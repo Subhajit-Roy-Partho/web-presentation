@@ -1,0 +1,138 @@
+/* Slide-specific visual fixes for slides 2-12. */
+
+/* Keep source notes legible without competing with dense body content. */
+.slide:nth-of-type(n + 2):nth-of-type(-n + 12) footer {
+  color: rgba(21, 33, 31, 0.64);
+  font-size: 0.68rem;
+}
+
+/* Slide 2: the roadmap SVG had no class styling, so default black fills obscured labels. */
+.slide:nth-of-type(2) .roadmap path {
+  fill: none;
+  stroke: rgba(11, 114, 133, 0.52);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.slide:nth-of-type(2) .roadmap circle {
+  fill: #fffaf0;
+  stroke: var(--teal-dark);
+  stroke-width: 5;
+}
+
+.slide:nth-of-type(2) .roadmap text {
+  fill: var(--ink);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Slide 3: shrink the over-wide ensemble SVG so its title and chain stay inside the card. */
+.slide:nth-of-type(3) .svg-card {
+  overflow: hidden;
+}
+
+.slide:nth-of-type(3) .svg-card > svg {
+  overflow: visible;
+  transform: scale(0.91);
+  transform-origin: center;
+}
+
+.slide:nth-of-type(3) .diagram-title {
+  font-size: 18px;
+}
+
+/* Slide 4: dense formula/list content was colliding with the footer. */
+.slide:nth-of-type(4) h2 {
+  font-size: clamp(2.15rem, 3.55vw, 4.05rem);
+}
+
+.slide:nth-of-type(4) p,
+.slide:nth-of-type(4) li {
+  font-size: clamp(0.98rem, 1.12vw, 1.18rem);
+  line-height: 1.36;
+}
+
+.slide:nth-of-type(4) ul {
+  margin-top: 14px;
+}
+
+.slide:nth-of-type(4) li + li {
+  margin-top: 0.3em;
+}
+
+.slide:nth-of-type(4) .formula-box {
+  margin-top: 18px;
+  padding: 14px 18px;
+}
+
+/* Slide 6: compact the comparison cards and pipeline labels to avoid crowding. */
+.slide:nth-of-type(6) .compare {
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.slide:nth-of-type(6) .compare > div {
+  padding: 18px 20px;
+}
+
+.slide:nth-of-type(6) .pipeline text {
+  font-size: 15px;
+}
+
+/* Slide 8: the long diagram title was clipped by the SVG viewport. */
+.slide:nth-of-type(8) .svg-card {
+  overflow: hidden;
+}
+
+.slide:nth-of-type(8) .svg-card > svg {
+  overflow: visible;
+  transform: scale(0.92);
+  transform-origin: center;
+}
+
+.slide:nth-of-type(8) .diagram-title {
+  font-size: 18px;
+}
+
+/* Slide 9: rotated frame art extended past the right edge of its SVG viewport. */
+.slide:nth-of-type(9) .svg-card {
+  overflow: hidden;
+}
+
+.slide:nth-of-type(9) .svg-card > svg {
+  overflow: visible;
+  transform: scale(0.9);
+  transform-origin: center;
+}
+
+/* Slide 11: long IPA heading in the diagram card was clipped. */
+.slide:nth-of-type(11) .svg-card {
+  overflow: hidden;
+}
+
+.slide:nth-of-type(11) .svg-card > svg {
+  overflow: visible;
+  transform: scale(0.91);
+  transform-origin: center;
+}
+
+.slide:nth-of-type(11) .diagram-title {
+  font-size: 18px;
+}
+
+/* Slide 12: right-hand CFA label overflowed the card; reduce only SVG label text. */
+.slide:nth-of-type(12) .svg-card {
+  overflow: hidden;
+}
+
+.slide:nth-of-type(12) .svg-card > svg {
+  overflow: visible;
+  transform: scale(0.93);
+  transform-origin: center;
+}
+
+.slide:nth-of-type(12) .stack-card text {
+  font-size: 15px;
+}

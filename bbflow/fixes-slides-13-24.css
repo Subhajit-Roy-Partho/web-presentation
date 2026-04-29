@@ -1,0 +1,63 @@
+/* Slide-specific visual fixes for slides 13-24. */
+
+/* Slide 16: keep dense copy clear of the footer and stop SVG caption clipping. */
+.slide:nth-of-type(16) h2 {
+  font-size: clamp(2.15rem, 3.35vw, 4.05rem);
+}
+
+.slide:nth-of-type(16) p,
+.slide:nth-of-type(16) li {
+  font-size: clamp(0.98rem, 1.12vw, 1.2rem);
+  line-height: 1.36;
+}
+
+.slide:nth-of-type(16) ul {
+  margin-top: 16px;
+}
+
+.slide:nth-of-type(16) li + li {
+  margin-top: 0.34em;
+}
+
+.slide:nth-of-type(16) .callout {
+  margin-top: 18px;
+  padding: 15px 18px;
+}
+
+.slide:nth-of-type(16) .svg-card .diagram-note {
+  font-size: 12.5px;
+}
+
+/* Slide 17: fit the SVG title and restore the equilibrium backbone curve. */
+.slide:nth-of-type(17) .svg-card .diagram-title {
+  font-size: 17px;
+}
+
+.slide:nth-of-type(17) .single-chain {
+  stroke: var(--teal);
+}
+
+/* Slide 19: the chain path used an unavailable gradient in this standalone SVG. */
+.slide:nth-of-type(19) .folded-chain {
+  stroke: var(--teal);
+}
+
+/* Slide 20: long SVG note was clipped by the card edge. */
+.slide:nth-of-type(20) .svg-card .diagram-note {
+  font-size: 12.5px;
+  transform: translateX(-26px);
+}
+
+/* Slide 22: long SVG title was clipped by the card edge. */
+.slide:nth-of-type(22) .svg-card .diagram-title {
+  font-size: 17px;
+}
+
+/* Slide 24: improve chart-label contrast and move replica labels off the bars. */
+.slide:nth-of-type(24) .dataset-bars text:first-of-type {
+  fill: #fffaf0;
+}
+
+.slide:nth-of-type(24) .replicas text {
+  transform: translateY(42px);
+}
