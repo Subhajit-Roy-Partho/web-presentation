@@ -48,15 +48,15 @@ body::before {
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr auto auto;
-  padding: 18px 22px 14px;
-  gap: 12px;
+  padding: 22px 30px 18px;
+  gap: 14px;
 }
 
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 1320px;
+  max-width: 1440px;
   width: 100%;
   margin: 0 auto;
   color: var(--teal-dark);
@@ -102,10 +102,10 @@ kbd {
 
 .deck {
   position: relative;
-  max-width: 1320px;
+  max-width: 1440px;
   width: 100%;
-  height: min(78vh, 830px);
-  min-height: 650px;
+  height: min(80vh, 860px);
+  min-height: 700px;
   margin: 0 auto;
 }
 
@@ -1251,4 +1251,46 @@ body.laser-on {
     box-shadow: none;
     border-radius: 0;
   }
+}
+
+/* === Compact layout for slides with tall content === */
+.slide.compact h2 { font-size: clamp(1.6rem, 2.4vw, 2.05rem); }
+.slide.compact p { font-size: clamp(0.92rem, 1.05vw, 1.05rem); }
+.slide.compact .two-col { gap: 28px; }
+.slide.compact .callout,
+.slide.compact .warning { padding: 10px 14px; font-size: clamp(0.9rem, 1vw, 1rem); }
+.slide.compact ul { font-size: clamp(0.92rem, 1.05vw, 1.05rem); }
+.slide.compact .compare p { font-size: clamp(0.85rem, 0.95vw, 0.95rem); }
+.slide.compact .compare { gap: 14px; }
+.slide.compact .card-grid.three { gap: 10px; }
+.slide.compact .card-grid.three .info-card { padding: 10px 13px; }
+.slide.compact .info-card h3 { font-size: 1.05rem; }
+.slide.compact .section-tag { font-size: 0.7rem; }
+
+/* === Slide-specific flex gaps to reduce vertical space === */
+.slide[data-title="Why Dynamics Matter"] .two-col > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slide[data-title="Flow vs Diffusion"] .two-col > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slide[data-title="Training Budget"] .two-col > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* === SVG title font-size overrides === */
+.slide[data-title="Conditional Prior"] figure > svg .diagram-title {
+  font-size: 13px;
+}
+
+.slide[data-title="RMSF Visualized"] .svg-card text {
+  font-family: "IBM Plex Sans", sans-serif;
 }

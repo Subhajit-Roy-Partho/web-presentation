@@ -1,0 +1,291 @@
+[
+  {
+    "slide": 7,
+    "issues": [
+      {
+        "type": "overlap",
+        "el1": "text: site A",
+        "el2": "text: allosteric",
+        "rect1": {
+          "left": 727.9105224609375,
+          "top": 299.46051025390625,
+          "right": 768.2330932617188,
+          "bottom": 318.61376953125
+        },
+        "rect2": {
+          "left": 727.9105224609375,
+          "top": 281.9053039550781,
+          "right": 795.4508666992188,
+          "bottom": 301.05853271484375
+        }
+      },
+      {
+        "type": "overlap",
+        "el1": "text: site B",
+        "el2": "text: active",
+        "rect1": {
+          "left": 1065.360595703125,
+          "top": 291.658203125,
+          "right": 1105.6832275390625,
+          "bottom": 310.8114318847656
+        },
+        "rect2": {
+          "left": 1065.360595703125,
+          "top": 276.0535583496094,
+          "right": 1108.7073974609375,
+          "bottom": 295.206787109375
+        }
+      },
+      {
+        "type": "overlap",
+        "el1": "text: (transiently open)",
+        "el2": "text: cryptic pocket",
+        "rect1": {
+          "left": 862.50048828125,
+          "top": 478.91375732421875,
+          "right": 983.4682006835938,
+          "bottom": 498.0669860839844
+        },
+        "rect2": {
+          "left": 862.50048828125,
+          "top": 463.3091125488281,
+          "right": 960.28271484375,
+          "bottom": 482.4623718261719
+        }
+      }
+    ]
+  },
+  {
+    "slide": 15,
+    "issues": [
+      {
+        "type": "overflow",
+        "tag": "text",
+        "text": "Straighter paths = fewer network evaluations = faster generation at equal accura",
+        "rect": {
+          "left": 716.20703125,
+          "top": 527.67822265625,
+          "right": 1288.78759765625,
+          "bottom": 546.8314208984375
+        }
+      }
+    ]
+  },
+  {
+    "slide": 19,
+    "issues": [
+      {
+        "type": "overlap",
+        "el1": "text: PLM",
+        "el2": "text: MSA /",
+        "rect1": {
+          "left": 845.1226806640625,
+          "top": 278.7863464355469,
+          "right": 875.3646240234375,
+          "bottom": 297.9395751953125
+        },
+        "rect2": {
+          "left": 852.5909423828125,
+          "top": 260.1156005859375,
+          "right": 894.9296875,
+          "bottom": 279.268798828125
+        }
+      }
+    ]
+  },
+  {
+    "slide": 31,
+    "issues": [
+      {
+        "type": "overlap",
+        "el1": "text: ConfDiff",
+        "el2": "text: AlphaFlow",
+        "rect1": {
+          "left": 985.1533203125,
+          "top": 392.8270263671875,
+          "right": 1036.564697265625,
+          "bottom": 409.964111328125
+        },
+        "rect2": {
+          "left": 1009.42529296875,
+          "top": 381.62457275390625,
+          "right": 1075.9576416015625,
+          "bottom": 398.76165771484375
+        }
+      }
+    ]
+  },
+  {
+    "slide": 36,
+    "issues": [
+      {
+        "type": "overlap",
+        "el1": "text: no direction",
+        "el2": "text: no cond prior",
+        "rect1": {
+          "left": 882.4641723632812,
+          "top": 525.389404296875,
+          "right": 956.0528564453125,
+          "bottom": 542.5264892578125
+        },
+        "rect2": {
+          "left": 807.7811279296875,
+          "top": 525.389404296875,
+          "right": 888.42626953125,
+          "bottom": 542.5264892578125
+        }
+      },
+      {
+        "type": "overlap",
+        "el1": "text: with index",
+        "el2": "text: no direction",
+        "rect1": {
+          "left": 955.2801513671875,
+          "top": 525.389404296875,
+          "right": 1020.8043212890625,
+          "bottom": 542.5264892578125
+        },
+        "rect2": {
+          "left": 882.4641723632812,
+          "top": 525.389404296875,
+          "right": 956.0528564453125,
+          "bottom": 542.5264892578125
+        }
+      }
+    ]
+  },
+  {
+    "slide": 37,
+    "issues": [
+      {
+        "type": "overflow",
+        "tag": "DIV",
+        "text": "\n            Practical\n            Training from scratch: an accessible compute ",
+        "rect": {
+          "left": 81,
+          "top": 105,
+          "right": 642.34375,
+          "bottom": 735.390625
+        }
+      },
+      {
+        "type": "overflow",
+        "tag": "DIV",
+        "text": "\n              \n                AlphaFold fine-tuning route\n                Requ",
+        "rect": {
+          "left": 81,
+          "top": 509.078125,
+          "right": 642.34375,
+          "bottom": 735.390625
+        }
+      },
+      {
+        "type": "overflow",
+        "tag": "DIV",
+        "text": "\n                AlphaFold fine-tuning route\n                Requires AlphaFold ",
+        "rect": {
+          "left": 81,
+          "top": 509.078125,
+          "right": 354.671875,
+          "bottom": 735.390625
+        }
+      },
+      {
+        "type": "overflow",
+        "tag": "DIV",
+        "text": "\n                BBFlow from scratch\n                No pre-trained starting poi",
+        "rect": {
+          "left": 368.671875,
+          "top": 509.078125,
+          "right": 642.34375,
+          "bottom": 735.390625
+        }
+      },
+      {
+        "type": "overlap",
+        "el1": "text: from scratch",
+        "el2": "text: BBFlow",
+        "rect1": {
+          "left": 731.8117065429688,
+          "top": 541.6070556640625,
+          "right": 819.5133056640625,
+          "bottom": 560.76025390625
+        },
+        "rect2": {
+          "left": 741.5645751953125,
+          "top": 524.0518188476562,
+          "right": 797.0081176757812,
+          "bottom": 543.205078125
+        }
+      },
+      {
+        "type": "overlap",
+        "el1": "text: ~1000s h",
+        "el2": "text: Compute to train each model",
+        "rect1": {
+          "left": 893.709716796875,
+          "top": 247.0696563720703,
+          "right": 960.241943359375,
+          "bottom": 266.2228698730469
+        },
+        "rect2": {
+          "left": 710.3553466796875,
+          "top": 221.51548767089844,
+          "right": 1020.8392333984375,
+          "bottom": 247.72515869140625
+        }
+      },
+      {
+        "type": "overlap",
+        "el1": "text: ~1000s h",
+        "el2": "text: Training GPU-hours (schematic)",
+        "rect1": {
+          "left": 893.709716796875,
+          "top": 247.0696563720703,
+          "right": 960.241943359375,
+          "bottom": 266.2228698730469
+        },
+        "rect2": {
+          "left": 733.7622680664062,
+          "top": 250.09384155273438,
+          "right": 905.1332397460938,
+          "bottom": 265.2148132324219
+        }
+      },
+      {
+        "type": "overlap",
+        "el1": "text: original training",
+        "el2": "text: AlphaFold 2",
+        "rect1": {
+          "left": 891.7591552734375,
+          "top": 541.6070556640625,
+          "right": 1000.630126953125,
+          "bottom": 560.76025390625
+        },
+        "rect2": {
+          "left": 895.6602783203125,
+          "top": 524.0518188476562,
+          "right": 982.3538818359375,
+          "bottom": 543.205078125
+        }
+      },
+      {
+        "type": "overlap",
+        "el1": "text: fine-tuning",
+        "el2": "text: AlphaFlow",
+        "rect1": {
+          "left": 1030.250244140625,
+          "top": 541.6070556640625,
+          "right": 1106.8631591796875,
+          "bottom": 560.76025390625
+        },
+        "rect2": {
+          "left": 1024.3984375,
+          "top": 524.0518188476562,
+          "right": 1102.01953125,
+          "bottom": 543.205078125
+        }
+      }
+    ]
+  }
+]

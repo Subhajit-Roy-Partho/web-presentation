@@ -1,0 +1,124 @@
+Slide 1: 0 issues
+Slide 2: 0 issues
+Slide 3: 0 issues
+Slide 4: 1 issues
+Slide 5: 0 issues
+Slide 6: 0 issues
+Slide 7: 6 issues
+Slide 8: 2 issues
+Slide 9: 0 issues
+Slide 10: 0 issues
+Slide 11: 0 issues
+Slide 12: 0 issues
+Slide 13: 2 issues
+Slide 14: 0 issues
+Slide 15: 4 issues
+Slide 16: 0 issues
+Slide 17: 0 issues
+Slide 18: 0 issues
+Slide 19: 1 issues
+Slide 20: 1 issues
+Slide 21: 0 issues
+Slide 22: 0 issues
+Slide 23: 0 issues
+Slide 24: 0 issues
+Slide 25: 0 issues
+Slide 26: 0 issues
+Slide 27: 0 issues
+Slide 28: 1 issues
+Slide 29: 0 issues
+Slide 30: 0 issues
+Slide 31: 1 issues
+Slide 32: 0 issues
+Slide 33: 0 issues
+Slide 34: 0 issues
+Slide 35: 0 issues
+Slide 36: 2 issues
+Slide 37: 12 issues
+Slide 38: 0 issues
+Slide 39: 0 issues
+Slide 40: 0 issues
+Slide 41: 0 issues
+Slide 42: 0 issues
+
+Done. Results saved to detected_issues.json
+Total slides with issues: 11
+
+Summary:
+Slide 4: 1 problems
+  [Overlap] text: R₂ (branched)
+          ↔ text: Backbone vs. full-atom representation
+Slide 7: 6 problems
+  [Overflow] DIV: "
+            Motivation
+            How ..." at (81, 105)
+  [Overflow] DIV: "
+              In drug discovery: a larg..." at (81, 666)
+  [Overlap] text: site A
+          ↔ text: allosteric
+  [Overlap] text: site B
+          ↔ text: active
+  [Overlap] text: (transiently open)
+          ↔ text: cryptic pocket
+  [Overflow] text: "MD or BBFlow ensembles can reveal pocket..." at (720, 584)
+Slide 8: 2 problems
+  [Overlap] text: 10^8 steps
+          ↔ text: MD
+  [Overlap] text: learned flow
+          ↔ text: BBFlow
+Slide 13: 2 problems
+  [Overlap] text: = scalar terms + geometry
+          ↔ text: attention logit
+  [Overflow] text: "IPA connects sequence features, pair fea..." at (716, 210)
+Slide 15: 4 problems
+  [Overflow] DIV: "
+            Background — ML
+           ..." at (81, 105)
+  [Overflow] DIV: "
+              Flow matching also allows..." at (81, 642)
+  [Overlap] text: stochastic SDE
+          ↔ text: diffusion
+  [Overlap] text: deterministic ODE
+          ↔ text: flow matching
+Slide 19: 1 problems
+  [Overlap] text: PLM
+          ↔ text: MSA /
+Slide 20: 1 problems
+  [Overflow] text: "Condition on one structure; sample many ..." at (714, 208)
+Slide 28: 1 problems
+  [Overlap] text: BBFlow
+          ↔ text: Residue index
+Slide 31: 1 problems
+  [Overlap] text: ConfDiff
+          ↔ text: AlphaFlow
+Slide 36: 2 problems
+  [Overlap] text: no direction
+          ↔ text: no cond prior
+  [Overlap] text: with index
+          ↔ text: no direction
+Slide 37: 12 problems
+  [Overflow] DIV: "
+            Practical
+            Train..." at (81, 105)
+  [Overflow] DIV: "
+              
+                AlphaFol..." at (81, 562)
+  [Overflow] DIV: "
+                AlphaFold fine-tuning r..." at (81, 562)
+  [Overflow] P: "Requires AlphaFold 2 weights, an MSA pip..." at (102, 638)
+  [Overflow] DIV: "
+                BBFlow from scratch
+   ..." at (368, 562)
+  [Overflow] P: "No pre-trained starting point required. ..." at (389, 619)
+  [Overlap] text: Training GPU-hours (schematic)
+          ↔ text: Compute to train each model
+  [Overlap] text: from scratch
+          ↔ text: BBFlow
+  [Overlap] text: ~1000s h
+          ↔ text: Compute to train each model
+  [Overlap] text: ~1000s h
+          ↔ text: Training GPU-hours (schematic)
+  [Overlap] text: original training
+          ↔ text: AlphaFold 2
+  [Overlap] text: fine-tuning
+          ↔ text: AlphaFlow

@@ -163,7 +163,7 @@
           </div>
           <figure class="svg-card">
             <svg viewBox="0 0 560 420" role="img" aria-label="Backbone vs side chain">
-              <text class="diagram-title" x="40" y="44">Backbone vs. full-atom representation</text>
+              <text class="diagram-title" x="40" y="30">Backbone vs. full-atom representation</text>
               <path class="single-chain" d="M60 270 L128 180 L196 270 L264 180 L332 270 L400 180" style="stroke-width:9;stroke-linecap:round"/>
               <circle class="state-dot" cx="128" cy="180" r="11"/>
               <circle class="state-dot" cx="264" cy="180" r="11"/>
@@ -274,7 +274,7 @@
         <footer>MD overview: Adcock and McCammon, Chem. Rev. 2006; BBFlow scope discussion, Wolf et al. 2025.</footer>
       </section>
 
-      <section class="slide" data-title="Why Dynamics Matter">
+      <section class="slide compact" data-title="Why Dynamics Matter">
         <div class="two-col">
           <div>
             <p class="section-tag">Motivation</p>
@@ -303,18 +303,18 @@
               <text class="diagram-title" x="40" y="44">Allostery: distant signalling through shape</text>
               <path class="single-chain" d="M70 240 C120 120 185 295 258 210 S374 115 470 230" style="stroke-width:9"/>
               <circle cx="140" cy="172" r="30" style="fill:rgba(11,114,133,0.13);stroke:#0b7285;stroke-width:3;stroke-dasharray:6 5"/>
-              <text x="62" y="136" class="diagram-note" style="fill:#064d5a;font-weight:700">allosteric</text>
-              <text x="72" y="152" class="diagram-note" style="fill:#064d5a;font-weight:700">site A</text>
+              <text x="58" y="124" class="diagram-note" style="fill:#064d5a;font-weight:700">allosteric</text>
+              <text x="58" y="148" class="diagram-note" style="fill:#064d5a;font-weight:700">site A</text>
               <circle cx="404" cy="154" r="30" style="fill:rgba(194,65,12,0.12);stroke:#c2410c;stroke-width:3;stroke-dasharray:6 5"/>
-              <text x="404" y="124" class="diagram-note" style="fill:#c2410c;font-weight:700">active</text>
-              <text x="404" y="141" class="diagram-note" style="fill:#c2410c;font-weight:700">site B</text>
+              <text x="404" y="118" class="diagram-note" style="fill:#c2410c;font-weight:700">active</text>
+              <text x="404" y="140" class="diagram-note" style="fill:#c2410c;font-weight:700">site B</text>
               <path d="M168 178 C225 148 310 184 374 162" style="fill:none;stroke:#f08c00;stroke-width:4;stroke-dasharray:9 6;stroke-linecap:round"/>
               <text x="220" y="142" class="diagram-note" style="fill:#8a5200">conformational signal</text>
               <rect x="120" y="152" width="22" height="22" rx="6" style="fill:#0b7285;opacity:0.72"/>
               <ellipse cx="258" cy="280" rx="40" ry="18" style="fill:rgba(240,140,0,0.18);stroke:#f08c00;stroke-width:2;stroke-dasharray:6 5"/>
-              <text x="196" y="318" class="diagram-note" style="fill:#8a5200">cryptic pocket</text>
-              <text x="190" y="334" class="diagram-note" style="fill:#8a5200">(transiently open)</text>
-              <text class="diagram-note" x="46" y="390">MD or BBFlow ensembles can reveal pockets invisible in the single equilibrium structure.</text>
+              <text x="196" y="310" class="diagram-note" style="fill:#8a5200">cryptic pocket</text>
+              <text x="196" y="332" class="diagram-note" style="fill:#8a5200">(transiently open)</text>
+              <text class="diagram-note" x="46" y="390">MD or BBFlow ensembles reveal pockets invisible in the single structure.</text>
             </svg>
           </figure>
         </div>
@@ -343,13 +343,13 @@
             <svg viewBox="0 0 560 410" role="img" aria-label="MD versus emulator">
               <g class="pipeline" transform="translate(36 70)">
                 <rect x="0" y="0" width="140" height="70"/><text x="20" y="42">Initial structure</text>
-                <rect x="190" y="0" width="140" height="70"/><text x="222" y="31">MD</text><text x="208" y="52">10^8 steps</text>
+                <rect x="190" y="0" width="140" height="70"/><text x="222" y="27">MD</text><text x="208" y="50">10^8 steps</text>
                 <rect x="380" y="0" width="130" height="70"/><text x="405" y="42">Trajectory</text>
                 <path d="M142 35 H188"/><path d="M332 35 H378"/>
               </g>
               <g class="pipeline alt" transform="translate(36 230)">
                 <rect x="0" y="0" width="140" height="70"/><text x="20" y="42">Equilibrium xeq</text>
-                <rect x="190" y="0" width="140" height="70"/><text x="214" y="31">BBFlow</text><text x="214" y="52">learned flow</text>
+                <rect x="190" y="0" width="140" height="70"/><text x="214" y="27">BBFlow</text><text x="214" y="50">learned flow</text>
                 <rect x="380" y="0" width="130" height="70"/><text x="397" y="42">Samples</text>
                 <path d="M142 35 H188"/><path d="M332 35 H378"/>
               </g>
@@ -538,9 +538,9 @@
               <path class="measure" d="M174 165 L342 186"/>
               <text class="diagram-note" x="210" y="158">squared 3D distance</text>
               <g class="small-box" transform="translate(165 275)">
-                <rect width="230" height="62"/><text x="22" y="28">attention logit</text><text x="22" y="48">= scalar terms + geometry</text>
+                <rect width="230" height="62"/><text x="22" y="26">attention logit</text><text x="22" y="50">= scalar terms + geometry</text>
               </g>
-              <text class="diagram-title" x="44" y="48">IPA connects sequence features, pair features, and 3D frames</text>
+              <text class="diagram-title" x="44" y="40">IPA: sequence features, pair features, and 3D frames</text>
             </svg>
           </figure>
         </div>
@@ -585,7 +585,7 @@
         <footer>Wagner et al., Generating Highly Designable Proteins with Geometric Algebra Flow Matching, NeurIPS 2024; BBFlow method section.</footer>
       </section>
 
-      <section class="slide" data-title="Flow vs Diffusion">
+      <section class="slide compact" data-title="Flow vs Diffusion">
         <div class="two-col">
           <div>
             <p class="section-tag">Background &mdash; ML</p>
@@ -613,16 +613,16 @@
               <text class="diagram-note" x="58" y="84">Prior</text>
               <text class="diagram-note" x="424" y="84">Data</text>
               <path d="M100 220 C120 188 112 248 138 212 C164 174 156 248 184 212 C210 176 200 248 228 214 C256 178 248 248 278 214 C306 178 298 244 326 212 C354 178 346 244 374 212 C400 178 392 244 420 218" style="fill:none;stroke:rgba(240,140,0,0.80);stroke-width:5;stroke-linecap:round"/>
-              <text x="58" y="240" class="diagram-note" style="fill:#8a5200;font-weight:700">diffusion</text>
-              <text x="58" y="257" class="diagram-note" style="fill:#8a5200">stochastic SDE</text>
+              <text x="58" y="238" class="diagram-note" style="fill:#8a5200;font-weight:700">diffusion</text>
+              <text x="58" y="262" class="diagram-note" style="fill:#8a5200">stochastic SDE</text>
               <path d="M100 300 C200 288 320 308 420 298" style="fill:none;stroke:#0b7285;stroke-width:6;stroke-linecap:round"/>
-              <text x="58" y="315" class="diagram-note" style="fill:#064d5a;font-weight:700">flow matching</text>
-              <text x="58" y="332" class="diagram-note" style="fill:#064d5a">deterministic ODE</text>
+              <text x="58" y="312" class="diagram-note" style="fill:#064d5a;font-weight:700">flow matching</text>
+              <text x="58" y="336" class="diagram-note" style="fill:#064d5a">deterministic ODE</text>
               <circle cx="100" cy="220" r="10" style="fill:rgba(21,33,31,0.42);stroke:none"/>
               <circle cx="420" cy="218" r="10" style="fill:#c2410c;stroke:none"/>
               <circle cx="100" cy="300" r="10" style="fill:rgba(21,33,31,0.42);stroke:none"/>
               <circle cx="420" cy="298" r="10" style="fill:#c2410c;stroke:none"/>
-              <text class="diagram-note" x="46" y="380">Straighter paths = fewer network evaluations = faster generation at equal accuracy.</text>
+              <text class="diagram-note" x="46" y="372">Straighter paths = fewer network evaluations = faster generation.</text>
             </svg>
           </figure>
         </div>
@@ -749,7 +749,7 @@
               <g class="pipeline thin" transform="translate(36 72)">
                 <text class="diagram-title" x="0" y="-20">Folding-model ensemble route</text>
                 <rect x="0" y="0" width="96" height="56"/><text x="22" y="35">Sequence</text>
-                <rect x="128" y="0" width="96" height="56"/><text x="154" y="25">MSA /</text><text x="146" y="43">PLM</text>
+                <rect x="128" y="0" width="96" height="56"/><text x="154" y="22">MSA /</text><text x="146" y="46">PLM</text>
                 <rect x="256" y="0" width="108" height="56"/><text x="274" y="35">Folding trunk</text>
                 <rect x="400" y="0" width="104" height="56"/><text x="424" y="35">Ensemble</text>
                 <path d="M98 28 H126"/><path d="M226 28 H254"/><path d="M366 28 H398"/>
@@ -786,7 +786,7 @@
           </div>
           <figure class="svg-card">
             <svg viewBox="0 0 560 410" role="img" aria-label="Conditional distribution">
-              <text class="diagram-title" x="42" y="46">Condition on one structure; sample many conformations</text>
+              <text class="diagram-title" x="42" y="46">Condition on x_eq; sample many conformations</text>
               <path class="single-chain" d="M70 225 C116 130 186 288 250 205 S380 114 474 230"/>
               <text class="diagram-note" x="82" y="110">given x_eq</text>
               <g class="sample-cloud" transform="translate(295 240)">
@@ -1066,7 +1066,7 @@
               <line x1="60" y1="380" x2="100" y2="380" style="stroke:#0b7285;stroke-width:4"/>
               <text x="108" y="384" class="diagram-note">MD reference</text>
               <line x1="240" y1="380" x2="280" y2="380" style="stroke:#c2410c;stroke-width:3;stroke-dasharray:8 6"/>
-              <text x="288" y="384" class="diagram-note">BBFlow</text>
+              <text x="270" y="384" class="diagram-note">BBFlow</text>
             </svg>
           </figure>
         </div>
@@ -1156,7 +1156,7 @@
               <g class="scatter">
                 <circle cx="466" cy="150" r="11"/><text x="376" y="154">AlphaFlow-T</text>
                 <circle cx="450" cy="220" r="10"/><text x="358" y="224">AlphaFlow</text>
-                <circle cx="420" cy="232" r="10"/><text x="332" y="236">ConfDiff</text>
+                <circle cx="420" cy="232" r="10"/><text x="310" y="240">ConfDiff</text>
                 <circle cx="250" cy="250" r="10"/><text x="152" y="254">AlphaFlow-Tdist</text>
                 <circle cx="195" cy="286" r="10"/><text x="82" y="290">AlphaFlow-T12L</text>
                 <circle class="star" cx="170" cy="154" r="15"/><text x="195" y="158">BBFlow</text>
@@ -1324,9 +1324,9 @@
               <g class="bar-chart" transform="translate(90 82)">
                 <line x1="0" y1="270" x2="390" y2="270"/>
                 <rect class="good" x="0" y="240" width="48" height="30"/><text x="0" y="296">full</text><text x="2" y="232">0.77</text>
-                <rect x="74" y="226" width="48" height="44"/><text x="60" y="296">no cond prior</text><text x="76" y="218">0.90</text>
-                <rect x="152" y="211" width="48" height="59"/><text x="139" y="296">no direction</text><text x="154" y="203">1.15</text>
-                <rect x="230" y="236" width="48" height="34"/><text x="214" y="296">with index</text><text x="232" y="228">0.82</text>
+                <rect x="74" y="226" width="48" height="44"/><text x="48" y="296" font-size="10px">no cond prior</text><text x="76" y="218">0.90</text>
+                <rect x="152" y="211" width="48" height="59"/><text x="130" y="296" font-size="10px">no direction</text><text x="154" y="203">1.15</text>
+                <rect x="230" y="236" width="48" height="34"/><text x="208" y="296" font-size="10px">with index</text><text x="232" y="228">0.82</text>
                 <rect class="bad" x="314" y="0" width="48" height="270"/><text x="292" y="296">no distance</text><text x="314" y="-8">7.08</text>
               </g>
             </svg>
@@ -1335,7 +1335,7 @@
         <footer>Ablation results from Wolf et al., Table 3 and Appendix Table A.12.</footer>
       </section>
 
-      <section class="slide" data-title="Training Budget">
+      <section class="slide compact" data-title="Training Budget">
         <div class="two-col">
           <div>
             <p class="section-tag">Practical</p>
@@ -1359,21 +1359,21 @@
           </div>
           <figure class="svg-card">
             <svg viewBox="0 0 540 420" role="img" aria-label="Training compute comparison">
-              <text class="diagram-title" x="40" y="46">Compute to train each model</text>
-              <path class="axis" d="M56 310 H490 M56 310 V40"/>
-              <text class="axis-label" x="64" y="36" style="font-size:13px">Training GPU-hours (schematic)</text>
+              <text class="diagram-title" x="40" y="28">Compute to train each model</text>
+              <path class="axis" d="M56 310 H490 M56 310 V50"/>
+              <text class="axis-label" x="64" y="48" style="font-size:12px">Training GPU-hours (schematic)</text>
               <rect x="80" y="180" width="60" height="130" rx="10" style="fill:rgba(11,114,133,0.75)"/>
-              <text x="68" y="172" class="diagram-note" style="fill:#064d5a;font-weight:700">~144 h</text>
-              <text x="72" y="330" class="diagram-note" style="font-weight:700">BBFlow</text>
-              <text x="62" y="346" class="diagram-note">from scratch</text>
+              <text x="68" y="168" class="diagram-note" style="fill:#064d5a;font-weight:700">~144 h</text>
+              <text x="72" y="332" class="diagram-note" style="font-weight:700">BBFlow</text>
+              <text x="62" y="350" class="diagram-note">from scratch</text>
               <rect x="250" y="60" width="60" height="250" rx="10" style="fill:rgba(240,140,0,0.65)"/>
-              <text x="228" y="52" class="diagram-note" style="fill:#8a5200;font-weight:700">~1000s h</text>
-              <text x="230" y="330" class="diagram-note" style="font-weight:700">AlphaFold 2</text>
-              <text x="226" y="346" class="diagram-note">original training</text>
+              <text x="228" y="48" class="diagram-note" style="fill:#8a5200;font-weight:700">~1000s h</text>
+              <text x="230" y="332" class="diagram-note" style="font-weight:700">AlphaFold 2</text>
+              <text x="226" y="350" class="diagram-note">original training</text>
               <rect x="380" y="120" width="60" height="190" rx="10" style="fill:rgba(194,65,12,0.55)"/>
               <text x="360" y="112" class="diagram-note" style="fill:#c2410c;font-weight:700">hundreds h</text>
-              <text x="362" y="330" class="diagram-note" style="font-weight:700">AlphaFlow</text>
-              <text x="368" y="346" class="diagram-note">fine-tuning</text>
+              <text x="362" y="332" class="diagram-note" style="font-weight:700">AlphaFlow</text>
+              <text x="368" y="350" class="diagram-note">fine-tuning</text>
               <text class="diagram-note" x="46" y="390">Values are schematic; exact numbers depend on hardware and configuration.</text>
             </svg>
           </figure>

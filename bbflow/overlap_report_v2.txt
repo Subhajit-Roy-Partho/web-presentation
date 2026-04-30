@@ -1,0 +1,89 @@
+Slide 1: 0 issues
+Slide 2: 0 issues
+Slide 3: 0 issues
+Slide 4: 0 issues
+Slide 5: 0 issues
+Slide 6: 0 issues
+Slide 7: 3 issues
+Slide 8: 0 issues
+Slide 9: 0 issues
+Slide 10: 0 issues
+Slide 11: 0 issues
+Slide 12: 0 issues
+Slide 13: 0 issues
+Slide 14: 0 issues
+Slide 15: 1 issues
+Slide 16: 0 issues
+Slide 17: 0 issues
+Slide 18: 0 issues
+Slide 19: 1 issues
+Slide 20: 0 issues
+Slide 21: 0 issues
+Slide 22: 0 issues
+Slide 23: 0 issues
+Slide 24: 0 issues
+Slide 25: 0 issues
+Slide 26: 0 issues
+Slide 27: 0 issues
+Slide 28: 0 issues
+Slide 29: 0 issues
+Slide 30: 0 issues
+Slide 31: 1 issues
+Slide 32: 0 issues
+Slide 33: 0 issues
+Slide 34: 0 issues
+Slide 35: 0 issues
+Slide 36: 2 issues
+Slide 37: 9 issues
+Slide 38: 0 issues
+Slide 39: 0 issues
+Slide 40: 0 issues
+Slide 41: 0 issues
+Slide 42: 0 issues
+
+Done. Results saved to detected_issues.json
+Total slides with issues: 6
+
+Summary:
+Slide 7: 3 problems
+  [Overlap] text: site A
+          ↔ text: allosteric
+  [Overlap] text: site B
+          ↔ text: active
+  [Overlap] text: (transiently open)
+          ↔ text: cryptic pocket
+Slide 15: 1 problems
+  [Overflow] text: "Straighter paths = fewer network evaluat..." at (716, 528)
+Slide 19: 1 problems
+  [Overlap] text: PLM
+          ↔ text: MSA /
+Slide 31: 1 problems
+  [Overlap] text: ConfDiff
+          ↔ text: AlphaFlow
+Slide 36: 2 problems
+  [Overlap] text: no direction
+          ↔ text: no cond prior
+  [Overlap] text: with index
+          ↔ text: no direction
+Slide 37: 9 problems
+  [Overflow] DIV: "
+            Practical
+            Train..." at (81, 105)
+  [Overflow] DIV: "
+              
+                AlphaFol..." at (81, 509)
+  [Overflow] DIV: "
+                AlphaFold fine-tuning r..." at (81, 509)
+  [Overflow] DIV: "
+                BBFlow from scratch
+   ..." at (369, 509)
+  [Overlap] text: from scratch
+          ↔ text: BBFlow
+  [Overlap] text: ~1000s h
+          ↔ text: Compute to train each model
+  [Overlap] text: ~1000s h
+          ↔ text: Training GPU-hours (schematic)
+  [Overlap] text: original training
+          ↔ text: AlphaFold 2
+  [Overlap] text: fine-tuning
+          ↔ text: AlphaFlow
