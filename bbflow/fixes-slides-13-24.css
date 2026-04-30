@@ -61,3 +61,14 @@
 .slide:nth-of-type(24) .replicas text {
   transform: translateY(42px);
 }
+
+/* Slide 15: bottom SVG caption sits near the viewBox edge and can clip at small heights. */
+.slide:nth-of-type(15) .svg-card {
+  overflow: hidden;
+}
+
+.slide:nth-of-type(15) .svg-card > svg {
+  overflow: visible;
+  transform: scale(0.93);
+  transform-origin: center;
+}

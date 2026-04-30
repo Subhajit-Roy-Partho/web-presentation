@@ -303,17 +303,14 @@
               <text class="diagram-title" x="40" y="44">Allostery: distant signalling through shape</text>
               <path class="single-chain" d="M70 240 C120 120 185 295 258 210 S374 115 470 230" style="stroke-width:9"/>
               <circle cx="140" cy="172" r="30" style="fill:rgba(11,114,133,0.13);stroke:#0b7285;stroke-width:3;stroke-dasharray:6 5"/>
-              <text x="58" y="124" class="diagram-note" style="fill:#064d5a;font-weight:700">allosteric</text>
-              <text x="58" y="148" class="diagram-note" style="fill:#064d5a;font-weight:700">site A</text>
+              <text x="58" y="112" class="diagram-note" style="fill:#064d5a;font-weight:700">allosteric<tspan x="58" dy="24">site A</tspan></text>
               <circle cx="404" cy="154" r="30" style="fill:rgba(194,65,12,0.12);stroke:#c2410c;stroke-width:3;stroke-dasharray:6 5"/>
-              <text x="404" y="118" class="diagram-note" style="fill:#c2410c;font-weight:700">active</text>
-              <text x="404" y="140" class="diagram-note" style="fill:#c2410c;font-weight:700">site B</text>
+              <text x="404" y="106" class="diagram-note" style="fill:#c2410c;font-weight:700">active<tspan x="404" dy="24">site B</tspan></text>
               <path d="M168 178 C225 148 310 184 374 162" style="fill:none;stroke:#f08c00;stroke-width:4;stroke-dasharray:9 6;stroke-linecap:round"/>
               <text x="220" y="142" class="diagram-note" style="fill:#8a5200">conformational signal</text>
               <rect x="120" y="152" width="22" height="22" rx="6" style="fill:#0b7285;opacity:0.72"/>
               <ellipse cx="258" cy="280" rx="40" ry="18" style="fill:rgba(240,140,0,0.18);stroke:#f08c00;stroke-width:2;stroke-dasharray:6 5"/>
-              <text x="196" y="310" class="diagram-note" style="fill:#8a5200">cryptic pocket</text>
-              <text x="196" y="332" class="diagram-note" style="fill:#8a5200">(transiently open)</text>
+              <text x="196" y="306" class="diagram-note" style="fill:#8a5200">cryptic pocket<tspan x="196" dy="22">(transiently open)</tspan></text>
               <text class="diagram-note" x="46" y="390">MD or BBFlow ensembles reveal pockets invisible in the single structure.</text>
             </svg>
           </figure>
@@ -379,26 +376,88 @@
             </ul>
           </div>
           <figure class="svg-card">
-            <svg viewBox="0 0 560 410" role="img" aria-label="Attention mechanism">
-              <g class="tokens" transform="translate(52 78)">
-                <rect x="0" y="0" width="72" height="52"/><text x="21" y="33">A</text>
-                <rect x="92" y="0" width="72" height="52"/><text x="113" y="33">L</text>
-                <rect x="184" y="0" width="72" height="52"/><text x="207" y="33">G</text>
-                <rect x="276" y="0" width="72" height="52"/><text x="299" y="33">V</text>
-                <rect x="368" y="0" width="72" height="52"/><text x="389" y="33">K</text>
+            <svg viewBox="0 0 560 420" role="img" aria-label="Transformer Q K V attention mechanism">
+              <defs>
+                <marker id="qkv-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="rgba(21,33,31,0.52)"/>
+                </marker>
+              </defs>
+              <text class="diagram-title" x="22" y="32">Q, K, V: project &#8594; score &#8594; retrieve</text>
+
+              <g class="tokens" transform="translate(20 46)">
+                <rect x="0"   y="0" width="50" height="36"/><text x="17"  y="24">A</text>
+                <rect x="60"  y="0" width="50" height="36"/><text x="77"  y="24">L</text>
+                <rect x="120" y="0" width="50" height="36"/><text x="137" y="24">G</text>
+                <rect x="180" y="0" width="50" height="36"/><text x="197" y="24">V</text>
               </g>
-              <g class="attention-lines">
-                <path class="thick" d="M88 216 C130 142 250 140 350 104"/>
-                <path d="M88 216 C150 172 185 154 203 104"/>
-                <path d="M88 216 C242 250 390 172 442 104"/>
-                <circle cx="88" cy="216" r="24"/><text x="64" y="260">query residue</text>
-              </g>
-              <g class="heatmap" transform="translate(350 238)">
-                <rect x="0" y="0" width="30" height="30" class="h1"/><rect x="35" y="0" width="30" height="30" class="h2"/><rect x="70" y="0" width="30" height="30" class="h3"/>
-                <rect x="0" y="35" width="30" height="30" class="h2"/><rect x="35" y="35" width="30" height="30" class="h1"/><rect x="70" y="35" width="30" height="30" class="h2"/>
-                <rect x="0" y="70" width="30" height="30" class="h3"/><rect x="35" y="70" width="30" height="30" class="h2"/><rect x="70" y="70" width="30" height="30" class="h1"/>
-                <text x="-10" y="128">attention weights</text>
-              </g>
+              <text class="diagram-note" x="250" y="72" style="font-size:12px">input tokens</text>
+              <line x1="45"  y1="84" x2="45"  y2="108" style="stroke:#0b7285;stroke-width:1.5;stroke-dasharray:3 3"/>
+              <line x1="105" y1="84" x2="105" y2="108" style="stroke:#0b7285;stroke-width:1.5;stroke-dasharray:3 3"/>
+              <line x1="165" y1="84" x2="165" y2="108" style="stroke:#0b7285;stroke-width:1.5;stroke-dasharray:3 3"/>
+              <line x1="225" y1="84" x2="225" y2="108" style="stroke:#0b7285;stroke-width:1.5;stroke-dasharray:3 3"/>
+              <text class="diagram-note" x="20" y="105" style="font-size:10px;font-family:'IBM Plex Mono',monospace">W&#x2071; projections</text>
+
+              <text x="20" y="139" style="fill:#0b7285;font-family:'Fraunces',serif;font-size:19px;font-weight:800">Q</text>
+              <rect x="44"  y="116" width="50" height="30" rx="7" style="fill:rgba(11,114,133,0.22);stroke:#0b7285;stroke-width:2"/>
+              <rect x="104" y="116" width="50" height="30" rx="7" style="fill:rgba(11,114,133,0.22);stroke:#0b7285;stroke-width:2"/>
+              <rect x="164" y="116" width="50" height="30" rx="7" style="fill:rgba(11,114,133,0.22);stroke:#0b7285;stroke-width:2"/>
+              <rect x="224" y="116" width="50" height="30" rx="7" style="fill:rgba(11,114,133,0.22);stroke:#0b7285;stroke-width:2"/>
+              <text class="diagram-note" x="282" y="136" style="fill:#064d5a;font-size:12px">"what I need"</text>
+
+              <text x="20" y="193" style="fill:#f08c00;font-family:'Fraunces',serif;font-size:19px;font-weight:800">K</text>
+              <rect x="44"  y="170" width="50" height="30" rx="7" style="fill:rgba(240,140,0,0.22);stroke:#f08c00;stroke-width:2"/>
+              <rect x="104" y="170" width="50" height="30" rx="7" style="fill:rgba(240,140,0,0.22);stroke:#f08c00;stroke-width:2"/>
+              <rect x="164" y="170" width="50" height="30" rx="7" style="fill:rgba(240,140,0,0.22);stroke:#f08c00;stroke-width:2"/>
+              <rect x="224" y="170" width="50" height="30" rx="7" style="fill:rgba(240,140,0,0.22);stroke:#f08c00;stroke-width:2"/>
+              <text class="diagram-note" x="282" y="190" style="fill:#8a5200;font-size:12px">"what I advertise"</text>
+
+              <text x="20" y="247" style="fill:#c2410c;font-family:'Fraunces',serif;font-size:19px;font-weight:800">V</text>
+              <rect x="44"  y="224" width="50" height="30" rx="7" style="fill:rgba(194,65,12,0.20);stroke:#c2410c;stroke-width:2"/>
+              <rect x="104" y="224" width="50" height="30" rx="7" style="fill:rgba(194,65,12,0.20);stroke:#c2410c;stroke-width:2"/>
+              <rect x="164" y="224" width="50" height="30" rx="7" style="fill:rgba(194,65,12,0.20);stroke:#c2410c;stroke-width:2"/>
+              <rect x="224" y="224" width="50" height="30" rx="7" style="fill:rgba(194,65,12,0.20);stroke:#c2410c;stroke-width:2"/>
+              <text class="diagram-note" x="282" y="244" style="fill:#a03010;font-size:12px">"what I transfer"</text>
+
+              <line x1="350" y1="44" x2="350" y2="400" style="stroke:rgba(21,33,31,0.11);stroke-width:1.5;stroke-dasharray:5 4"/>
+
+              <text class="diagram-note" x="360" y="58" style="font-weight:700;fill:#064d5a;font-size:12px">For q&#x2081;: score all keys, weight V</text>
+              <text x="360" y="80" style="fill:#0b7285;font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace">Q&#x2081;&#xB7;K&#x1D40; / &#x221A;d&#x2096;</text>
+              <rect x="360" y="86"  width="42" height="26" rx="6" style="fill:rgba(11,114,133,0.72)"/>
+              <rect x="408" y="86"  width="42" height="26" rx="6" style="fill:rgba(11,114,133,0.20)"/>
+              <rect x="456" y="86"  width="42" height="26" rx="6" style="fill:rgba(11,114,133,0.44)"/>
+              <rect x="504" y="86"  width="42" height="26" rx="6" style="fill:rgba(11,114,133,0.13)"/>
+              <text x="367" y="104" style="fill:#fffaf0;font-size:11px;font-weight:700">3.1</text>
+              <text x="415" y="104" style="fill:#555;font-size:11px">0.8</text>
+              <text x="463" y="104" style="fill:#555;font-size:11px">1.9</text>
+              <text x="511" y="104" style="fill:#999;font-size:11px">0.3</text>
+
+              <line x1="462" y1="115" x2="462" y2="134" marker-end="url(#qkv-arrow)" style="stroke:rgba(21,33,31,0.5);stroke-width:1.8"/>
+              <text class="diagram-note" x="362" y="134" style="font-size:11px;font-style:italic">softmax &#8594; attention weights &#945;</text>
+
+              <rect x="360" y="140" width="42" height="26" rx="6" style="fill:rgba(11,114,133,0.80)"/>
+              <rect x="408" y="140" width="42" height="26" rx="6" style="fill:rgba(11,114,133,0.13)"/>
+              <rect x="456" y="140" width="42" height="26" rx="6" style="fill:rgba(11,114,133,0.38)"/>
+              <rect x="504" y="140" width="42" height="26" rx="6" style="fill:rgba(11,114,133,0.10)"/>
+              <text x="365" y="158" style="fill:#fffaf0;font-size:11px;font-weight:700">.54</text>
+              <text x="413" y="158" style="fill:#444;font-size:11px">.12</text>
+              <text x="461" y="158" style="fill:#444;font-size:11px">.26</text>
+              <text x="509" y="158" style="fill:#999;font-size:11px">.08</text>
+
+              <line x1="462" y1="169" x2="462" y2="188" marker-end="url(#qkv-arrow)" style="stroke:rgba(21,33,31,0.5);stroke-width:1.8"/>
+              <text class="diagram-note" x="362" y="188" style="font-size:11px;font-style:italic">&#945; &#xB7; V &#8594; weighted sum</text>
+
+              <rect x="360" y="194" width="42" height="26" rx="6" style="fill:rgba(194,65,12,0.72)"/>
+              <rect x="408" y="194" width="42" height="26" rx="6" style="fill:rgba(194,65,12,0.13)"/>
+              <rect x="456" y="194" width="42" height="26" rx="6" style="fill:rgba(194,65,12,0.38)"/>
+              <rect x="504" y="194" width="42" height="26" rx="6" style="fill:rgba(194,65,12,0.10)"/>
+
+              <line x1="462" y1="223" x2="462" y2="242" marker-end="url(#qkv-arrow)" style="stroke:rgba(21,33,31,0.5);stroke-width:1.8"/>
+              <text class="diagram-note" x="362" y="242" style="font-size:11px;font-weight:700">Output z&#x2081;</text>
+              <rect x="360" y="248" width="186" height="32" rx="9" style="fill:rgba(11,114,133,0.13);stroke:#0b7285;stroke-width:2"/>
+              <text x="396" y="269" style="fill:#064d5a;font-size:13px;font-weight:700">context vector</text>
+
+              <text class="diagram-note" x="20" y="308">Strong Q&#xB7;K match &#8594; high &#945; &#8594; that token&#x2019;s V dominates output.</text>
+              <text class="diagram-note" x="20" y="328">Multi-head attention: repeat with different W projections in parallel.</text>
             </svg>
           </figure>
         </div>
@@ -749,7 +808,7 @@
               <g class="pipeline thin" transform="translate(36 72)">
                 <text class="diagram-title" x="0" y="-20">Folding-model ensemble route</text>
                 <rect x="0" y="0" width="96" height="56"/><text x="22" y="35">Sequence</text>
-                <rect x="128" y="0" width="96" height="56"/><text x="154" y="22">MSA /</text><text x="146" y="46">PLM</text>
+                <rect x="128" y="0" width="96" height="56"/><text x="176" y="19" style="text-anchor:middle">MSA /<tspan x="176" dy="26">PLM</tspan></text>
                 <rect x="256" y="0" width="108" height="56"/><text x="274" y="35">Folding trunk</text>
                 <rect x="400" y="0" width="104" height="56"/><text x="424" y="35">Ensemble</text>
                 <path d="M98 28 H126"/><path d="M226 28 H254"/><path d="M366 28 H398"/>
@@ -1155,8 +1214,8 @@
               <text class="axis-label rotate" x="-280" y="32">RMSF MAE</text>
               <g class="scatter">
                 <circle cx="466" cy="150" r="11"/><text x="376" y="154">AlphaFlow-T</text>
-                <circle cx="450" cy="220" r="10"/><text x="358" y="224">AlphaFlow</text>
-                <circle cx="420" cy="232" r="10"/><text x="310" y="240">ConfDiff</text>
+                <circle cx="450" cy="220" r="10"/><text x="356" y="214">AlphaFlow</text>
+                <circle cx="420" cy="232" r="10"/><text x="302" y="252">ConfDiff</text>
                 <circle cx="250" cy="250" r="10"/><text x="152" y="254">AlphaFlow-Tdist</text>
                 <circle cx="195" cy="286" r="10"/><text x="82" y="290">AlphaFlow-T12L</text>
                 <circle class="star" cx="170" cy="154" r="15"/><text x="195" y="158">BBFlow</text>
@@ -1324,9 +1383,9 @@
               <g class="bar-chart" transform="translate(90 82)">
                 <line x1="0" y1="270" x2="390" y2="270"/>
                 <rect class="good" x="0" y="240" width="48" height="30"/><text x="0" y="296">full</text><text x="2" y="232">0.77</text>
-                <rect x="74" y="226" width="48" height="44"/><text x="48" y="296" font-size="10px">no cond prior</text><text x="76" y="218">0.90</text>
+                <rect x="74" y="226" width="48" height="44"/><text x="48" y="314" font-size="10px">no cond prior</text><text x="76" y="218">0.90</text>
                 <rect x="152" y="211" width="48" height="59"/><text x="130" y="296" font-size="10px">no direction</text><text x="154" y="203">1.15</text>
-                <rect x="230" y="236" width="48" height="34"/><text x="208" y="296" font-size="10px">with index</text><text x="232" y="228">0.82</text>
+                <rect x="230" y="236" width="48" height="34"/><text x="208" y="314" font-size="10px">with index</text><text x="232" y="228">0.82</text>
                 <rect class="bad" x="314" y="0" width="48" height="270"/><text x="292" y="296">no distance</text><text x="314" y="-8">7.08</text>
               </g>
             </svg>
@@ -1364,16 +1423,13 @@
               <text class="axis-label" x="64" y="48" style="font-size:12px">Training GPU-hours (schematic)</text>
               <rect x="80" y="180" width="60" height="130" rx="10" style="fill:rgba(11,114,133,0.75)"/>
               <text x="68" y="168" class="diagram-note" style="fill:#064d5a;font-weight:700">~144 h</text>
-              <text x="72" y="332" class="diagram-note" style="font-weight:700">BBFlow</text>
-              <text x="62" y="350" class="diagram-note">from scratch</text>
+              <text x="72" y="330" class="diagram-note" style="font-weight:700">BBFlow<tspan x="62" dy="20">from scratch</tspan></text>
               <rect x="250" y="60" width="60" height="250" rx="10" style="fill:rgba(240,140,0,0.65)"/>
-              <text x="228" y="48" class="diagram-note" style="fill:#8a5200;font-weight:700">~1000s h</text>
-              <text x="230" y="332" class="diagram-note" style="font-weight:700">AlphaFold 2</text>
-              <text x="226" y="350" class="diagram-note">original training</text>
+              <text x="228" y="36" class="diagram-note" style="fill:#8a5200;font-weight:700">~1000s h</text>
+              <text x="230" y="330" class="diagram-note" style="font-weight:700">AlphaFold 2<tspan x="226" dy="20">original training</tspan></text>
               <rect x="380" y="120" width="60" height="190" rx="10" style="fill:rgba(194,65,12,0.55)"/>
               <text x="360" y="112" class="diagram-note" style="fill:#c2410c;font-weight:700">hundreds h</text>
-              <text x="362" y="332" class="diagram-note" style="font-weight:700">AlphaFlow</text>
-              <text x="368" y="350" class="diagram-note">fine-tuning</text>
+              <text x="362" y="330" class="diagram-note" style="font-weight:700">AlphaFlow<tspan x="368" dy="20">fine-tuning</tspan></text>
               <text class="diagram-note" x="46" y="390">Values are schematic; exact numbers depend on hardware and configuration.</text>
             </svg>
           </figure>

@@ -14,10 +14,19 @@
 
   let current = getInitialSlideIndex();
   let laserOn = false;
+  let hideTimer = null;
+
+  function showUI() {
+    document.body.classList.remove("ui-hidden");
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => document.body.classList.add("ui-hidden"), 2800);
+  }
 
   slideTotal.textContent = String(slides.length);
   showSlide(current, { replaceHash: true });
 
+  prevBtn.addEventListener("click", showUI);
+  nextBtn.addEventListener("click", showUI);
   prevBtn.addEventListener("click", previousSlide);
   nextBtn.addEventListener("click", nextSlide);
   laserBtn.addEventListener("click", toggleLaser);
@@ -30,6 +39,8 @@
 
   document.addEventListener("keydown", handleKeydown);
   document.addEventListener("mousemove", updateLaser);
+  document.addEventListener("mousemove", showUI);
+  showUI();
   window.addEventListener("hashchange", () => {
     const index = getInitialSlideIndex();
     if (index !== current) showSlide(index, { replaceHash: true });
@@ -102,6 +113,7 @@
   }
 
   function handleKeydown(event) {
+    showUI();
     const key = event.key;
 
     if (key === "Escape") {

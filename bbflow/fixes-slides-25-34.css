@@ -219,3 +219,61 @@
   margin-top: 14px;
   font-size: 1rem;
 }
+
+/* Slide 37: Training Budget — compact the text column and compare cards to avoid overflow. */
+.slide:nth-of-type(37) h2 {
+  font-size: clamp(1.5rem, 2.1vw, 2.3rem);
+}
+
+.slide:nth-of-type(37) p,
+.slide:nth-of-type(37) li {
+  font-size: clamp(0.88rem, 0.98vw, 1rem);
+  line-height: 1.32;
+}
+
+.slide:nth-of-type(37) .metric-strip {
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.slide:nth-of-type(37) .metric-strip div {
+  padding: 12px 10px;
+}
+
+.slide:nth-of-type(37) .metric-strip strong {
+  font-size: 1.55rem;
+}
+
+.slide:nth-of-type(37) .metric-strip span {
+  font-size: 0.76rem;
+}
+
+.slide:nth-of-type(37) .compare {
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.slide:nth-of-type(37) .compare > div {
+  padding: 10px 13px;
+}
+
+.slide:nth-of-type(37) .compare p {
+  font-size: clamp(0.84rem, 0.9vw, 0.94rem);
+  line-height: 1.28;
+  margin-top: 6px;
+}
+
+.slide:nth-of-type(37) .compare h3 {
+  font-size: 1rem;
+}
+
+/* Slide 37: keep the SVG y-axis label from overlapping bar value annotations. */
+.slide:nth-of-type(37) .svg-card {
+  overflow: hidden;
+}
+
+.slide:nth-of-type(37) .svg-card > svg {
+  overflow: visible;
+  transform: scale(0.94);
+  transform-origin: center;
+}
