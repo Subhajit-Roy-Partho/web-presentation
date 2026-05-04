@@ -116,7 +116,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 2 — Talk Map -->
-      <section class="slide" data-title="Talk Map">
+      <section class="slide compact" data-title="Talk Map">
         <div class="two-col">
           <div>
             <p class="section-tag">Navigation</p>
@@ -273,7 +273,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 5 — Conformational Ensemble -->
-      <section class="slide" data-title="Conformational Ensemble">
+      <section class="slide compact" data-title="Conformational Ensemble">
         <div class="two-col">
           <div>
             <p class="section-tag">Biology background 3</p>
@@ -452,7 +452,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 8 — Diffusion Models 101 -->
-      <section class="slide" data-title="Diffusion Models 101">
+      <section class="slide compact" data-title="Diffusion Models 101">
         <div class="two-col">
           <div>
             <p class="section-tag">ML prerequisite 1</p>
@@ -522,7 +522,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 9 — Score-Based Generative Models -->
-      <section class="slide" data-title="Score-Based Models">
+      <section class="slide compact" data-title="Score-Based Models">
         <div class="two-col">
           <div>
             <p class="section-tag">ML prerequisite 2</p>
@@ -645,7 +645,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 11 — Backbone Frames as SE(3) -->
-      <section class="slide" data-title="Backbone Frames SE3">
+      <section class="slide compact" data-title="Backbone Frames SE3">
         <div class="two-col">
           <div>
             <p class="section-tag">ML prerequisite 4</p>
@@ -721,7 +721,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 12 — Diffusion on SO(3) -->
-      <section class="slide" data-title="Diffusion on SO3">
+      <section class="slide compact" data-title="Diffusion on SO3">
         <div class="two-col">
           <div>
             <p class="section-tag">ML prerequisite 5</p>
@@ -848,7 +848,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 14 — MDGen Problem Formulation -->
-      <section class="slide" data-title="MDGen Formulation">
+      <section class="slide compact" data-title="MDGen Formulation">
         <div class="two-col">
           <div>
             <p class="section-tag">MDGen method 1</p>
@@ -927,7 +927,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 15 — Forward Diffusion over Trajectories -->
-      <section class="slide" data-title="Forward Diffusion Trajectories">
+      <section class="slide compact" data-title="Forward Diffusion Trajectories">
         <div class="two-col">
           <div>
             <p class="section-tag">MDGen method 2</p>
@@ -1020,7 +1020,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 16 — Architecture Overview -->
-      <section class="slide" data-title="Architecture Overview">
+      <section class="slide compact" data-title="Architecture Overview">
         <div class="two-col">
           <div>
             <p class="section-tag">MDGen method 3</p>
@@ -1093,7 +1093,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 17 — Invariant Point Attention -->
-      <section class="slide" data-title="Invariant Point Attention">
+      <section class="slide compact" data-title="Invariant Point Attention">
         <div class="two-col">
           <div>
             <p class="section-tag">MDGen method 4</p>
@@ -1152,7 +1152,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 18 — Temporal Attention -->
-      <section class="slide" data-title="Temporal Attention">
+      <section class="slide compact" data-title="Temporal Attention">
         <div class="two-col">
           <div>
             <p class="section-tag">MDGen method 5 — key innovation</p>
@@ -1232,7 +1232,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 19 — Training Objective -->
-      <section class="slide" data-title="Training Objective">
+      <section class="slide compact" data-title="Training Objective">
         <div class="two-col">
           <div>
             <p class="section-tag">MDGen method 6</p>
@@ -1348,31 +1348,27 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 21 — Training Procedure -->
-      <section class="slide" data-title="Training Procedure">
+      <section class="slide compact" data-title="Training Procedure">
         <div class="two-col">
           <div>
             <p class="section-tag">MDGen method 7</p>
-            <h2>Training procedure: windows, noise, and gradient steps</h2>
+            <h2>Training procedure: four key steps</h2>
             <div class="storyline">
               <div>
                 <span>1</span>
-                <p><strong>Sample a protein</strong> from the ATLAS training set and pick a random trajectory window of T=16 consecutive frames.</p>
+                <p><strong>Sample window:</strong> pick a protein from ATLAS and a random T=16 frame window. Sample diffusion time \(s \sim \mathrm{Uniform}(0,S)\) where S=500.</p>
               </div>
               <div>
                 <span>2</span>
-                <p><strong>Sample diffusion time</strong> \(s \sim \mathrm{Uniform}(0,S)\), where S=500 steps defines the noise schedule.</p>
+                <p><strong>Add noise:</strong> apply IGSO3, Gaussian, and wrapped Gaussian forward processes to all T frames simultaneously to obtain \(\mathbf{X}^{(s)}\).</p>
               </div>
               <div>
                 <span>3</span>
-                <p><strong>Add noise</strong> to all T frames simultaneously using IGSO3, Gaussian, and wrapped Gaussian forward processes.</p>
+                <p><strong>Predict and score:</strong> run \(\epsilon_\theta(\mathbf{X}^{(s)}, s, \mathbf{s})\) — spatial IPA + temporal attention layers process all T noisy frames jointly.</p>
               </div>
               <div>
                 <span>4</span>
-                <p><strong>Run the network</strong> \(\epsilon_\theta(\mathbf{X}^{(s)}, s, \mathbf{s})\) on all T noisy frames — spatial and temporal attention layers process the full window.</p>
-              </div>
-              <div>
-                <span>5</span>
-                <p><strong>Compute and backpropagate</strong> the total loss \(\mathcal{L}\). Optimiser: AdamW, learning rate 1e-4 with cosine decay.</p>
+                <p><strong>Update weights:</strong> backpropagate the total loss \(\mathcal{L}\) and step the AdamW optimiser (lr 1e-4, cosine decay, batch ≈ 64 windows).</p>
               </div>
             </div>
           </div>
@@ -1419,7 +1415,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 22 — Sampling / Inference -->
-      <section class="slide" data-title="Sampling Inference">
+      <section class="slide compact" data-title="Sampling Inference">
         <div class="two-col">
           <div>
             <p class="section-tag">MDGen method 8</p>
@@ -1489,7 +1485,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 23 — Trajectory Extension (Inpainting) -->
-      <section class="slide" data-title="Trajectory Extension">
+      <section class="slide compact" data-title="Trajectory Extension">
         <div class="two-col">
           <div>
             <p class="section-tag">MDGen method 9</p>
@@ -1500,20 +1496,16 @@
               \mathbf{x}_1^{(s)} \leftarrow \sqrt{\bar\alpha_s}\,\mathbf{x}_1^{(0)} + \sqrt{1-\bar\alpha_s}\,\boldsymbol\epsilon, \quad\text{(inpainted)}
               \]
             </div>
-            <p>This enables three powerful inference modes:</p>
-            <div class="card-grid three">
-              <article class="info-card">
+            <p>This enables three powerful inference modes — extension, interpolation, and conditional sampling:</p>
+            <div class="compare">
+              <div>
                 <h3>Extension</h3>
-                <p>Condition on frame \(\mathbf{x}_1\) to generate a continuation from a known crystal structure or AlphaFold prediction.</p>
-              </article>
-              <article class="info-card">
+                <p>Condition on frame \(\mathbf{x}_1\) (e.g. a crystal structure) to generate a continuation trajectory. Ideal for probing dynamics around a known conformation.</p>
+              </div>
+              <div>
                 <h3>Interpolation</h3>
-                <p>Condition on both \(\mathbf{x}_1\) and \(\mathbf{x}_T\) to generate a plausible transition pathway between two known conformational states.</p>
-              </article>
-              <article class="info-card">
-                <h3>Conditional sampling</h3>
-                <p>Given any partial trajectory observations, fill in the missing frames consistently with the observed ones.</p>
-              </article>
+                <p>Condition on both \(\mathbf{x}_1\) <em>and</em> \(\mathbf{x}_T\) to generate a plausible transition pathway between two known states (e.g. open ↔ closed).</p>
+              </div>
             </div>
           </div>
           <figure class="svg-card compact">
@@ -1565,7 +1557,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 24 — RMSF Explained -->
-      <section class="slide" data-title="RMSF Explained">
+      <section class="slide compact" data-title="RMSF Explained">
         <div class="two-col">
           <div>
             <p class="section-tag">Evaluation 1</p>
@@ -1633,7 +1625,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 25 — Autocorrelation Function -->
-      <section class="slide" data-title="Autocorrelation Function">
+      <section class="slide compact" data-title="Autocorrelation Function">
         <div class="two-col">
           <div>
             <p class="section-tag">Evaluation 2</p>
@@ -1838,7 +1830,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 28 — RMSF Scatter -->
-      <section class="slide" data-title="RMSF Scatter Plot">
+      <section class="slide compact" data-title="RMSF Scatter Plot">
         <div class="two-col">
           <div>
             <p class="section-tag">Results — visual</p>
@@ -1921,76 +1913,43 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 29 — Baseline Comparison -->
-      <section class="slide" data-title="Baseline Comparison">
-        <div class="two-col">
-          <div>
-            <p class="section-tag">Results — comparisons</p>
-            <h2>How MDGen compares to existing methods</h2>
-            <p>MDGen is positioned among several categories of prior work, each with different strengths and weaknesses:</p>
-            <div class="card-grid three">
-              <article class="info-card">
-                <h3>Normal Mode Analysis</h3>
-                <p>Classical harmonic model. Fast but only captures small vibrations around equilibrium — misses barrier crossings, large-amplitude motions, and anharmonic effects. RMSF r ≈ 0.64.</p>
-              </article>
-              <article class="info-card">
-                <h3>Independent diffusion</h3>
-                <p>FrameDiff/EigenFold-style: generates each frame independently from the equilibrium distribution. No temporal coherence. RMSF r ≈ 0.71 but fails all temporal metrics.</p>
-              </article>
-              <article class="info-card">
-                <h3>Boltzmann generators</h3>
-                <p>Normalizing-flow-based equilibrium samplers. Good for small molecules; challenging to scale to full proteins. No temporal order — produce independent equilibrium samples.</p>
-              </article>
-              <article class="info-card">
-                <h3>RFdiffusion / ESMFold</h3>
-                <p>Static structure generators. Provide one structure; cannot produce ensembles or dynamics. Not designed for flexibility prediction.</p>
-              </article>
-              <article class="info-card">
-                <h3>AlphaFold2 subsampling</h3>
-                <p>MSA depth subsampling produces alternative conformations, but the variance is limited and not calibrated to MD-like ensembles. Requires expensive MSA pipeline.</p>
-              </article>
-              <article class="info-card">
-                <h3>MDGen (this work)</h3>
-                <p><strong>First model</strong> generating temporally coherent full-protein backbone trajectories. Matches MD on both equilibrium (RMSF r ≈ 0.87) and temporal (ACF, Δ RMSD) metrics.</p>
-              </article>
-            </div>
+      <section class="slide compact" data-title="Baseline Comparison">
+        <div>
+          <p class="section-tag">Results — comparisons</p>
+          <h2>How MDGen compares to existing methods</h2>
+          <p>MDGen is positioned among several categories of prior work. The key differentiator is being the <strong>only method</strong> that achieves high equilibrium quality <em>and</em> correct temporal coherence simultaneously.</p>
+          <div class="card-grid three">
+            <article class="info-card">
+              <h3>Normal Mode Analysis</h3>
+              <p>Classical harmonic model. Fast but captures only small vibrations around equilibrium — misses barrier crossings and large-amplitude anharmonic motions. RMSF r ≈ 0.64.</p>
+            </article>
+            <article class="info-card">
+              <h3>Independent frame diffusion</h3>
+              <p>FrameDiff/EigenFold-style: each frame drawn independently from the equilibrium distribution. RMSF r ≈ 0.71 but fails all temporal metrics — consecutive frames jump arbitrarily.</p>
+            </article>
+            <article class="info-card">
+              <h3>Boltzmann generators</h3>
+              <p>Normalizing-flow equilibrium samplers. Good for small molecules; hard to scale to full proteins. No temporal order — produce independent equilibrium samples with no kinetic information.</p>
+            </article>
+            <article class="info-card">
+              <h3>RFdiffusion / ESMFold</h3>
+              <p>Static structure generators: one sequence → one structure. No ensemble, no dynamics. Excellent for design and folding respectively, but not evaluated on MD ensemble metrics.</p>
+            </article>
+            <article class="info-card">
+              <h3>AlphaFold2 MSA subsampling</h3>
+              <p>Subsampling MSA depth yields alternative conformations, but variance is limited, not calibrated to MD, and requires an expensive MSA pipeline unavailable for many proteins.</p>
+            </article>
+            <article class="info-card" style="background:rgba(232,243,239,0.95);border-color:rgba(11,114,133,0.3)">
+              <h3 style="color:#064d5a">MDGen (this work) ✓</h3>
+              <p><strong>First model</strong> generating temporally coherent full-protein backbone trajectories. RMSF r ≈ 0.87, correct Ramachandran, matching ACF and Δ RMSD. ~10,000× faster than MD.</p>
+            </article>
           </div>
-          <figure class="svg-card compact">
-            <svg viewBox="0 0 540 400" role="img" aria-label="Method comparison radar chart">
-              <text class="diagram-title" x="40" y="34">Method comparison</text>
-              <!-- Axes labels -->
-              <text x="224" y="66" class="diagram-note" style="font-weight:700;font-size:13px">RMSF quality</text>
-              <text x="414" y="188" class="diagram-note" style="font-weight:700;font-size:13px">Temporal coherence</text>
-              <text x="280" y="360" class="diagram-note" style="font-weight:700;font-size:13px">Speed</text>
-              <text x="52" y="188" class="diagram-note" style="font-weight:700;font-size:13px">Scalability</text>
-              <!-- Radar axes -->
-              <g fill="none" stroke="rgba(21,33,31,0.18)" stroke-width="1.5">
-                <line x1="270" y1="200" x2="270" y2="76"/>
-                <line x1="270" y1="200" x2="390" y2="182"/>
-                <line x1="270" y1="200" x2="310" y2="340"/>
-                <line x1="270" y1="200" x2="150" y2="182"/>
-                <!-- Scale circles -->
-                <polygon points="270,150 320,193 304,270 236,270 220,193" fill="none" stroke="rgba(21,33,31,0.12)" stroke-width="1"/>
-                <polygon points="270,100 370,186 338,340 202,340 170,186" fill="none" stroke="rgba(21,33,31,0.12)" stroke-width="1"/>
-              </g>
-              <!-- MDGen polygon (good all-around) -->
-              <polygon points="270,96 378,184 306,330 234,330 162,184"
-                       fill="rgba(11,114,133,0.15)" stroke="#0b7285" stroke-width="2.5"/>
-              <!-- NMA polygon (weak on temporal, medium RMSF) -->
-              <polygon points="270,150 290,193 300,290 240,290 210,190"
-                       fill="rgba(194,65,12,0.08)" stroke="#c2410c" stroke-width="2" stroke-dasharray="6 4"/>
-              <!-- Legend -->
-              <line x1="60" y1="370" x2="100" y2="370" stroke="#0b7285" stroke-width="2.5"/>
-              <text x="108" y="374" class="diagram-note" style="font-size:12px">MDGen</text>
-              <line x1="200" y1="370" x2="240" y2="370" stroke="#c2410c" stroke-width="2" stroke-dasharray="5 4"/>
-              <text x="248" y="374" class="diagram-note" style="font-size:12px">NMA</text>
-            </svg>
-          </figure>
         </div>
-        <footer>Comparison to baselines: MDGen paper, Jing et al. 2024, Section 4.3; NMA: Tirion 1996, Yang et al.; Boltzmann generators: Noé et al. 2019.</footer>
+        <footer>Comparison to baselines: MDGen paper, Jing et al. 2024, Section 4.3; NMA: Tirion 1996; Boltzmann generators: Noé et al. 2019.</footer>
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 30 — Fast-Folding Proteins -->
-      <section class="slide" data-title="Fast-Folding Proteins">
+      <section class="slide compact" data-title="Fast-Folding Proteins">
         <div class="two-col">
           <div>
             <p class="section-tag">Results — challenging test</p>
@@ -2052,7 +2011,7 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 31 — Drug Discovery Applications -->
-      <section class="slide" data-title="Drug Discovery">
+      <section class="slide compact" data-title="Drug Discovery">
         <div class="two-col">
           <div>
             <p class="section-tag">Application 1</p>
@@ -2119,77 +2078,41 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 32 — IDPs and Disease -->
-      <section class="slide" data-title="IDPs and Disease">
-        <div class="two-col">
-          <div>
-            <p class="section-tag">Application 2</p>
-            <h2>Intrinsically disordered proteins and disease</h2>
-            <p>Intrinsically disordered proteins (IDPs) have no stable 3D fold — they exist as dynamic ensembles. They are <strong>impossible to characterise with single-structure methods</strong> like AlphaFold2, but are medically critical:</p>
-            <div class="card-grid three">
-              <article class="info-card">
-                <h3>α-synuclein</h3>
-                <p>Central to Parkinson's disease aggregation. Its disordered ensemble determines the aggregation pathway. No single structure exists. MDGen can sample its conformational landscape.</p>
-              </article>
-              <article class="info-card">
-                <h3>Tau</h3>
-                <p>Forms neurofibrillary tangles in Alzheimer's disease. The disordered regions that initiate aggregation require ensemble characterisation, not a single fold.</p>
-              </article>
-              <article class="info-card">
-                <h3>p53</h3>
-                <p>The most frequently mutated gene in cancer. Its disordered N- and C-terminal regions mediate key protein–protein interactions that differ across its conformational ensemble.</p>
-              </article>
+      <section class="slide compact" data-title="IDPs and Disease">
+        <div>
+          <p class="section-tag">Application 2</p>
+          <h2>Intrinsically disordered proteins and disease</h2>
+          <p>IDPs have no stable 3D fold — they exist as dynamic ensembles, impossible to characterise with single-structure methods like AlphaFold2, but medically critical.</p>
+          <div class="card-grid three">
+            <article class="info-card">
+              <h3>α-synuclein (Parkinson's)</h3>
+              <p>~100% disordered; its conformational ensemble determines the aggregation pathway. No single structure exists — MDGen can sample its backbone conformational landscape from sequence alone.</p>
+            </article>
+            <article class="info-card">
+              <h3>Tau (Alzheimer's)</h3>
+              <p>Forms neurofibrillary tangles in Alzheimer's disease. Disordered regions that initiate aggregation require ensemble characterisation — not a single fold — to understand disease mechanisms.</p>
+            </article>
+            <article class="info-card">
+              <h3>p53 (cancer)</h3>
+              <p>The most frequently mutated gene in cancer. Its disordered N/C-terminal regions mediate key protein–protein interactions that vary across its conformational ensemble, governing transcription factor activity.</p>
+            </article>
+          </div>
+          <div class="compare" style="margin-top:14px">
+            <div>
+              <h3>Why static predictors fail for IDPs</h3>
+              <p>AlphaFold2 predicts one structure with low confidence (pLDDT &lt; 50) for disordered regions — this is a flag, not an answer. The ensemble <em>is</em> the biologically relevant state.</p>
             </div>
-            <div class="callout" style="margin-top:14px">
-              MDGen's training on ATLAS (which includes flexible and partially disordered proteins) gives it a data-driven understanding of disordered-region dynamics — a capability that is absent in static structure predictors.
+            <div>
+              <h3>MDGen's advantage</h3>
+              <p>Trained on ATLAS trajectories that include flexible regions, MDGen generates backbone ensembles for disordered stretches — providing the distribution of conformations rather than a single misleading coordinate set.</p>
             </div>
           </div>
-          <figure class="svg-card">
-            <svg viewBox="0 0 560 420" role="img" aria-label="IDP ensemble: disordered protein has no single structure">
-              <text class="diagram-title" x="40" y="34">IDP: a protein is its ensemble</text>
-              <!-- Many overlapping disordered chains -->
-              <path fill="none" stroke="rgba(11,114,133,0.15)" stroke-width="5" stroke-linecap="round"
-                    d="M68 210 C100 140 154 280 200 186 S288 100 340 220 S410 290 480 190"/>
-              <path fill="none" stroke="rgba(11,114,133,0.15)" stroke-width="5" stroke-linecap="round"
-                    d="M68 234 C104 160 148 296 196 202 S280 116 336 240 S418 304 484 210"/>
-              <path fill="none" stroke="rgba(11,114,133,0.18)" stroke-width="5" stroke-linecap="round"
-                    d="M68 192 C96 128 158 266 204 174 S294 84 344 204 S406 272 476 174"/>
-              <path fill="none" stroke="rgba(240,140,0,0.20)" stroke-width="5" stroke-linecap="round"
-                    d="M68 222 C108 148 160 302 208 196 S296 106 350 224 S422 296 488 198"/>
-              <path fill="none" stroke="rgba(194,65,12,0.18)" stroke-width="5" stroke-linecap="round"
-                    d="M68 200 C102 134 156 272 202 178 S292 96 344 210 S414 280 480 180"/>
-              <!-- Main highlighted chain -->
-              <path fill="none" stroke="#0b7285" stroke-width="9" stroke-linecap="round"
-                    d="M68 218 C100 148 150 286 198 194 S284 108 338 230 S416 298 484 200"/>
-              <!-- Residue beads on main chain -->
-              <g fill="#fffaf0" stroke="#064d5a" stroke-width="3">
-                <circle cx="68"  cy="218" r="9"/>
-                <circle cx="150" cy="184" r="9"/>
-                <circle cx="198" cy="194" r="9"/>
-                <circle cx="266" cy="152" r="9"/>
-                <circle cx="338" cy="230" r="9"/>
-                <circle cx="416" cy="258" r="9"/>
-                <circle cx="484" cy="200" r="9"/>
-              </g>
-              <!-- Annotation: "no fixed fold" -->
-              <text x="200" y="96" class="diagram-note" style="fill:#c2410c;font-weight:700;font-size:14px">No single stable structure!</text>
-              <text x="200" y="116" class="diagram-note" style="font-size:12px">The ensemble IS the functional state.</text>
-              <!-- Alpha-synuclein annotation -->
-              <rect x="40" y="320" width="230" height="72" rx="12" fill="rgba(255,243,191,0.85)" stroke="rgba(194,65,12,0.30)" stroke-width="1.5"/>
-              <text x="56" y="344" fill="#a03010" font-family="'IBM Plex Sans',sans-serif" font-size="13" font-weight="700">α-synuclein (140 residues)</text>
-              <text x="56" y="364" fill="#53625e" font-family="'IBM Plex Sans',sans-serif" font-size="12">~100% disordered; ensemble</text>
-              <text x="56" y="382" fill="#53625e" font-family="'IBM Plex Sans',sans-serif" font-size="12">determines aggregation risk.</text>
-              <rect x="286" y="320" width="232" height="72" rx="12" fill="rgba(232,243,239,0.85)" stroke="rgba(11,114,133,0.30)" stroke-width="1.5"/>
-              <text x="302" y="344" fill="#064d5a" font-family="'IBM Plex Sans',sans-serif" font-size="13" font-weight="700">MDGen advantage</text>
-              <text x="302" y="364" fill="#53625e" font-family="'IBM Plex Sans',sans-serif" font-size="12">Samples backbone ensemble for</text>
-              <text x="302" y="382" fill="#53625e" font-family="'IBM Plex Sans',sans-serif" font-size="12">disordered regions directly.</text>
-            </svg>
-          </figure>
         </div>
         <footer>IDPs in disease: Uversky, 2019; α-synuclein: Bhatt et al. 2023; tau: Fitzpatrick et al. 2017; MDGen IDP application: Jing et al. 2024.</footer>
       </section>
 
       <!-- ═══════════════════════════════════════════════════ SLIDE 33 — MDGen in ML Landscape -->
-      <section class="slide" data-title="MDGen in ML Landscape">
+      <section class="slide compact" data-title="MDGen in ML Landscape">
         <div class="two-col">
           <div>
             <p class="section-tag">Context</p>
