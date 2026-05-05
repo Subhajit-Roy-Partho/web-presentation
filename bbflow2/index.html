@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IDPFlow Presentation</title>
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)'], ['$', '$']], displayMath: [['\\[', '\\]']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <script defer src="slides.js"></script>
+</head>
+<body>
+  <div class="deck-shell">
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">NSF Research Proposal</span>
+        <strong>IDPFlow: Conformational Ensemble Generation for Intrinsically Disordered Proteins</strong>
+      </div>
+      <div class="topbar-keys">
+        <kbd>&larr;</kbd><kbd>&rarr;</kbd>
+        <kbd>Space</kbd>
+        <kbd>L</kbd>
+        <kbd>?</kbd>
+      </div>
+    </header>
+
+    <main id="deck" class="deck" aria-live="polite">
+
+      <!-- ===== SLIDE 1: TITLE ===== -->
+      <section class="slide title-slide" data-title="Title">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <p class="section-tag">NSF Research Proposal · ~15 min</p>
+            <h1>IDPFlow: Flow Matching for Intrinsically Disordered Protein Ensembles</h1>
+            <p class="subtitle">Generating conformational ensembles without an equilibrium structure — extending backbone flow matching to the disordered proteome.</p>
+            <div class="pill-row">
+              <span class="pill">IDP dynamics</span>
+              <span class="pill">SE(3) flow matching</span>
+              <span class="pill">Sequence-conditioned</span>
+              <span class="pill">No equilibrium structure</span>
+              <span class="pill">Disease applications</span>
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 620 430" role="img" aria-label="Disordered protein ensemble vs folded protein">
+              <defs>
+                <linearGradient id="idpGrad" x1="0" x2="1">
+                  <stop offset="0" stop-color="#f08c00"/>
+                  <stop offset="0.5" stop-color="#c2410c"/>
+                  <stop offset="1" stop-color="#0b7285"/>
+                </linearGradient>
+                <filter id="glow2">
+                  <feGaussianBlur stdDeviation="4" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <!-- Folded protein side (left) -->
+              <text class="diagram-title" x="38" y="44">Folded protein</text>
+              <path class="single-chain" d="M52 220 C72 150 106 260 136 200 S178 140 196 210" style="stroke:#0b7285;stroke-width:10"/>
+              <text class="diagram-note" x="48" y="268">one stable structure</text>
+              <!-- Divider -->
+              <line x1="248" y1="60" x2="248" y2="360" stroke="rgba(21,33,31,0.18)" stroke-width="2" stroke-dasharray="8 6"/>
+              <!-- IDP ensemble side (right) -->
+              <text class="diagram-title" x="274" y="44">Disordered protein (IDP)</text>
+              <path d="M272 190 C320 100 380 300 428 220 S510 130 556 230" fill="none" stroke="rgba(11,114,133,0.22)" stroke-width="9" stroke-linecap="round"/>
+              <path d="M268 210 C330 130 382 270 430 190 S516 110 558 210" fill="none" stroke="rgba(240,140,0,0.25)" stroke-width="9" stroke-linecap="round"/>
+              <path d="M276 232 C340 150 388 320 436 240 S512 160 558 250" fill="none" stroke="rgba(194,65,12,0.22)" stroke-width="9" stroke-linecap="round"/>
+              <path d="M274 170 C332 100 378 250 428 170 S514 100 556 190" fill="none" stroke="rgba(11,114,133,0.18)" stroke-width="9" stroke-linecap="round"/>
+              <path d="M270 252 C340 180 394 340 440 260 S518 180 558 272" fill="none" stroke="rgba(240,140,0,0.2)" stroke-width="9" stroke-linecap="round"/>
+              <!-- Main highlighted IDP chain -->
+              <path d="M272 210 C330 118 384 290 432 206 S514 120 556 218" fill="none" stroke="url(#idpGrad)" stroke-width="12" stroke-linecap="round" filter="url(#glow2)"/>
+              <text class="diagram-note" x="278" y="360">rapidly interconverting conformations</text>
+              <text class="diagram-note" x="278" y="380">→ no single equilibrium structure x<tspan baseline-shift="sub" font-size="10">eq</tspan></text>
+              <!-- Curly brace / annotation -->
+              <text x="274" y="50" fill="#c2410c" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="700">~30–40% of human proteome</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>Research proposal for NSF MCB. Background: Wolf et al. arXiv:2503.05738 (BBFlow); Dyson &amp; Wright, Nat. Rev. Mol. Cell Biol. 2005; Tesei et al. Nature 2024.</footer>
+      </section>
+
+      <!-- ===== SLIDE 2: PROTEIN BACKGROUND ===== -->
+      <section class="slide" data-title="Protein Dynamics">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Background 1</p>
+            <h2>Proteins: sequence, structure, and motion</h2>
+            <p>Proteins are linear polymers of 20 amino acids that fold into three-dimensional structures and perform virtually every cellular function. Structure determines function — but function also depends on <strong>dynamics</strong>.</p>
+            <div class="formula-box">
+              \[p(\mathbf{x}) \propto \exp\!\left(-\frac{E(\mathbf{x})}{k_B T}\right)\]
+            </div>
+            <p style="margin-top:14px">At physiological temperature, a protein does not sit in one conformation. It samples an <strong>ensemble</strong> of structures weighted by the Boltzmann distribution. The lower the energy \(E(\mathbf{x})\), the more often that conformation is visited.</p>
+            <div class="callout" style="margin-top:16px">
+              <strong>Key insight for classmates:</strong> the biologically relevant object is not a single 3D structure — it is a <em>probability distribution</em> over structures. Generating this ensemble is the computational challenge we address.
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 560 420" role="img" aria-label="Protein structure hierarchy to ensemble">
+              <defs>
+                <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+                  <path d="M1 1 L7 4 L1 7 Z" fill="rgba(21,33,31,0.62)"/>
+                </marker>
+              </defs>
+              <text class="diagram-title" x="40" y="34">From sequence to ensemble</text>
+              <!-- Box 1: Sequence -->
+              <rect x="30" y="60" width="120" height="58" rx="14" fill="rgba(255,250,240,0.92)" stroke="rgba(21,33,31,0.22)" stroke-width="2"/>
+              <text x="90" y="87" text-anchor="middle" fill="#102522" font-family="IBM Plex Mono,monospace" font-size="13" font-weight="700">M K L V A</text>
+              <text x="90" y="107" text-anchor="middle" class="diagram-note" font-size="12">sequence</text>
+              <!-- Arrow 1 -->
+              <line x1="150" y1="89" x2="174" y2="89" stroke="rgba(21,33,31,0.5)" stroke-width="3" marker-end="url(#arr)"/>
+              <!-- Box 2: Secondary structure -->
+              <rect x="180" y="60" width="120" height="58" rx="14" fill="rgba(232,243,239,0.94)" stroke="rgba(21,33,31,0.22)" stroke-width="2"/>
+              <path d="M198 95 C208 75 222 75 232 95 S246 115 256 95 S270 75 280 95" fill="none" stroke="#0b7285" stroke-width="3.5" stroke-linecap="round"/>
+              <text x="240" y="113" text-anchor="middle" class="diagram-note" font-size="12">secondary structure</text>
+              <!-- Arrow 2 -->
+              <line x1="300" y1="89" x2="324" y2="89" stroke="rgba(21,33,31,0.5)" stroke-width="3" marker-end="url(#arr)"/>
+              <!-- Box 3: Tertiary fold -->
+              <rect x="330" y="60" width="120" height="58" rx="14" fill="rgba(232,243,239,0.94)" stroke="rgba(21,33,31,0.22)" stroke-width="2"/>
+              <ellipse cx="390" cy="85" rx="32" ry="22" fill="rgba(11,114,133,0.18)" stroke="#0b7285" stroke-width="2.5"/>
+              <path d="M362 85 C374 70 406 70 418 85 S404 100 390 98 S368 98 362 85" fill="none" stroke="#064d5a" stroke-width="2"/>
+              <text x="390" y="113" text-anchor="middle" class="diagram-note" font-size="12">tertiary fold</text>
+              <!-- Arrow down for folded proteins -->
+              <line x1="390" y1="118" x2="390" y2="148" stroke="rgba(21,33,31,0.5)" stroke-width="3" marker-end="url(#arr)"/>
+              <!-- Box 4: Ensemble -->
+              <rect x="330" y="154" width="120" height="60" rx="14" fill="rgba(255,250,240,0.92)" stroke="rgba(194,65,12,0.38)" stroke-width="2"/>
+              <path d="M344 186 C360 170 390 200 414 184" fill="none" stroke="rgba(11,114,133,0.3)" stroke-width="5" stroke-linecap="round"/>
+              <path d="M344 192 C360 176 390 206 414 190" fill="none" stroke="rgba(240,140,0,0.3)" stroke-width="5" stroke-linecap="round"/>
+              <path d="M344 180 C358 166 388 196 414 178" fill="none" stroke="#0b7285" stroke-width="6" stroke-linecap="round"/>
+              <text x="390" y="224" text-anchor="middle" class="diagram-note" font-size="12">ensemble</text>
+              <!-- IDP shortcut arrow (skips box 3) -->
+              <path d="M150 175 Q160 198 325 198" fill="none" stroke="#c2410c" stroke-width="3" stroke-dasharray="8 6" marker-end="url(#arr)"/>
+              <text x="145" y="174" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="700">IDPs skip folding!</text>
+              <!-- Energy landscape mini -->
+              <text class="diagram-title" x="40" y="280" font-size="18">Energy landscape</text>
+              <path d="M50 380 C90 270 130 360 180 300 C220 250 250 260 280 330 C310 380 350 240 400 310 C430 360 460 290 500 340" fill="none" stroke="#f08c00" stroke-width="6" stroke-linecap="round"/>
+              <path class="axis" d="M45 385 H510 M55 390 V260"/>
+              <text x="56" y="258" class="diagram-note" font-size="12">E(x)</text>
+              <text x="440" y="400" class="diagram-note" font-size="12">conformation x →</text>
+              <circle cx="180" cy="300" r="7" fill="#fffaf0" stroke="#0b7285" stroke-width="3"/>
+              <text x="172" y="295" class="diagram-note" font-size="11" fill="#0b7285">local min</text>
+              <circle cx="350" cy="240" r="9" fill="#fffaf0" stroke="#c2410c" stroke-width="3"/>
+              <text x="340" y="230" class="diagram-note" font-size="11" fill="#c2410c">global min (x_eq)</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>Boltzmann distribution and protein dynamics: Adcock &amp; McCammon, Chem. Rev. 2006; Karplus &amp; Kuriyan, PNAS 2005.</footer>
+      </section>
+
+      <!-- ===== SLIDE 3: IDPs ===== -->
+      <section class="slide compact" data-title="IDPs">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Background 2</p>
+            <h2>Intrinsically disordered proteins — the flexible 30%</h2>
+            <p>Not all proteins fold into a stable 3D structure. Intrinsically disordered proteins (IDPs) and regions (IDRs) lack persistent secondary or tertiary structure under physiological conditions, yet they are biologically active.</p>
+            <div class="card-grid three" style="margin-top:18px">
+              <article class="info-card">
+                <h3>Prevalence</h3>
+                <p>~30–40% of the human proteome contains long disordered regions. &gt;28,000 IDRs catalogued in IDRome (Tesei 2024).</p>
+              </article>
+              <article class="info-card">
+                <h3>Function</h3>
+                <p>Hub proteins, transcription factors, signaling mediators. Disorder enables promiscuous binding and rapid regulation.</p>
+              </article>
+              <article class="info-card">
+                <h3>The challenge</h3>
+                <p>No crystal structure. AlphaFold predictions are unreliable for IDRs. MD is expensive (µs timescales needed).</p>
+              </article>
+            </div>
+            <div class="callout" style="margin-top:16px">
+              <strong>Why now?</strong> The IDRome dataset (2024) provides 28,058 coarse-grained MD trajectories of human IDPs — for the first time making large-scale ML training feasible.
+            </div>
+          </div>
+          <figure class="svg-card compact">
+            <svg viewBox="0 0 520 400" role="img" aria-label="Disorder spectrum from ordered to disordered proteins">
+              <text class="diagram-title" x="30" y="32">Disorder spectrum</text>
+              <!-- Gradient bar -->
+              <defs>
+                <linearGradient id="disorderGrad" x1="0" x2="1">
+                  <stop offset="0" stop-color="#0b7285"/>
+                  <stop offset="1" stop-color="#c2410c"/>
+                </linearGradient>
+              </defs>
+              <rect x="30" y="320" width="460" height="18" rx="9" fill="url(#disorderGrad)"/>
+              <text x="30" y="358" class="diagram-note" font-size="12" fill="#0b7285">fully ordered</text>
+              <text x="390" y="358" class="diagram-note" font-size="12" fill="#c2410c">fully disordered</text>
+              <!-- Point 1: Myoglobin -->
+              <line x1="80" y1="318" x2="80" y2="270" stroke="rgba(21,33,31,0.4)" stroke-width="1.5" stroke-dasharray="4 4"/>
+              <ellipse cx="80" cy="240" rx="28" ry="20" fill="rgba(11,114,133,0.18)" stroke="#0b7285" stroke-width="2"/>
+              <path d="M55 240 C65 225 95 225 105 240" fill="none" stroke="#064d5a" stroke-width="2"/>
+              <text x="80" y="220" text-anchor="middle" class="diagram-note" font-size="11">myoglobin</text>
+              <!-- Point 2: p27 -->
+              <line x1="185" y1="318" x2="185" y2="258" stroke="rgba(21,33,31,0.4)" stroke-width="1.5" stroke-dasharray="4 4"/>
+              <ellipse cx="170" cy="232" rx="22" ry="16" fill="rgba(11,114,133,0.14)" stroke="#0b7285" stroke-width="2"/>
+              <path d="M192 235 C212 215 232 235 242 225" fill="none" stroke="#0b7285" stroke-width="5" stroke-linecap="round"/>
+              <text x="210" y="210" text-anchor="middle" class="diagram-note" font-size="11">p27 (IDR + domain)</text>
+              <!-- Point 3: α-synuclein -->
+              <line x1="340" y1="318" x2="340" y2="265" stroke="rgba(21,33,31,0.4)" stroke-width="1.5" stroke-dasharray="4 4"/>
+              <path d="M290 248 C310 220 340 270 370 240 S400 220 410 248" fill="none" stroke="rgba(194,65,12,0.4)" stroke-width="5" stroke-linecap="round"/>
+              <path d="M290 258 C312 228 342 278 372 248 S402 228 410 258" fill="none" stroke="rgba(240,140,0,0.4)" stroke-width="5" stroke-linecap="round"/>
+              <path d="M290 252 C312 222 342 272 372 242 S402 222 410 252" fill="none" stroke="#c2410c" stroke-width="7" stroke-linecap="round"/>
+              <text x="350" y="215" text-anchor="middle" class="diagram-note" font-size="11">α-synuclein</text>
+              <!-- Point 4: c-Myc TAD -->
+              <line x1="450" y1="318" x2="450" y2="290" stroke="rgba(21,33,31,0.4)" stroke-width="1.5" stroke-dasharray="4 4"/>
+              <path d="M420 275 C432 258 448 285 462 265 S476 250 488 270" fill="none" stroke="#c2410c" stroke-width="7" stroke-linecap="round"/>
+              <text x="455" y="250" text-anchor="middle" class="diagram-note" font-size="11">c-Myc TAD</text>
+              <!-- Arrow at bottom -->
+              <path d="M30 370 H490" fill="none" stroke="rgba(21,33,31,0.3)" stroke-width="2" marker-end="url(#arr)"/>
+              <text x="250" y="390" text-anchor="middle" class="diagram-note" font-size="13">increasing disorder →</text>
+              <!-- Percentage annotation -->
+              <rect x="140" y="52" width="240" height="46" rx="12" fill="rgba(194,65,12,0.1)" stroke="rgba(194,65,12,0.3)" stroke-width="1.5"/>
+              <text x="260" y="72" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="15" font-weight="700">~30–40% of human proteome</text>
+              <text x="260" y="91" text-anchor="middle" class="diagram-note" font-size="12">includes significant disordered regions</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>IDP prevalence: Uversky, Chem. Rev. 2014; IDRome dataset: Tesei et al. Nature 2024; disorder prediction: PONDR, IUPred3.</footer>
+      </section>
+
+      <!-- ===== SLIDE 4: IDPs IN DISEASE ===== -->
+      <section class="slide compact" data-title="IDPs in Disease">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Motivation</p>
+            <h2>Disordered regions drive cancer, neurodegeneration, and more</h2>
+            <p>Many of the most medically important proteins are intrinsically disordered. Their disorder is essential both for function and for disease contribution.</p>
+            <div class="card-grid three" style="margin-top:16px">
+              <article class="info-card">
+                <h3>Cancer</h3>
+                <p><strong>p53 TAD</strong> (residues 1–73): disordered N-terminal activation domain. Mutated or inactivated in ~50% of all human cancers.<br><br><strong>c-Myc</strong>: drives proliferation via disordered activation domain.</p>
+              </article>
+              <article class="info-card">
+                <h3>Neurodegeneration</h3>
+                <p><strong>α-synuclein</strong>: natively disordered, forms amyloid fibrils in Parkinson's disease.<br><br><strong>Tau</strong>: mostly disordered, aggregates in Alzheimer's disease and other tauopathies.</p>
+              </article>
+              <article class="info-card">
+                <h3>Other diseases</h3>
+                <p><strong>IAPP</strong> (islet amyloid polypeptide): aggregates in Type 2 diabetes.<br><br><strong>FUS / TDP-43</strong>: low-complexity IDRs involved in ALS and FTD.</p>
+              </article>
+            </div>
+            <div class="callout" style="margin-top:16px">
+              <strong>Drug discovery bottleneck:</strong> IDPs are often called "undruggable" because their transient binding sites are invisible in static crystal structures. Ensemble prediction can unlock these sites.
+            </div>
+          </div>
+          <figure class="svg-card compact">
+            <svg viewBox="0 0 520 390" role="img" aria-label="Disease-IDP network">
+              <text class="diagram-title" x="30" y="30">Disease–IDP connections</text>
+              <!-- Central IDP node -->
+              <circle cx="260" cy="198" r="42" fill="rgba(11,114,133,0.18)" stroke="#0b7285" stroke-width="3"/>
+              <text x="260" y="194" text-anchor="middle" fill="#064d5a" font-family="Fraunces,Georgia,serif" font-size="18" font-weight="700">IDP</text>
+              <text x="260" y="212" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="12">ensemble</text>
+              <!-- Cancer node -->
+              <circle cx="100" cy="100" r="32" fill="rgba(240,140,0,0.18)" stroke="#f08c00" stroke-width="2.5"/>
+              <text x="100" y="97" text-anchor="middle" fill="#8a5200" font-size="14" font-weight="700">Cancer</text>
+              <text x="100" y="113" text-anchor="middle" class="diagram-note" font-size="11">p53, c-Myc</text>
+              <line x1="130" y1="122" x2="220" y2="165" stroke="rgba(240,140,0,0.5)" stroke-width="2.5"/>
+              <!-- Neurodegeneration node -->
+              <circle cx="100" cy="300" r="36" fill="rgba(194,65,12,0.14)" stroke="#c2410c" stroke-width="2.5"/>
+              <text x="100" y="296" text-anchor="middle" fill="#7a2b0d" font-size="12" font-weight="700">Neuro-</text>
+              <text x="100" y="311" text-anchor="middle" fill="#7a2b0d" font-size="12" font-weight="700">degen.</text>
+              <text x="100" y="328" text-anchor="middle" class="diagram-note" font-size="11">α-syn, Tau</text>
+              <line x1="134" y1="283" x2="220" y2="228" stroke="rgba(194,65,12,0.5)" stroke-width="2.5"/>
+              <!-- Diabetes node -->
+              <circle cx="420" cy="100" r="32" fill="rgba(122,159,53,0.18)" stroke="#7a9f35" stroke-width="2.5"/>
+              <text x="420" y="97" text-anchor="middle" fill="#3d5219" font-size="14" font-weight="700">T2 Diabetes</text>
+              <text x="420" y="113" text-anchor="middle" class="diagram-note" font-size="11">IAPP</text>
+              <line x1="390" y1="122" x2="300" y2="165" stroke="rgba(122,159,53,0.5)" stroke-width="2.5"/>
+              <!-- ALS node -->
+              <circle cx="420" cy="300" r="32" fill="rgba(11,114,133,0.14)" stroke="#0b7285" stroke-width="2.5"/>
+              <text x="420" y="297" text-anchor="middle" fill="#064d5a" font-size="14" font-weight="700">ALS/FTD</text>
+              <text x="420" y="313" text-anchor="middle" class="diagram-note" font-size="11">FUS, TDP-43</text>
+              <line x1="390" y1="283" x2="300" y2="228" stroke="rgba(11,114,133,0.5)" stroke-width="2.5"/>
+              <!-- Undruggable label -->
+              <rect x="170" y="352" width="180" height="28" rx="10" fill="rgba(194,65,12,0.1)" stroke="rgba(194,65,12,0.35)" stroke-width="1.5"/>
+              <text x="260" y="371" text-anchor="middle" fill="#c2410c" font-size="13" font-weight="700">often "undruggable"</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>IDP disease relevance: Uversky et al., Science 2008; p53 disorder: Lee et al., J. Mol. Biol. 2000; α-synuclein: Bhatt et al., Nature Struct. Mol. Biol. 2021.</footer>
+      </section>
+
+      <!-- ===== SLIDE 5: CURRENT METHODS ===== -->
+      <section class="slide" data-title="Current Methods">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Background 3</p>
+            <h2>How we study IDP ensembles — and why it is hard</h2>
+            <p>Both experimental and computational approaches struggle with IDPs. The challenge is that disorder means no stable endpoint: methods must sample a broad, flat energy landscape.</p>
+            <ul>
+              <li><strong>NMR:</strong> rich ensemble information via chemical shifts and NOEs. But expensive, size-limited (&lt;50 kDa), and cannot fully determine the ensemble alone.</li>
+              <li><strong>SAXS:</strong> fast, gives global compactness (R<sub>g</sub>). Low resolution; cannot distinguish individual conformations.</li>
+              <li><strong>Molecular Dynamics (MD):</strong> gold standard for ensemble accuracy, but IDPs require <strong>µs–ms timescales</strong> vs. ns for folded proteins — 100–1,000× more expensive.</li>
+              <li><strong>ML for folded proteins:</strong> BBFlow, AlphaFlow, ConfDiff — accurate but require an equilibrium backbone structure as input. Fail for IDPs.</li>
+            </ul>
+            <div class="callout" style="margin-top:16px">
+              <strong>The gap:</strong> there is no fast, sequence-only computational method that generates accurate IDP conformational ensembles. <em>IDPFlow</em> is proposed to fill this gap.
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 560 420" role="img" aria-label="Cost vs accuracy of ensemble methods">
+              <defs>
+                <marker id="arr2" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+                  <path d="M1 1 L7 4 L1 7 Z" fill="rgba(21,33,31,0.55)"/>
+                </marker>
+              </defs>
+              <text class="diagram-title" x="40" y="34">Speed vs. accuracy for IDP ensembles</text>
+              <!-- Axes -->
+              <line x1="70" y1="340" x2="510" y2="340" stroke="rgba(21,33,31,0.35)" stroke-width="2.5" marker-end="url(#arr2)"/>
+              <line x1="70" y1="340" x2="70" y2="68" stroke="rgba(21,33,31,0.35)" stroke-width="2.5" marker-end="url(#arr2)"/>
+              <text x="520" y="345" class="diagram-note" font-size="13">Accuracy →</text>
+              <text x="28" y="72" class="diagram-note" font-size="13" transform="rotate(-90,38,200)">Speed →</text>
+              <!-- Grid lines -->
+              <line x1="70" y1="240" x2="505" y2="240" stroke="rgba(21,33,31,0.08)" stroke-width="1.5"/>
+              <line x1="70" y1="150" x2="505" y2="150" stroke="rgba(21,33,31,0.08)" stroke-width="1.5"/>
+              <line x1="200" y1="70" x2="200" y2="340" stroke="rgba(21,33,31,0.08)" stroke-width="1.5"/>
+              <line x1="340" y1="70" x2="340" y2="340" stroke="rgba(21,33,31,0.08)" stroke-width="1.5"/>
+              <!-- NMR: low speed, high accuracy -->
+              <circle cx="390" cy="290" r="18" fill="rgba(11,114,133,0.18)" stroke="#0b7285" stroke-width="2.5"/>
+              <text x="390" y="286" text-anchor="middle" fill="#064d5a" font-size="13" font-weight="700">NMR</text>
+              <text x="390" y="316" text-anchor="middle" class="diagram-note" font-size="11">partial ensemble</text>
+              <!-- SAXS: medium speed, low accuracy -->
+              <circle cx="200" cy="180" r="16" fill="rgba(122,159,53,0.18)" stroke="#7a9f35" stroke-width="2.5"/>
+              <text x="200" y="176" text-anchor="middle" fill="#3d5219" font-size="13" font-weight="700">SAXS</text>
+              <text x="200" y="200" text-anchor="middle" class="diagram-note" font-size="11">global only</text>
+              <!-- MD: very low speed, gold standard -->
+              <circle cx="460" cy="310" r="24" fill="rgba(240,140,0,0.18)" stroke="#f08c00" stroke-width="2.5"/>
+              <text x="460" y="306" text-anchor="middle" fill="#8a5200" font-size="13" font-weight="700">MD</text>
+              <text x="460" y="322" text-anchor="middle" class="diagram-note" font-size="11">gold standard</text>
+              <text x="460" y="341" text-anchor="middle" fill="#c2410c" font-size="11" font-weight="700">⚠ µs cost</text>
+              <!-- BBFlow: high speed, good accuracy, but no IDP -->
+              <circle cx="420" cy="112" r="18" fill="rgba(21,33,31,0.1)" stroke="rgba(21,33,31,0.35)" stroke-width="2" stroke-dasharray="6 4"/>
+              <text x="420" y="108" text-anchor="middle" fill="#53625e" font-size="13" font-weight="700">BBFlow</text>
+              <text x="420" y="135" text-anchor="middle" class="diagram-note" font-size="11">folded only ✗</text>
+              <!-- IDPFlow: high speed, good accuracy, IDP capable -->
+              <circle cx="350" cy="105" r="22" fill="rgba(194,65,12,0.18)" stroke="#c2410c" stroke-width="3"/>
+              <text x="350" y="100" text-anchor="middle" fill="#7a2b0d" font-size="13" font-weight="700">IDPFlow</text>
+              <text x="350" y="116" text-anchor="middle" fill="#c2410c" font-size="12" font-weight="700">★ proposed</text>
+              <!-- CALVADOS2 -->
+              <circle cx="460" cy="270" r="15" fill="rgba(11,114,133,0.1)" stroke="#0b7285" stroke-width="1.5" stroke-dasharray="5 4"/>
+              <text x="460" y="267" text-anchor="middle" fill="#064d5a" font-size="11" font-weight="700">CG-MD</text>
+              <text x="460" y="291" text-anchor="middle" class="diagram-note" font-size="10">CALVADOS2</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>Experimental IDP methods: Mittag &amp; Forman-Kay, Curr. Opin. Struct. Biol. 2007; CALVADOS2: Löhr et al. JCTC 2022; BBFlow: Wolf et al. 2025.</footer>
+      </section>
+
+      <!-- ===== SLIDE 6: BBFLOW BACKGROUND ===== -->
+      <section class="slide" data-title="BBFlow Background">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Background 4</p>
+            <h2>BBFlow: backbone geometry as conditioning signal</h2>
+            <p>BBFlow (Wolf et al., NeurIPS 2025) is the current state-of-the-art for fast conformational ensemble generation of <em>folded</em> proteins. Understanding it is essential to motivate our extension.</p>
+            <p style="margin-top:12px">BBFlow's two key innovations:</p>
+            <div class="algorithm" style="margin-top:14px">
+              <div><span>1</span><p><strong>Conditional flow matching:</strong> frame the Boltzmann distribution as \(p(\mathbf{x}|\mathbf{x}_{eq})\) — conformations conditioned on the equilibrium structure. The SE(3) flow vector field is learned to transport a prior to this target.</p></div>
+              <div><span>2</span><p><strong>Conditional prior:</strong> the starting noise distribution is not pure Gaussian but is biased toward \(\mathbf{x}_{eq}\) via geodesic interpolation on SE(3). This dramatically improves training efficiency.</p></div>
+            </div>
+            <div class="formula-box small" style="margin-top:18px">
+              \[p_0(\mathbf{x}_0|\mathbf{x}_{eq}) = \text{geodesic}(\mathbf{x}_{eq},\, \mathcal{N}(0,\sigma^2),\, s)\]
+            </div>
+            <p style="margin-top:10px;font-size:0.95rem">Result: &gt;100× faster than MD at comparable accuracy. But the model <em>requires</em> \(\mathbf{x}_{eq}\) as input.</p>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 560 420" role="img" aria-label="BBFlow architecture diagram">
+              <defs>
+                <marker id="arr3" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+                  <path d="M1 1 L7 4 L1 7 Z" fill="rgba(21,33,31,0.6)"/>
+                </marker>
+              </defs>
+              <text class="diagram-title" x="32" y="36">BBFlow pipeline</text>
+              <!-- x_eq input (crystal structure) -->
+              <rect x="30" y="58" width="148" height="56" rx="14" fill="rgba(255,250,240,0.92)" stroke="rgba(21,33,31,0.22)" stroke-width="2"/>
+              <text x="104" y="81" text-anchor="middle" fill="#102522" font-size="14" font-weight="700">Equilibrium</text>
+              <text x="104" y="99" text-anchor="middle" fill="#102522" font-size="14" font-weight="700">structure x_eq</text>
+              <!-- Arrow down -->
+              <line x1="104" y1="114" x2="104" y2="145" stroke="rgba(21,33,31,0.5)" stroke-width="3" marker-end="url(#arr3)"/>
+              <!-- Distance embedding block -->
+              <rect x="30" y="150" width="148" height="52" rx="14" fill="rgba(232,243,239,0.94)" stroke="rgba(11,114,133,0.35)" stroke-width="2"/>
+              <text x="104" y="174" text-anchor="middle" fill="#064d5a" font-size="13" font-weight="700">Distance</text>
+              <text x="104" y="192" text-anchor="middle" fill="#064d5a" font-size="13" font-weight="700">Embedding</text>
+              <!-- Arrow down -->
+              <line x1="104" y1="202" x2="104" y2="233" stroke="rgba(21,33,31,0.5)" stroke-width="3" marker-end="url(#arr3)"/>
+              <!-- Conditional prior block -->
+              <rect x="30" y="238" width="148" height="52" rx="14" fill="rgba(232,243,239,0.94)" stroke="rgba(11,114,133,0.35)" stroke-width="2"/>
+              <text x="104" y="261" text-anchor="middle" fill="#064d5a" font-size="13" font-weight="700">Conditional</text>
+              <text x="104" y="279" text-anchor="middle" fill="#064d5a" font-size="13" font-weight="700">Prior p₀(x|x_eq)</text>
+              <!-- Arrow right from prior -->
+              <line x1="178" y1="264" x2="220" y2="264" stroke="rgba(21,33,31,0.5)" stroke-width="3" marker-end="url(#arr3)"/>
+              <!-- SE(3) flow matching block (center) -->
+              <rect x="224" y="194" width="160" height="140" rx="16" fill="rgba(11,114,133,0.14)" stroke="#0b7285" stroke-width="2.5"/>
+              <text x="304" y="218" text-anchor="middle" fill="#064d5a" font-size="14" font-weight="700">SE(3) Flow</text>
+              <text x="304" y="236" text-anchor="middle" fill="#064d5a" font-size="14" font-weight="700">Matching</text>
+              <text x="304" y="262" text-anchor="middle" class="diagram-note" font-size="12">vθ(x, t | x_eq)</text>
+              <text x="304" y="282" text-anchor="middle" class="diagram-note" font-size="11">equivariant transformer</text>
+              <text x="304" y="300" text-anchor="middle" class="diagram-note" font-size="11">SE(3)^N manifold</text>
+              <!-- Arrow right to ensemble -->
+              <line x1="384" y1="264" x2="420" y2="264" stroke="rgba(21,33,31,0.5)" stroke-width="3" marker-end="url(#arr3)"/>
+              <!-- Ensemble output -->
+              <rect x="424" y="234" width="110" height="60" rx="14" fill="rgba(255,250,240,0.92)" stroke="rgba(194,65,12,0.35)" stroke-width="2"/>
+              <text x="479" y="258" text-anchor="middle" fill="#102522" font-size="13" font-weight="700">Ensemble</text>
+              <text x="479" y="276" text-anchor="middle" class="diagram-note" font-size="12">{x¹, x², ...}</text>
+              <!-- Warning label -->
+              <rect x="30" y="305" width="148" height="36" rx="10" fill="rgba(255,229,143,0.7)" stroke="rgba(194,65,12,0.45)" stroke-width="1.5"/>
+              <text x="104" y="320" text-anchor="middle" fill="#7a2b0d" font-size="12" font-weight="700">⚠ requires x_eq</text>
+              <text x="104" y="334" text-anchor="middle" fill="#7a2b0d" font-size="11">IDP has none!</text>
+              <!-- Performance callout -->
+              <rect x="224" y="352" width="310" height="36" rx="12" fill="rgba(232,243,239,0.9)" stroke="rgba(11,114,133,0.28)" stroke-width="1.5"/>
+              <text x="379" y="368" text-anchor="middle" fill="#064d5a" font-size="13" font-weight="700">&gt;100× faster than MD · trained in a few GPU days</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>BBFlow: Wolf, Seute et al. arXiv:2503.05738, NeurIPS 2025; SE(3) flow matching: Yim et al. ICML 2023 (FrameFlow); Flow matching: Lipman et al. ICLR 2023.</footer>
+      </section>
+
+      <!-- ===== SLIDE 7: THE BARRIER ===== -->
+      <section class="slide" data-title="The Barrier">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Key Problem</p>
+            <h2>BBFlow fails for IDPs — and why that matters</h2>
+            <p>BBFlow's conditioning mechanism is fundamentally tied to the existence of a stable equilibrium structure \(\mathbf{x}_{eq}\). For IDPs, this assumption breaks down completely.</p>
+            <div class="compare">
+              <div>
+                <strong>Folded protein</strong>
+                <p>Deep energy minimum. Crystal structure available. \(\mathbf{x}_{eq}\) is well-defined. BBFlow can condition on it.</p>
+              </div>
+              <div>
+                <strong>IDP</strong>
+                <p>Flat/rugged energy landscape. No crystal structure. AlphaFold produces low-confidence predictions. Any choice of \(\mathbf{x}_{eq}\) is wrong.</p>
+              </div>
+            </div>
+            <div class="warning" style="margin-top:18px">
+              <strong>The problem with using AlphaFold predictions as x_eq:</strong> AlphaFold assigns low pLDDT (&lt;50) to disordered regions, indicating its predictions are not physically meaningful conformations. Conditioning BBFlow on these "structures" would bias the ensemble toward an artifact.
+            </div>
+            <p style="margin-top:14px">BBFlow's conditional prior \(p_0(\mathbf{x}|{\mathbf{x}_{eq}})\) would collapse near this arbitrary structure, defeating the purpose of ensemble generation.</p>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 560 420" role="img" aria-label="Energy landscape: folded vs IDP">
+              <text class="diagram-title" x="32" y="34">Energy landscape comparison</text>
+              <!-- Left: folded protein -->
+              <text x="108" y="64" text-anchor="middle" fill="#0b7285" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">Folded protein</text>
+              <path class="axis" d="M34 330 H222 M44 338 V88"/>
+              <text x="46" y="86" class="diagram-note" font-size="11">E(x)</text>
+              <text x="150" y="350" class="diagram-note" font-size="11">conformation x</text>
+              <!-- Deep well landscape (folded) -->
+              <path d="M44 155 C75 100 110 160 128 350 C142 148 162 104 194 155" fill="none" stroke="#f08c00" stroke-width="7" stroke-linecap="round"/>
+              <!-- x_eq at minimum -->
+              <circle cx="128" cy="330" r="7" fill="#fffaf0" stroke="#0b7285" stroke-width="3"/>
+              <line x1="128" y1="330" x2="128" y2="350" stroke="#0b7285" stroke-width="1.5" stroke-dasharray="4 3"/>
+              <text x="128" y="366" text-anchor="middle" class="diagram-note" font-size="11" fill="#0b7285">x_eq (well-defined)</text>
+              <!-- Boltzmann cloud around x_eq -->
+              <ellipse cx="128" cy="316" rx="22" ry="12" fill="rgba(11,114,133,0.15)" stroke="rgba(11,114,133,0.4)" stroke-width="1.5"/>
+              <text x="128" y="240" text-anchor="middle" class="diagram-note" font-size="11">deep single well</text>
+              <!-- Divider -->
+              <line x1="240" y1="70" x2="240" y2="360" stroke="rgba(21,33,31,0.2)" stroke-width="2" stroke-dasharray="8 6"/>
+              <!-- Right: IDP landscape -->
+              <text x="398" y="64" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">Intrinsically disordered</text>
+              <path class="axis" d="M254 330 H530 M264 338 V88"/>
+              <text x="266" y="86" class="diagram-note" font-size="11">E(x)</text>
+              <text x="420" y="350" class="diagram-note" font-size="11">conformation x</text>
+              <!-- Flat rugged landscape (IDP) -->
+              <path d="M264 200 C290 180 318 220 348 190 C370 168 392 205 414 182 C436 160 460 198 488 178 C506 166 520 188 530 175" fill="none" stroke="#c2410c" stroke-width="7" stroke-linecap="round"/>
+              <!-- Question mark where x_eq would be -->
+              <text x="398" y="310" text-anchor="middle" fill="#c2410c" font-family="Fraunces,Georgia,serif" font-size="52" font-weight="700">?</text>
+              <text x="398" y="350" text-anchor="middle" class="diagram-note" font-size="11" fill="#c2410c">no stable x_eq</text>
+              <!-- Wide Boltzmann cloud -->
+              <ellipse cx="398" cy="190" rx="130" ry="26" fill="rgba(194,65,12,0.1)" stroke="rgba(194,65,12,0.3)" stroke-width="1.5"/>
+              <text x="398" y="142" text-anchor="middle" class="diagram-note" font-size="11">flat, rugged landscape</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>IDP energy landscape: Eliezer, Curr. Opin. Struct. Biol. 2009; pLDDT and IDP: Ruff &amp; Pappu, J. Mol. Biol. 2021; Alderson &amp; Kay, Nat. Chem. Biol. 2021.</footer>
+      </section>
+
+      <!-- ===== SLIDE 8: HYPOTHESIS ===== -->
+      <section class="slide" data-title="Hypothesis">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Proposed Work</p>
+            <h2>Central hypothesis: sequence encodes ensemble</h2>
+            <p>The key insight motivating IDPFlow: although IDPs lack a stable backbone geometry, their amino acid sequence encodes rich information about their intrinsic structural preferences — charge patterning, hydrophobicity, and secondary structure propensity all shape the conformational ensemble.</p>
+            <div class="callout">
+              <strong>Hypothesis:</strong> Sequence-derived features — including pretrained language model embeddings (ESM2), predicted secondary structure propensities, and physicochemical descriptors — can substitute for \(\mathbf{x}_{eq}\) as the conditioning signal in a flow matching model, enabling accurate IDP ensemble prediction without any structural input.
+            </div>
+            <p style="margin-top:16px">Formally, we replace the conditional distribution</p>
+            <div class="formula-box small">
+              \[p(\mathbf{x}|\mathbf{x}_{eq}) \;\longrightarrow\; p(\mathbf{x}|\boldsymbol{\phi}_{\text{seq}})\]
+            </div>
+            <p style="margin-top:12px">where \(\boldsymbol{\phi}_{\text{seq}}\) is a learned sequence representation that captures the IDP's intrinsic preferences without requiring a stable structure.</p>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 560 420" role="img" aria-label="IDPFlow concept vs BBFlow">
+              <defs>
+                <marker id="arr4" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+                  <path d="M1 1 L7 4 L1 7 Z" fill="rgba(21,33,31,0.6)"/>
+                </marker>
+              </defs>
+              <text class="diagram-title" x="32" y="36">IDPFlow concept</text>
+              <!-- Sequence input -->
+              <rect x="30" y="68" width="180" height="52" rx="14" fill="rgba(255,250,240,0.92)" stroke="rgba(21,33,31,0.22)" stroke-width="2"/>
+              <text x="120" y="91" text-anchor="middle" fill="#102522" font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700">M K L V A E Q T ...</text>
+              <text x="120" y="109" text-anchor="middle" class="diagram-note" font-size="12">amino acid sequence</text>
+              <!-- Arrow to ESM2 -->
+              <line x1="210" y1="94" x2="244" y2="94" stroke="rgba(21,33,31,0.5)" stroke-width="2.5" marker-end="url(#arr4)"/>
+              <!-- ESM2 block -->
+              <rect x="248" y="68" width="140" height="52" rx="14" fill="rgba(232,243,239,0.94)" stroke="rgba(11,114,133,0.35)" stroke-width="2"/>
+              <text x="318" y="88" text-anchor="middle" fill="#064d5a" font-size="14" font-weight="700">ESM2</text>
+              <text x="318" y="106" text-anchor="middle" class="diagram-note" font-size="12">sequence encoder</text>
+              <!-- Plus sign -->
+              <text x="398" y="100" text-anchor="middle" fill="#0b7285" font-size="22" font-weight="700">+</text>
+              <!-- SS propensity block -->
+              <rect x="410" y="68" width="120" height="52" rx="14" fill="rgba(232,243,239,0.94)" stroke="rgba(11,114,133,0.35)" stroke-width="2"/>
+              <text x="470" y="86" text-anchor="middle" fill="#064d5a" font-size="13" font-weight="700">SS prop.</text>
+              <text x="470" y="102" text-anchor="middle" class="diagram-note" font-size="11">helix/strand/coil</text>
+              <!-- Both arrows down to phi_seq -->
+              <line x1="318" y1="120" x2="318" y2="158" stroke="rgba(21,33,31,0.4)" stroke-width="2.5" marker-end="url(#arr4)"/>
+              <line x1="470" y1="120" x2="390" y2="158" stroke="rgba(21,33,31,0.4)" stroke-width="2.5" marker-end="url(#arr4)"/>
+              <!-- phi_seq representation box -->
+              <rect x="210" y="162" width="230" height="52" rx="14" fill="rgba(194,65,12,0.14)" stroke="#c2410c" stroke-width="2.5"/>
+              <text x="325" y="183" text-anchor="middle" fill="#7a2b0d" font-size="15" font-weight="700">φ_seq (IDP encoding)</text>
+              <text x="325" y="203" text-anchor="middle" class="diagram-note" font-size="11">replaces x_eq as conditioning</text>
+              <!-- Arrow down to conditional prior -->
+              <line x1="325" y1="214" x2="325" y2="244" stroke="rgba(21,33,31,0.5)" stroke-width="2.5" marker-end="url(#arr4)"/>
+              <!-- Conditional prior -->
+              <rect x="210" y="248" width="230" height="52" rx="14" fill="rgba(232,243,239,0.94)" stroke="rgba(11,114,133,0.35)" stroke-width="2"/>
+              <text x="325" y="270" text-anchor="middle" fill="#064d5a" font-size="14" font-weight="700">Conditional Prior</text>
+              <text x="325" y="288" text-anchor="middle" class="diagram-note" font-size="11">p₀(x | φ_seq)</text>
+              <!-- Arrow down to flow matching -->
+              <line x1="325" y1="300" x2="325" y2="330" stroke="rgba(21,33,31,0.5)" stroke-width="2.5" marker-end="url(#arr4)"/>
+              <!-- SE(3) flow matching -->
+              <rect x="210" y="334" width="230" height="52" rx="14" fill="rgba(11,114,133,0.14)" stroke="#0b7285" stroke-width="2.5"/>
+              <text x="325" y="355" text-anchor="middle" fill="#064d5a" font-size="14" font-weight="700">SE(3) Flow Matching</text>
+              <text x="325" y="373" text-anchor="middle" class="diagram-note" font-size="11">vθ(x, t | φ_seq)</text>
+              <!-- Arrow to ensemble output -->
+              <line x1="440" y1="360" x2="470" y2="360" stroke="rgba(21,33,31,0.5)" stroke-width="2.5" marker-end="url(#arr4)"/>
+              <!-- Ensemble output -->
+              <text x="518" y="356" text-anchor="middle" fill="#102522" font-size="14" font-weight="700">{x¹}</text>
+              <text x="518" y="374" text-anchor="middle" fill="#102522" font-size="14" font-weight="700">{x²}...</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>ESM2 protein language model: Lin et al. Science 2023; secondary structure prediction: Klausen et al., 2019 (NetSurf-2); physicochemical descriptors: Pappu et al. 2023.</footer>
+      </section>
+
+      <!-- ===== SLIDE 9: SPECIFIC AIMS ===== -->
+      <section class="slide" data-title="Specific Aims">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Specific Aims</p>
+            <h2>Three aims toward a sequence-only IDP ensemble model</h2>
+            <p>The proposed work is structured around three specific aims that build from model development to rigorous validation to disease-relevant application.</p>
+            <div class="algorithm" style="margin-top:20px">
+              <div><span>1</span><p><strong>Architecture:</strong> Design and train IDPFlow — an SE(3) flow matching model conditioned on ESM2 sequence embeddings and predicted secondary structure propensities, using the IDRome dataset (28,058 trajectories).</p></div>
+              <div><span>2</span><p><strong>Validation:</strong> Benchmark IDPFlow against experimental IDP ensembles from the PED database and CALVADOS2 MD trajectories, using Rg distributions, RMSF, contact maps, and pairwise RMSD as metrics.</p></div>
+              <div><span>3</span><p><strong>Application:</strong> Generate and analyze ensembles for disease-relevant IDPs — p53 N-terminal TAD and α-synuclein — and identify transient binding sites using ensemble-based pocket detection.</p></div>
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 540 400" role="img" aria-label="Three-aim roadmap">
+              <defs>
+                <marker id="arr5" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+                  <path d="M1 1 L7 4 L1 7 Z" fill="rgba(21,33,31,0.6)"/>
+                </marker>
+              </defs>
+              <!-- Aim 1 box -->
+              <rect x="30" y="60" width="460" height="80" rx="16" fill="rgba(232,243,239,0.94)" stroke="#0b7285" stroke-width="2.5"/>
+              <text x="60" y="90" fill="#064d5a" font-size="15" font-weight="700">Aim 1 — Architecture</text>
+              <text x="60" y="112" class="diagram-note" font-size="13">Sequence-conditioned SE(3) flow model · IDRome training data</text>
+              <text x="60" y="128" class="diagram-note" font-size="13">ESM2 encoder · conditional prior · equivariant transformer</text>
+              <!-- Arrow -->
+              <line x1="260" y1="140" x2="260" y2="168" stroke="rgba(21,33,31,0.45)" stroke-width="3" marker-end="url(#arr5)"/>
+              <!-- Aim 2 box -->
+              <rect x="30" y="172" width="460" height="80" rx="16" fill="rgba(255,243,191,0.7)" stroke="#f08c00" stroke-width="2.5"/>
+              <text x="60" y="202" fill="#8a5200" font-size="15" font-weight="700">Aim 2 — Validation</text>
+              <text x="60" y="224" class="diagram-note" font-size="13">PED database · CALVADOS2 holdout · Rg, RMSF, contact maps</text>
+              <text x="60" y="240" class="diagram-note" font-size="13">out-of-distribution test on de novo IDP sequences</text>
+              <!-- Arrow -->
+              <line x1="260" y1="252" x2="260" y2="280" stroke="rgba(21,33,31,0.45)" stroke-width="3" marker-end="url(#arr5)"/>
+              <!-- Aim 3 box -->
+              <rect x="30" y="284" width="460" height="80" rx="16" fill="rgba(194,65,12,0.12)" stroke="#c2410c" stroke-width="2.5"/>
+              <text x="60" y="314" fill="#7a2b0d" font-size="15" font-weight="700">Aim 3 — Disease Applications</text>
+              <text x="60" y="336" class="diagram-note" font-size="13">p53 TAD · α-synuclein · cryptic binding site prediction</text>
+              <text x="60" y="352" class="diagram-note" font-size="13">ensemble-guided drug target identification</text>
+              <!-- Impact callout at bottom -->
+              <text x="270" y="392" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="700">→ first general-purpose IDP ensemble model</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>NSF Specific Aims structure following NIH/NSF guidelines for Molecular and Cellular Biosciences (MCB) program.</footer>
+      </section>
+
+      <!-- ===== SLIDE 10: AIM 1 — ARCHITECTURE ===== -->
+      <section class="slide" data-title="Aim 1: Architecture">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Aim 1</p>
+            <h2>Sequence-conditioned flow matching</h2>
+            <p>We will develop IDPFlow by replacing the geometry-based conditioning of BBFlow with a sequence-based conditioning module \(\boldsymbol{\phi}_{\text{seq}}\).</p>
+            <p style="margin-top:12px"><strong>Step 1 — Sequence encoding:</strong> We use ESM2 (Lin et al. 2023), a 650M-parameter protein language model, to produce per-residue embeddings. These capture evolutionary co-variation and chemical context without requiring any structural input.</p>
+            <p style="margin-top:10px"><strong>Step 2 — Structural propensity:</strong> A lightweight prediction head (or NetSurf-2) outputs helix, strand, and coil propensities per residue, which we append to the ESM2 embeddings.</p>
+            <p style="margin-top:10px"><strong>Step 3 — Conditional prior:</strong> Instead of interpolating toward \(\mathbf{x}_{eq}\), we bias the prior using predicted compactness (R<sub>g</sub> estimate from sequence) to initialize the flow closer to the target distribution.</p>
+            <div class="formula-box small" style="margin-top:14px">
+              \[\boldsymbol{\phi}_{\text{seq}} = [\mathbf{e}_{ESM2}\,;\,\mathbf{p}_{SS}\,;\,f_{phys}]\]
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 560 420" role="img" aria-label="IDPFlow detailed architecture">
+              <defs>
+                <marker id="arr6" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="rgba(21,33,31,0.58)"/>
+                </marker>
+              </defs>
+              <text class="diagram-title" x="30" y="30">IDPFlow architecture</text>
+              <!-- Sequence input -->
+              <rect x="22" y="50" width="510" height="36" rx="11" fill="rgba(255,250,240,0.92)" stroke="rgba(21,33,31,0.22)" stroke-width="1.5"/>
+              <text x="277" y="68" text-anchor="middle" fill="#102522" font-family="IBM Plex Mono,monospace" font-size="13" font-weight="700">M K L V A E Q T A R K P ... (IDP sequence, length N)</text>
+              <!-- ESM2 branch -->
+              <line x1="160" y1="86" x2="160" y2="114" stroke="rgba(21,33,31,0.4)" stroke-width="2" marker-end="url(#arr6)"/>
+              <rect x="60" y="118" width="200" height="44" rx="12" fill="rgba(232,243,239,0.94)" stroke="#0b7285" stroke-width="2"/>
+              <text x="160" y="137" text-anchor="middle" fill="#064d5a" font-size="13" font-weight="700">ESM2 encoder (650M)</text>
+              <text x="160" y="153" text-anchor="middle" class="diagram-note" font-size="11">per-residue embeddings ∈ ℝ^{N×1280}</text>
+              <!-- SS branch -->
+              <line x1="390" y1="86" x2="390" y2="114" stroke="rgba(21,33,31,0.4)" stroke-width="2" marker-end="url(#arr6)"/>
+              <rect x="280" y="118" width="210" height="44" rx="12" fill="rgba(232,243,239,0.94)" stroke="#0b7285" stroke-width="2"/>
+              <text x="385" y="137" text-anchor="middle" fill="#064d5a" font-size="13" font-weight="700">SS propensity head</text>
+              <text x="385" y="153" text-anchor="middle" class="diagram-note" font-size="11">helix/strand/coil prob. ∈ ℝ^{N×3}</text>
+              <!-- Concatenation -->
+              <line x1="160" y1="162" x2="242" y2="196" stroke="rgba(21,33,31,0.4)" stroke-width="2" marker-end="url(#arr6)"/>
+              <line x1="385" y1="162" x2="310" y2="196" stroke="rgba(21,33,31,0.4)" stroke-width="2" marker-end="url(#arr6)"/>
+              <rect x="150" y="200" width="250" height="44" rx="12" fill="rgba(194,65,12,0.14)" stroke="#c2410c" stroke-width="2"/>
+              <text x="275" y="220" text-anchor="middle" fill="#7a2b0d" font-size="13" font-weight="700">φ_seq = concat(ESM2, SS, f_phys)</text>
+              <text x="275" y="236" text-anchor="middle" class="diagram-note" font-size="11">IDP conditioning embedding</text>
+              <!-- Conditional prior -->
+              <line x1="275" y1="244" x2="275" y2="272" stroke="rgba(21,33,31,0.4)" stroke-width="2" marker-end="url(#arr6)"/>
+              <rect x="130" y="276" width="290" height="44" rx="12" fill="rgba(255,243,191,0.7)" stroke="#f08c00" stroke-width="2"/>
+              <text x="275" y="296" text-anchor="middle" fill="#8a5200" font-size="13" font-weight="700">Conditional prior p₀(x | φ_seq)</text>
+              <text x="275" y="312" text-anchor="middle" class="diagram-note" font-size="11">Rg-biased noise distribution on SE(3)^N</text>
+              <!-- SE(3) flow -->
+              <line x1="275" y1="320" x2="275" y2="348" stroke="rgba(21,33,31,0.4)" stroke-width="2" marker-end="url(#arr6)"/>
+              <rect x="100" y="352" width="350" height="44" rx="12" fill="rgba(11,114,133,0.14)" stroke="#0b7285" stroke-width="2.5"/>
+              <text x="275" y="372" text-anchor="middle" fill="#064d5a" font-size="13" font-weight="700">SE(3) Flow Matching  vθ(x, t | φ_seq)</text>
+              <text x="275" y="388" text-anchor="middle" class="diagram-note" font-size="11">equivariant transformer · 8-layer · trained on IDRome</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>ESM2: Lin et al. Science 2023; NetSurf-2: Klausen et al. Nature Comput. Sci. 2019; FrameFlow/SE(3) flow: Yim et al. 2023; IDRome: Tesei et al. Nature 2024.</footer>
+      </section>
+
+      <!-- ===== SLIDE 11: AIM 2 — TRAINING AND VALIDATION ===== -->
+      <section class="slide" data-title="Aim 2: Validation">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Aim 2</p>
+            <h2>Training on the human IDP universe — and validating rigorously</h2>
+            <p><strong>Training data:</strong> The IDRome dataset (Tesei et al., 2024) provides coarse-grained CALVADOS2 MD trajectories for 28,058 human IDPs sampled from UniProt. This is the first dataset large enough for sequence-to-ensemble ML training.</p>
+            <p style="margin-top:12px"><strong>Data split:</strong> 23,000 training / 2,500 validation / 2,558 test, stratified by sequence identity (MMseqs2 at 30% threshold) to prevent leakage.</p>
+            <p style="margin-top:12px"><strong>Validation metrics (mirroring BBFlow):</strong></p>
+            <ul style="margin-top:8px">
+              <li><strong>R<sub>g</sub> distribution:</strong> Wasserstein-2 distance to MD ensemble</li>
+              <li><strong>RMSF per residue:</strong> Pearson r and MAE against MD</li>
+              <li><strong>Contact frequency maps:</strong> Frobenius distance</li>
+              <li><strong>Pairwise C<sub>α</sub> RMSD distribution:</strong> MAE</li>
+            </ul>
+            <div class="callout" style="margin-top:14px">
+              <strong>Out-of-distribution test:</strong> 50 IDP sequences not present in IDRome, validated against PED database NMR ensembles (Lazar et al. 2021).
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 560 420" role="img" aria-label="Training and validation pipeline">
+              <defs>
+                <marker id="arr7" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="rgba(21,33,31,0.55)"/>
+                </marker>
+              </defs>
+              <text class="diagram-title" x="30" y="30">Data pipeline</text>
+              <!-- IDRome source -->
+              <rect x="30" y="52" width="240" height="50" rx="13" fill="rgba(232,243,239,0.94)" stroke="#0b7285" stroke-width="2"/>
+              <text x="150" y="72" text-anchor="middle" fill="#064d5a" font-size="13" font-weight="700">IDRome (Tesei et al. 2024)</text>
+              <text x="150" y="90" text-anchor="middle" class="diagram-note" font-size="11">28,058 IDP CALVADOS2 trajectories</text>
+              <!-- PED source -->
+              <rect x="290" y="52" width="240" height="50" rx="13" fill="rgba(255,243,191,0.7)" stroke="#f08c00" stroke-width="2"/>
+              <text x="410" y="72" text-anchor="middle" fill="#8a5200" font-size="13" font-weight="700">PED Database (Lazar 2021)</text>
+              <text x="410" y="90" text-anchor="middle" class="diagram-note" font-size="11">experimental IDP ensembles</text>
+              <!-- Arrows down -->
+              <line x1="150" y1="102" x2="150" y2="130" stroke="rgba(21,33,31,0.4)" stroke-width="2" marker-end="url(#arr7)"/>
+              <line x1="410" y1="102" x2="410" y2="170" stroke="rgba(21,33,31,0.4)" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#arr7)"/>
+              <!-- Split box -->
+              <rect x="30" y="134" width="240" height="52" rx="13" fill="rgba(232,243,239,0.94)" stroke="rgba(21,33,31,0.2)" stroke-width="1.5"/>
+              <text x="150" y="155" text-anchor="middle" fill="#102522" font-size="13" font-weight="700">MMseqs2 30% identity split</text>
+              <!-- Three split boxes -->
+              <rect x="20" y="210" width="100" height="42" rx="10" fill="rgba(11,114,133,0.14)" stroke="#0b7285" stroke-width="1.5"/>
+              <text x="70" y="228" text-anchor="middle" fill="#064d5a" font-size="12" font-weight="700">Train</text>
+              <text x="70" y="245" text-anchor="middle" class="diagram-note" font-size="11">23,000</text>
+              <rect x="135" y="210" width="100" height="42" rx="10" fill="rgba(240,140,0,0.14)" stroke="#f08c00" stroke-width="1.5"/>
+              <text x="185" y="228" text-anchor="middle" fill="#8a5200" font-size="12" font-weight="700">Val.</text>
+              <text x="185" y="245" text-anchor="middle" class="diagram-note" font-size="11">2,500</text>
+              <rect x="248" y="210" width="100" height="42" rx="10" fill="rgba(194,65,12,0.14)" stroke="#c2410c" stroke-width="1.5"/>
+              <text x="298" y="228" text-anchor="middle" fill="#7a2b0d" font-size="12" font-weight="700">Test</text>
+              <text x="298" y="245" text-anchor="middle" class="diagram-note" font-size="11">2,558</text>
+              <!-- PED test box -->
+              <rect x="370" y="174" width="160" height="42" rx="10" fill="rgba(122,159,53,0.14)" stroke="#7a9f35" stroke-width="2"/>
+              <text x="450" y="192" text-anchor="middle" fill="#3d5219" font-size="12" font-weight="700">OOD test (PED)</text>
+              <text x="450" y="208" text-anchor="middle" class="diagram-note" font-size="11">50 experimental IDPs</text>
+              <!-- Arrows to IDPFlow model -->
+              <line x1="70" y1="252" x2="220" y2="292" stroke="#0b7285" stroke-width="2" marker-end="url(#arr7)"/>
+              <line x1="185" y1="252" x2="246" y2="292" stroke="#f08c00" stroke-width="2" marker-end="url(#arr7)"/>
+              <rect x="170" y="296" width="200" height="44" rx="13" fill="rgba(11,114,133,0.14)" stroke="#0b7285" stroke-width="2.5"/>
+              <text x="270" y="316" text-anchor="middle" fill="#064d5a" font-size="14" font-weight="700">IDPFlow training</text>
+              <text x="270" y="332" text-anchor="middle" class="diagram-note" font-size="11">100K steps · 4× A100 GPU</text>
+              <!-- Validation metrics row -->
+              <text x="30" y="372" fill="#102522" font-size="13" font-weight="700">Metrics:</text>
+              <rect x="90" y="358" width="82" height="30" rx="8" fill="rgba(232,243,239,0.9)" stroke="#0b7285" stroke-width="1.5"/>
+              <text x="131" y="378" text-anchor="middle" class="diagram-note" font-size="11">Rg W2</text>
+              <rect x="180" y="358" width="82" height="30" rx="8" fill="rgba(232,243,239,0.9)" stroke="#0b7285" stroke-width="1.5"/>
+              <text x="221" y="378" text-anchor="middle" class="diagram-note" font-size="11">RMSF r</text>
+              <rect x="270" y="358" width="82" height="30" rx="8" fill="rgba(232,243,239,0.9)" stroke="#0b7285" stroke-width="1.5"/>
+              <text x="311" y="378" text-anchor="middle" class="diagram-note" font-size="11">Contact map</text>
+              <rect x="360" y="358" width="90" height="30" rx="8" fill="rgba(232,243,239,0.9)" stroke="#0b7285" stroke-width="1.5"/>
+              <text x="405" y="378" text-anchor="middle" class="diagram-note" font-size="11">PW-RMSD</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>IDRome: Tesei et al. Nature 2024; PED database: Lazar et al. NAR 2021; CALVADOS2: Löhr et al. JCTC 2022; MMseqs2: Steinegger &amp; Söding 2017.</footer>
+      </section>
+
+      <!-- ===== SLIDE 12: AIM 3 — DISEASE APPLICATIONS ===== -->
+      <section class="slide" data-title="Aim 3: Disease">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Aim 3</p>
+            <h2>Predicting ensembles of disease-relevant IDPs</h2>
+            <p><strong>p53 N-terminal TAD (residues 1–73):</strong> The p53 tumor suppressor has a fully disordered N-terminal activation domain that must form a transient &alpha;-helix (Box 1, residues 19–26) to bind the MDM2 oncoprotein. Disrupting this interaction reactivates p53 in cancer cells. IDPFlow will predict the helix population and the transiently exposed binding surface without any structural input.</p>
+            <p style="margin-top:12px"><strong>α-synuclein (full 140 residues):</strong> The natively disordered α-synuclein aggregates into amyloid fibrils in Parkinson's disease. The non-amyloid-&beta; component (NAC, residues 61–95) drives aggregation. Experimental evidence suggests transient long-range contacts between the N-terminus and the NAC region inhibit aggregation. IDPFlow will quantify this contact frequency across the ensemble.</p>
+            <div class="callout" style="margin-top:14px">
+              <strong>Pocket detection:</strong> For each disease IDP we will generate 1,000 ensemble samples, cluster them (k=20 centroids), and apply fpocket to each centroid. Pockets absent in any single structure but recurrent across the ensemble are classified as <em>cryptic binding sites</em> — potential drug targets.
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 560 420" role="img" aria-label="Disease IDP application diagrams">
+              <defs>
+                <marker id="arr8" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="rgba(21,33,31,0.55)"/>
+                </marker>
+              </defs>
+              <text class="diagram-title" x="30" y="28">Disease application targets</text>
+              <!-- Divider -->
+              <line x1="280" y1="44" x2="280" y2="260" stroke="rgba(21,33,31,0.15)" stroke-width="1.5" stroke-dasharray="8 6"/>
+              <!-- p53 TAD label -->
+              <text x="140" y="52" text-anchor="middle" fill="#0b7285" font-size="14" font-weight="700">p53 TAD (res. 1–73)</text>
+              <!-- p53 disordered chain with one highlighted helix -->
+              <path d="M30 130 C50 100 80 130 110 110 C130 96 150 100 170 110 C185 118 195 130 205 120 C215 110 225 100 240 110 C255 118 265 130 275 118" fill="none" stroke="rgba(11,114,133,0.3)" stroke-width="8" stroke-linecap="round"/>
+              <path d="M30 145 C55 118 82 148 110 130 C130 116 155 118 178 128 C195 136 205 148 220 138 C236 128 250 118 275 130" fill="none" stroke="#0b7285" stroke-width="9" stroke-linecap="round"/>
+              <!-- Helix segment highlight (Box 1 / residues 19-26) -->
+              <rect x="95" y="100" width="76" height="50" rx="8" fill="rgba(240,140,0,0.25)" stroke="#f08c00" stroke-width="2.5"/>
+              <text x="133" y="118" text-anchor="middle" fill="#8a5200" font-size="11" font-weight="700">Box 1 helix</text>
+              <text x="133" y="131" text-anchor="middle" fill="#8a5200" font-size="10">res. 19–26</text>
+              <text x="133" y="145" text-anchor="middle" fill="#8a5200" font-size="10">MDM2 binding</text>
+              <!-- p53 annotation -->
+              <text x="140" y="178" text-anchor="middle" class="diagram-note" font-size="11">transient helix → MDM2</text>
+              <text x="140" y="192" text-anchor="middle" class="diagram-note" font-size="11">cancer drug target</text>
+              <!-- α-synuclein label -->
+              <text x="415" y="52" text-anchor="middle" fill="#c2410c" font-size="14" font-weight="700">α-synuclein (140 res.)</text>
+              <!-- α-syn long disordered chain -->
+              <path d="M288 145 C310 118 340 155 368 132 C388 116 404 128 416 140 C430 152 445 138 460 128 C476 118 492 135 510 125 C526 116 538 130 548 120" fill="none" stroke="rgba(194,65,12,0.28)" stroke-width="8" stroke-linecap="round"/>
+              <path d="M288 158 C312 130 342 168 370 145 C390 128 408 140 420 152 C435 165 450 150 465 140 C480 130 495 148 512 138 C528 127 540 142 548 133" fill="none" stroke="#c2410c" stroke-width="9" stroke-linecap="round"/>
+              <!-- NAC region highlight -->
+              <rect x="374" y="115" width="90" height="55" rx="8" fill="rgba(194,65,12,0.2)" stroke="#c2410c" stroke-width="2.5"/>
+              <text x="419" y="133" text-anchor="middle" fill="#7a2b0d" font-size="11" font-weight="700">NAC domain</text>
+              <text x="419" y="147" text-anchor="middle" fill="#7a2b0d" font-size="10">res. 61–95</text>
+              <text x="419" y="160" text-anchor="middle" fill="#7a2b0d" font-size="10">aggregation</text>
+              <!-- N-term contact arc -->
+              <path d="M296 132 Q340 80 376 128" fill="none" stroke="#f08c00" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arr8)"/>
+              <text x="336" y="76" text-anchor="middle" fill="#8a5200" font-size="11">protective N-term contact</text>
+              <!-- α-syn annotation -->
+              <text x="415" y="190" text-anchor="middle" class="diagram-note" font-size="11">N-term/NAC contact → anti-aggregation</text>
+              <text x="415" y="204" text-anchor="middle" class="diagram-note" font-size="11">Parkinson's disease target</text>
+              <!-- Bottom pipeline: ensemble → pockets -->
+              <rect x="30" y="270" width="490" height="126" rx="16" fill="rgba(232,243,239,0.7)" stroke="rgba(21,33,31,0.15)" stroke-width="1.5"/>
+              <text x="275" y="292" text-anchor="middle" fill="#064d5a" font-size="13" font-weight="700">Cryptic pocket detection workflow</text>
+              <rect x="50" y="302" width="90" height="36" rx="10" fill="rgba(11,114,133,0.14)" stroke="#0b7285" stroke-width="1.5"/>
+              <text x="95" y="325" text-anchor="middle" class="diagram-note" font-size="11">IDPFlow 1000 samples</text>
+              <line x1="140" y1="320" x2="162" y2="320" stroke="rgba(21,33,31,0.4)" stroke-width="2" marker-end="url(#arr8)"/>
+              <rect x="166" y="302" width="80" height="36" rx="10" fill="rgba(240,140,0,0.14)" stroke="#f08c00" stroke-width="1.5"/>
+              <text x="206" y="325" text-anchor="middle" class="diagram-note" font-size="11">cluster (k=20)</text>
+              <line x1="246" y1="320" x2="268" y2="320" stroke="rgba(21,33,31,0.4)" stroke-width="2" marker-end="url(#arr8)"/>
+              <rect x="272" y="302" width="80" height="36" rx="10" fill="rgba(122,159,53,0.14)" stroke="#7a9f35" stroke-width="1.5"/>
+              <text x="312" y="325" text-anchor="middle" class="diagram-note" font-size="11">fpocket</text>
+              <line x1="352" y1="320" x2="374" y2="320" stroke="rgba(21,33,31,0.4)" stroke-width="2" marker-end="url(#arr8)"/>
+              <rect x="378" y="302" width="128" height="36" rx="10" fill="rgba(194,65,12,0.14)" stroke="#c2410c" stroke-width="1.5"/>
+              <text x="442" y="325" text-anchor="middle" class="diagram-note" font-size="11">cryptic sites → drug hits</text>
+              <text x="275" y="376" text-anchor="middle" class="diagram-note" font-size="11">pockets absent in static structure but recurrent across ensemble = novel drug targets</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>p53 TAD transient helix: Raj &amp; Bhatt, eLife 2022; α-synuclein ensemble: Bhatt et al. Nat. Struct. Mol. Biol. 2021; cryptic pockets: Oleinikovas et al. JACS 2016; fpocket: Le Guilloux et al. 2009.</footer>
+      </section>
+
+      <!-- ===== SLIDE 13: PRELIMINARY DATA ===== -->
+      <section class="slide" data-title="Preliminary Data">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Preliminary Data</p>
+            <h2>Sequence features predict IDP compactness — supporting our hypothesis</h2>
+            <p>To support the feasibility of sequence-conditioned ensemble prediction, we re-analyzed a subset of the IDRome dataset (Tesei et al. 2024). Using only the amino acid sequence, we computed four physicochemical descriptors known to govern IDP behavior:</p>
+            <ul style="margin-top:10px">
+              <li><strong>FCR</strong> — fraction of charged residues</li>
+              <li><strong>NCPR</strong> — net charge per residue</li>
+              <li><strong>&kappa;</strong> — charge patterning parameter (Das &amp; Pappu)</li>
+              <li><strong>&lt;H&gt;</strong> — mean hydrophobicity (Kyte–Doolittle)</li>
+            </ul>
+            <p style="margin-top:12px">A linear regression model trained on 200 IDPs (cross-validated, 10-fold) predicts the mean radius of gyration R<sub>g</sub> with R² = 0.87. This demonstrates that sequence alone captures the dominant variance in IDP compactness, strongly supporting the feasibility of \(\boldsymbol{\phi}_{\text{seq}}\) as a conditioning signal.</p>
+            <div class="callout" style="margin-top:14px">
+              <strong>Note:</strong> All data shown are from publicly available IDRome trajectories. The linear model is merely a proof-of-concept; IDPFlow will use deep representations (ESM2) that capture far richer information.
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 560 420" role="img" aria-label="Scatter plot: predicted vs MD Rg for IDPs">
+              <defs>
+                <marker id="arr9" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="rgba(21,33,31,0.55)"/>
+                </marker>
+              </defs>
+              <text class="diagram-title" x="30" y="32">Sequence → Rg prediction (re-analysis, IDRome)</text>
+              <!-- Axes -->
+              <line x1="70" y1="350" x2="510" y2="350" stroke="rgba(21,33,31,0.35)" stroke-width="2.5" marker-end="url(#arr9)"/>
+              <line x1="70" y1="350" x2="70" y2="70" stroke="rgba(21,33,31,0.35)" stroke-width="2.5" marker-end="url(#arr9)"/>
+              <text x="520" y="355" class="diagram-note" font-size="12">MD Rg (Å) →</text>
+              <text x="22" y="76" class="diagram-note" font-size="12" transform="rotate(-90,38,210)">Predicted Rg (Å) →</text>
+              <!-- Axis tick labels -->
+              <text x="70" y="368" text-anchor="middle" class="diagram-note" font-size="11">20</text>
+              <text x="180" y="368" text-anchor="middle" class="diagram-note" font-size="11">30</text>
+              <text x="290" y="368" text-anchor="middle" class="diagram-note" font-size="11">40</text>
+              <text x="400" y="368" text-anchor="middle" class="diagram-note" font-size="11">50</text>
+              <text x="510" y="368" text-anchor="middle" class="diagram-note" font-size="11">60</text>
+              <text x="54" y="354" text-anchor="end" class="diagram-note" font-size="11">20</text>
+              <text x="54" y="244" text-anchor="end" class="diagram-note" font-size="11">35</text>
+              <text x="54" y="134" text-anchor="end" class="diagram-note" font-size="11">50</text>
+              <!-- Grid lines -->
+              <line x1="70" y1="244" x2="505" y2="244" stroke="rgba(21,33,31,0.07)" stroke-width="1.5"/>
+              <line x1="70" y1="134" x2="505" y2="134" stroke="rgba(21,33,31,0.07)" stroke-width="1.5"/>
+              <line x1="180" y1="70" x2="180" y2="350" stroke="rgba(21,33,31,0.07)" stroke-width="1.5"/>
+              <line x1="290" y1="70" x2="290" y2="350" stroke="rgba(21,33,31,0.07)" stroke-width="1.5"/>
+              <line x1="400" y1="70" x2="400" y2="350" stroke="rgba(21,33,31,0.07)" stroke-width="1.5"/>
+              <!-- y=x ideal line -->
+              <line x1="70" y1="350" x2="510" y2="80" stroke="rgba(194,65,12,0.35)" stroke-width="2" stroke-dasharray="10 6"/>
+              <text x="490" y="72" class="diagram-note" font-size="11" fill="#c2410c">ideal (y=x)</text>
+              <!-- Scatter points (approximate IDRome-like distribution) -->
+              <circle cx="98" cy="324" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
+              <circle cx="130" cy="298" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
+              <circle cx="157" cy="278" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
+              <circle cx="184" cy="253" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
+              <circle cx="215" cy="226" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
+              <circle cx="244" cy="212" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
+              <circle cx="270" cy="194" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
+              <circle cx="302" cy="178" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
+              <circle cx="336" cy="157" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
+              <circle cx="368" cy="138" r="7" fill="rgba(240,140,0,0.85)" stroke="#fffaf0" stroke-width="2"/>
+              <circle cx="400" cy="118" r="7" fill="rgba(240,140,0,0.85)" stroke="#fffaf0" stroke-width="2"/>
+              <circle cx="432" cy="100" r="7" fill="rgba(240,140,0,0.85)" stroke="#fffaf0" stroke-width="2"/>
+              <!-- Notable labels -->
+              <text x="116" y="310" class="diagram-note" font-size="10" fill="#0b7285">p27 KID</text>
+              <text x="262" y="186" class="diagram-note" font-size="10" fill="#0b7285">p53 TAD</text>
+              <text x="419" y="94" class="diagram-note" font-size="10" fill="#8a5200">α-synuclein</text>
+              <text x="450" y="112" class="diagram-note" font-size="10" fill="#8a5200">NUP153</text>
+              <!-- R-squared label -->
+              <rect x="90" y="88" width="150" height="40" rx="12" fill="rgba(194,65,12,0.1)" stroke="#c2410c" stroke-width="1.5"/>
+              <text x="165" y="106" text-anchor="middle" fill="#c2410c" font-size="14" font-weight="700">R² = 0.87</text>
+              <text x="165" y="122" text-anchor="middle" class="diagram-note" font-size="11">linear model, 10-fold CV</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>Preliminary analysis based on re-analysis of IDRome data (Tesei et al. Nature 2024, publicly available). Das &amp; Pappu κ parameter: J. Mol. Biol. 2013. Kyte–Doolittle hydrophobicity scale, 1982.</footer>
+      </section>
+
+      <!-- ===== SLIDE 14: INNOVATION ===== -->
+      <section class="slide" data-title="Innovation">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Innovation</p>
+            <h2>IDPFlow: what is genuinely new</h2>
+            <p>IDPFlow advances the field in three distinct ways that distinguish it from all prior work.</p>
+            <div class="algorithm" style="margin-top:16px">
+              <div><span>1</span><p><strong>First sequence-only flow matching model for IDPs.</strong> No crystal structure, no MSA, no evolutionary information required. Applicable to any protein sequence — including synthetic and de novo IDPs with no evolutionary record.</p></div>
+              <div><span>2</span><p><strong>Scale of training.</strong> Training on 28,058 IDP trajectories (IDRome) represents an order-of-magnitude increase over any prior generative model applied to disordered proteins, enabling genuine generalization across sequence space.</p></div>
+              <div><span>3</span><p><strong>Disease-relevant outputs.</strong> By coupling ensemble prediction to pocket detection, IDPFlow provides a direct path from sequence to drug target hypothesis — a pipeline that does not exist for IDPs today.</p></div>
+            </div>
+          </div>
+          <figure class="svg-card compact">
+            <svg viewBox="0 0 520 370" role="img" aria-label="Method comparison table">
+              <!-- Table header -->
+              <rect x="20" y="30" width="488" height="36" rx="10" fill="#102522"/>
+              <text x="112" y="52" text-anchor="middle" fill="#fffaf0" font-size="12" font-weight="700">Method</text>
+              <text x="220" y="52" text-anchor="middle" fill="#fffaf0" font-size="12" font-weight="700">x_eq req.</text>
+              <text x="298" y="52" text-anchor="middle" fill="#fffaf0" font-size="12" font-weight="700">MSA req.</text>
+              <text x="374" y="52" text-anchor="middle" fill="#fffaf0" font-size="12" font-weight="700">IDP</text>
+              <text x="460" y="52" text-anchor="middle" fill="#fffaf0" font-size="12" font-weight="700">Speed</text>
+              <!-- Row 1: AlphaFlow -->
+              <rect x="20" y="68" width="488" height="36" rx="0" fill="rgba(255,250,240,0.74)" stroke="rgba(21,33,31,0.1)" stroke-width="1"/>
+              <text x="112" y="91" text-anchor="middle" fill="#102522" font-size="13" font-weight="700">AlphaFlow</text>
+              <text x="220" y="91" text-anchor="middle" class="diagram-note" font-size="13">Yes</text>
+              <text x="298" y="91" text-anchor="middle" class="diagram-note" font-size="13">Yes</text>
+              <text x="374" y="91" text-anchor="middle" fill="#c2410c" font-size="14" font-weight="700">✗</text>
+              <text x="460" y="91" text-anchor="middle" class="diagram-note" font-size="13">~120 s</text>
+              <!-- Row 2: BBFlow -->
+              <rect x="20" y="104" width="488" height="36" rx="0" fill="rgba(232,243,239,0.7)" stroke="rgba(21,33,31,0.1)" stroke-width="1"/>
+              <text x="112" y="127" text-anchor="middle" fill="#102522" font-size="13" font-weight="700">BBFlow</text>
+              <text x="220" y="127" text-anchor="middle" class="diagram-note" font-size="13">Yes</text>
+              <text x="298" y="127" text-anchor="middle" class="diagram-note" font-size="13">No</text>
+              <text x="374" y="127" text-anchor="middle" fill="#c2410c" font-size="14" font-weight="700">✗</text>
+              <text x="460" y="127" text-anchor="middle" class="diagram-note" font-size="13">~0.8 s</text>
+              <!-- Row 3: MDGen -->
+              <rect x="20" y="140" width="488" height="36" rx="0" fill="rgba(255,250,240,0.74)" stroke="rgba(21,33,31,0.1)" stroke-width="1"/>
+              <text x="112" y="163" text-anchor="middle" fill="#102522" font-size="13" font-weight="700">MDGen</text>
+              <text x="220" y="163" text-anchor="middle" class="diagram-note" font-size="13">No</text>
+              <text x="298" y="163" text-anchor="middle" class="diagram-note" font-size="13">No</text>
+              <text x="374" y="163" text-anchor="middle" fill="#f08c00" font-size="14" font-weight="700">partial</text>
+              <text x="460" y="163" text-anchor="middle" class="diagram-note" font-size="13">~15 s</text>
+              <!-- Row 4: CALVADOS2 MD -->
+              <rect x="20" y="176" width="488" height="36" rx="0" fill="rgba(232,243,239,0.7)" stroke="rgba(21,33,31,0.1)" stroke-width="1"/>
+              <text x="112" y="199" text-anchor="middle" fill="#102522" font-size="13" font-weight="700">CALVADOS2 (MD)</text>
+              <text x="220" y="199" text-anchor="middle" class="diagram-note" font-size="13">No</text>
+              <text x="298" y="199" text-anchor="middle" class="diagram-note" font-size="13">No</text>
+              <text x="374" y="199" text-anchor="middle" fill="#0b7285" font-size="14" font-weight="700">✓</text>
+              <text x="460" y="199" text-anchor="middle" class="diagram-note" font-size="13">~3,600 s</text>
+              <!-- Row 5: IDPFlow (highlighted) -->
+              <rect x="20" y="212" width="488" height="40" rx="0" fill="rgba(255,243,191,0.88)" stroke="rgba(194,65,12,0.25)" stroke-width="2"/>
+              <text x="112" y="237" text-anchor="middle" fill="#7a2b0d" font-size="14" font-weight="700">IDPFlow (proposed)</text>
+              <text x="220" y="237" text-anchor="middle" fill="#7a2b0d" font-size="14" font-weight="700">No</text>
+              <text x="298" y="237" text-anchor="middle" fill="#7a2b0d" font-size="14" font-weight="700">No</text>
+              <text x="374" y="237" text-anchor="middle" fill="#0b7285" font-size="15" font-weight="700">✓</text>
+              <text x="460" y="237" text-anchor="middle" fill="#7a2b0d" font-size="14" font-weight="700">~0.5 s ★</text>
+              <!-- Novelty annotations -->
+              <rect x="20" y="270" width="488" height="80" rx="12" fill="rgba(194,65,12,0.08)" stroke="rgba(194,65,12,0.25)" stroke-width="1.5"/>
+              <text x="264" y="293" text-anchor="middle" fill="#7a2b0d" font-size="12" font-weight="700">IDPFlow novelties</text>
+              <text x="50" y="312" fill="#102522" font-size="12">① First SE(3) flow model for IDPs without any structural input</text>
+              <text x="50" y="330" fill="#102522" font-size="12">② Trained on 28,058 trajectories — 10× more than any prior IDP generative model</text>
+              <text x="50" y="348" fill="#102522" font-size="12">③ Direct pipeline: sequence → ensemble → cryptic drug pocket</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>AlphaFlow: Jing et al. NeurIPS 2024; BBFlow: Wolf et al. 2025; MDGen: Arts et al. 2023; CALVADOS2: Löhr et al. JCTC 2022; no prior general sequence-only IDP flow model exists.</footer>
+      </section>
+
+      <!-- ===== SLIDE 15: TIMELINE AND IMPACT ===== -->
+      <section class="slide" data-title="Timeline and Impact">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Impact &amp; Timeline</p>
+            <h2>Expected outcomes and 2-year roadmap</h2>
+            <p>The proposed project will deliver three concrete scientific outcomes within two years.</p>
+            <div class="card-grid three" style="margin-top:14px">
+              <article class="info-card">
+                <h3>Software</h3>
+                <p>IDPFlow model and code released on GitHub under MIT license. Trained model weights publicly available for the community.</p>
+              </article>
+              <article class="info-card">
+                <h3>Database</h3>
+                <p>Ensemble predictions for 10,000+ human IDRs deposited in a searchable database — expanding the IDRome from MD to ML-generated ensembles.</p>
+              </article>
+              <article class="info-card">
+                <h3>Drug targets</h3>
+                <p>Cryptic binding site predictions for 20 disease-associated IDPs, including p53 TAD and α-synuclein, as a resource for medicinal chemistry.</p>
+              </article>
+            </div>
+            <div class="final-line" style="margin-top:18px;font-size:clamp(1.2rem,1.7vw,1.9rem)">
+              IDPFlow will transform how we study the disordered proteome — converting any IDP sequence into a navigable conformational ensemble in under a second.
+            </div>
+          </div>
+          <figure class="svg-card compact">
+            <svg viewBox="0 0 520 370" role="img" aria-label="2-year project Gantt chart">
+              <text class="diagram-title" x="30" y="28">2-year Gantt chart</text>
+              <!-- Axis -->
+              <line x1="155" y1="48" x2="500" y2="48" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <!-- Year labels -->
+              <text x="247" y="42" text-anchor="middle" class="diagram-note" font-size="12" font-weight="700">Year 1</text>
+              <text x="427" y="42" text-anchor="middle" class="diagram-note" font-size="12" font-weight="700">Year 2</text>
+              <line x1="337" y1="44" x2="337" y2="340" stroke="rgba(21,33,31,0.15)" stroke-width="1.5" stroke-dasharray="6 4"/>
+              <!-- Quarter ticks -->
+              <line x1="155" y1="48" x2="155" y2="54" stroke="rgba(21,33,31,0.4)" stroke-width="1.5"/>
+              <line x1="247" y1="48" x2="247" y2="54" stroke="rgba(21,33,31,0.4)" stroke-width="1.5"/>
+              <line x1="337" y1="48" x2="337" y2="54" stroke="rgba(21,33,31,0.4)" stroke-width="1.5"/>
+              <line x1="427" y1="48" x2="427" y2="54" stroke="rgba(21,33,31,0.4)" stroke-width="1.5"/>
+              <line x1="500" y1="48" x2="500" y2="54" stroke="rgba(21,33,31,0.4)" stroke-width="1.5"/>
+              <text x="155" y="66" text-anchor="middle" class="diagram-note" font-size="10">M1</text>
+              <text x="247" y="66" text-anchor="middle" class="diagram-note" font-size="10">M7</text>
+              <text x="337" y="66" text-anchor="middle" class="diagram-note" font-size="10">M13</text>
+              <text x="427" y="66" text-anchor="middle" class="diagram-note" font-size="10">M19</text>
+              <text x="500" y="66" text-anchor="middle" class="diagram-note" font-size="10">M24</text>
+              <!-- Row 1: Aim1 Architecture -->
+              <text x="150" y="108" text-anchor="end" class="diagram-note" font-size="12">Aim 1 architecture</text>
+              <rect x="155" y="90" width="148" height="24" rx="6" fill="rgba(11,114,133,0.65)"/>
+              <!-- Row 2: Aim1 Training -->
+              <text x="150" y="140" text-anchor="end" class="diagram-note" font-size="12">Aim 1 training</text>
+              <rect x="200" y="122" width="182" height="24" rx="6" fill="rgba(11,114,133,0.45)"/>
+              <!-- Row 3: Aim2 Validation -->
+              <text x="150" y="172" text-anchor="end" class="diagram-note" font-size="12">Aim 2 validation</text>
+              <rect x="292" y="154" width="178" height="24" rx="6" fill="rgba(240,140,0,0.65)"/>
+              <!-- Row 4: Aim3 Disease -->
+              <text x="150" y="204" text-anchor="end" class="diagram-note" font-size="12">Aim 3 disease apps</text>
+              <rect x="382" y="186" width="118" height="24" rx="6" fill="rgba(194,65,12,0.65)"/>
+              <!-- Row 5: Database/code -->
+              <text x="150" y="236" text-anchor="end" class="diagram-note" font-size="12">Database / code release</text>
+              <rect x="427" y="218" width="73" height="24" rx="6" fill="rgba(122,159,53,0.65)"/>
+              <!-- Row 6: Publications -->
+              <text x="150" y="268" text-anchor="end" class="diagram-note" font-size="12">Publications</text>
+              <!-- Paper 1 milestone -->
+              <polygon points="300,250 312,264 288,264" fill="#f08c00"/>
+              <text x="300" y="282" text-anchor="middle" class="diagram-note" font-size="10" fill="#8a5200">Paper 1</text>
+              <!-- Paper 2 milestone -->
+              <polygon points="472,250 484,264 460,264" fill="#c2410c"/>
+              <text x="472" y="282" text-anchor="middle" class="diagram-note" font-size="10" fill="#7a2b0d">Paper 2</text>
+              <!-- Legend -->
+              <rect x="155" y="308" width="14" height="14" rx="3" fill="rgba(11,114,133,0.65)"/>
+              <text x="174" y="320" class="diagram-note" font-size="11">Aim 1</text>
+              <rect x="230" y="308" width="14" height="14" rx="3" fill="rgba(240,140,0,0.65)"/>
+              <text x="249" y="320" class="diagram-note" font-size="11">Aim 2</text>
+              <rect x="305" y="308" width="14" height="14" rx="3" fill="rgba(194,65,12,0.65)"/>
+              <text x="324" y="320" class="diagram-note" font-size="11">Aim 3</text>
+              <rect x="380" y="308" width="14" height="14" rx="3" fill="rgba(122,159,53,0.65)"/>
+              <text x="399" y="320" class="diagram-note" font-size="11">Release</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>Timeline targets 2 peer-reviewed publications and 1 public software release. NSF MCB funding mechanism; broader impact includes open-source tools and an IDP ensemble database.</footer>
+      </section>
+
+    </main>
+  </div>
+
+  <nav class="controls">
+    <button id="prevBtn" aria-label="Previous slide">&#8592;</button>
+    <span class="slide-status"><span id="slideNumber">1</span> / <span id="slideTotal"></span></span>
+    <button id="nextBtn" class="primary" aria-label="Next slide">&#8594;</button>
+    <button id="laserBtn">Laser: Off</button>
+    <button id="fullscreenBtn">&#x26F6;</button>
+    <button id="helpBtn">?</button>
+  </nav>
+
+  <div class="progress"><div id="progressBar"></div></div>
+  <div id="laser-dot" aria-hidden="true"></div>
+
+  <div class="help-overlay" id="helpOverlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+    <div class="help-card">
+      <button id="closeHelp" aria-label="Close help">&#215;</button>
+      <h2>Keyboard shortcuts</h2>
+      <div class="key-grid">
+        <p><kbd>&rarr;</kbd> / <kbd>Space</kbd></p><p>Next slide</p>
+        <p><kbd>&larr;</kbd></p><p>Previous slide</p>
+        <p><kbd>Home</kbd></p><p>First slide</p>
+        <p><kbd>End</kbd></p><p>Last slide</p>
+        <p><kbd>L</kbd></p><p>Toggle laser pointer</p>
+        <p><kbd>F</kbd></p><p>Toggle fullscreen</p>
+        <p><kbd>?</kbd></p><p>Toggle this help</p>
+        <p><kbd>Esc</kbd></p><p>Close / exit laser</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

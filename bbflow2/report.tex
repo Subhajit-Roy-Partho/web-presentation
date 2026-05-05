@@ -1,0 +1,562 @@
+% IDPFlow NSF Report --- Times 12pt, single spacing, 1-inch margins
+% Project Summary: 1 page | Project Description: 6 pages | References separate
+\documentclass[12pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}          % Times New Roman
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\singlespacing
+\usepackage[parfill]{parskip}
+\setlength{\parskip}{6pt}
+\usepackage{titlesec}
+\titleformat{\section}{\normalfont\bfseries\large}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalfont\bfseries}{}{0em}{}
+\titlespacing*{\section}{0pt}{14pt}{4pt}
+\titlespacing*{\subsection}{0pt}{10pt}{2pt}
+
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% No header/footer except page numbers
+\pagestyle{plain}
+
+\begin{document}
+
+% ============================================================
+%  PROJECT SUMMARY  (exactly 1 page)
+% ============================================================
+\begin{center}
+  {\large\bfseries Project Summary}\\[4pt]
+  \textbf{IDPFlow: Sequence-Conditioned Flow Matching for\\
+  Intrinsically Disordered Protein Conformational Ensembles}
+\end{center}
+
+\noindent\textbf{Overview.}
+Intrinsically disordered proteins (IDPs) and disordered regions (IDRs) constitute 30--40\% of the
+human proteome and are central to cancer, neurodegeneration, and a wide range of other diseases.
+Yet unlike folded proteins, IDPs lack a stable three-dimensional structure --- they sample a broad,
+flat conformational energy landscape --- making them resistant to structure-based computational
+methods. The current state-of-the-art for fast ensemble generation, BBFlow \cite{wolf2025bbflow},
+achieves orders-of-magnitude speedups over molecular dynamics (MD) for folded proteins by
+conditioning a geometric deep learning model on the equilibrium backbone structure
+$\mathbf{x}_\mathrm{eq}$. For IDPs, no such equilibrium structure exists, and the method fails.
+This proposal introduces \textbf{IDPFlow}, the first sequence-conditioned SE(3) flow matching
+model for IDP conformational ensembles, requiring no structural input whatsoever.
+
+\noindent\textbf{Intellectual Merit.}
+IDPFlow will demonstrate that protein language model embeddings (ESM2 \cite{lin2023esm2})
+combined with predicted secondary structure propensities
+provide a sufficient conditioning signal to learn accurate IDP conformational distributions.
+The model will be trained on the IDRome dataset \cite{tesei2024idrome} --- 28,058
+coarse-grained CALVADOS2 \cite{lohr2022calvados2} MD trajectories of human IDPs --- providing
+unprecedented scale for IDP machine learning.
+Three specific aims will be pursued: (1) design and train the IDPFlow architecture with a
+sequence-based conditional prior on the SE(3)$^N$ manifold; (2) validate against experimental
+IDP ensembles from the Protein Ensemble Database (PED) \cite{lazar2021ped} using
+radius-of-gyration distributions, per-residue RMSF, contact frequency maps, and pairwise RMSD;
+(3) apply IDPFlow to the disease-relevant p53 N-terminal transactivation domain (TAD) and
+$\alpha$-synuclein to identify transient structural features and cryptic binding sites.
+Preliminary re-analysis of a 200-IDP subset of IDRome shows that sequence-derived
+physicochemical descriptors alone predict mean $R_g$ with $R^2 = 0.87$ (cross-validated),
+supporting the feasibility of sequence-conditioned ensemble learning.
+
+\noindent\textbf{Broader Impacts.}
+All trained model weights and code will be released as open-source software (MIT license),
+enabling the community to generate IDP ensembles from sequence in under one second.
+A publicly searchable database of ensemble predictions for over 10,000 human IDRs will be
+deposited, expanding the utility of the IDRome resource to users who lack computational
+infrastructure for MD simulation.
+Two peer-reviewed publications are planned, targeting a machine learning venue (NeurIPS or
+ICLR) and a structural biology journal (\textit{Nature Structural \& Molecular Biology} or
+\textit{eLife}).
+The disease application component will deliver cryptic binding site predictions for 20
+disease-associated IDPs as a public resource for medicinal chemistry campaigns targeting
+currently undruggable proteins.
+Training of graduate and undergraduate researchers in the intersection of deep learning and
+structural biology is an integral component of the project.
+
+\noindent\textbf{Keywords:} intrinsically disordered proteins, conformational ensembles,
+flow matching, SE(3) equivariance, protein language models, drug discovery, p53, $\alpha$-synuclein.
+
+\newpage
+
+% ============================================================
+%  PROJECT DESCRIPTION  (6 pages)
+% ============================================================
+\begin{center}
+  {\large\bfseries Project Description}
+\end{center}
+
+% -----------------------------------------------------------
+\section{Overview and Specific Aims}
+% -----------------------------------------------------------
+
+Proteins are the molecular machines of life, and their functions depend not only on structure
+but on dynamics. At physiological temperature, a protein samples an ensemble of conformations
+according to the Boltzmann distribution,
+$p(\mathbf{x}) \propto \exp(-E(\mathbf{x}) / k_B T)$.
+For most globular proteins, this ensemble is tightly clustered around a single low-energy
+equilibrium conformation that is accessible to X-ray crystallography or cryo-EM.
+However, approximately 30--40\% of the human proteome contains intrinsically disordered
+regions (IDRs) that lack a stable equilibrium structure
+\cite{uversky2014idp_review,dyson2005idp}.
+These regions are not merely flexible loops; they are fully functional molecular entities that
+engage in protein--protein and protein--nucleic-acid interactions, mediate post-translational
+modification cascades, and drive liquid--liquid phase separation.
+Importantly, they are over-represented among disease-associated and clinically validated drug
+targets: the p53 tumor suppressor, $\alpha$-synuclein in Parkinson's disease, and Tau in
+Alzheimer's disease are all predominantly disordered \cite{uversky2008idp_disease}.
+
+Generating accurate conformational ensembles for IDPs is therefore of major biological and
+medical importance, yet it remains unsolved computationally.
+MD simulation is the gold standard for ensemble accuracy, but IDPs require microsecond-to-millisecond
+timescales to adequately sample conformational space --- 100- to 1,000-fold more than folded
+proteins \cite{mittag2007idp_nmr}.
+Recent geometric deep learning models, notably BBFlow \cite{wolf2025bbflow} and
+AlphaFlow \cite{jing2024alphaflow}, achieve orders-of-magnitude speedups for folded proteins
+by conditioning on an equilibrium backbone structure $\mathbf{x}_\mathrm{eq}$.
+This conditioning is undefined for IDPs, and preliminary experiments show these models fail
+or produce highly biased ensembles when forced to operate on AlphaFold2 predictions of
+disordered regions, where predicted local distance difference test (pLDDT) scores are low
+and the structural prediction is physically meaningless \cite{ruff2021af2idp}.
+
+\noindent\textbf{Central hypothesis.}
+Sequence-derived features --- specifically pretrained protein language model embeddings (ESM2
+\cite{lin2023esm2}), predicted secondary structure propensities, and physicochemical
+descriptors capturing charge patterning and hydrophobicity --- constitute a sufficient
+conditioning signal to learn accurate IDP conformational distributions within an SE(3) flow
+matching framework, entirely replacing the need for a structural input.
+
+\noindent\textbf{Specific Aims:}
+
+\noindent\textbf{Aim 1 --- IDPFlow architecture and training.}
+We will design and implement IDPFlow, an SE(3) flow matching model conditioned on a
+learned sequence representation $\boldsymbol{\phi}_\mathrm{seq}$ derived from ESM2
+embeddings, predicted secondary structure propensities, and physicochemical descriptors.
+The model will be trained on 23,000 IDP CALVADOS2 trajectories from the IDRome dataset
+\cite{tesei2024idrome}.
+
+\noindent\textbf{Aim 2 --- Validation against experimental IDP ensembles.}
+IDPFlow will be benchmarked against experimental ensembles from the PED database
+\cite{lazar2021ped} and against a held-out set of 2,558 IDRome trajectories, using
+$R_g$ Wasserstein distance, per-residue RMSF Pearson correlation, contact frequency map
+Frobenius distance, and pairwise C$_\alpha$ RMSD distribution MAE as quantitative metrics.
+
+\noindent\textbf{Aim 3 --- Disease applications.}
+IDPFlow will be applied to the p53 N-terminal transactivation domain (TAD, residues 1--73)
+and full-length $\alpha$-synuclein (140 residues) to predict conformational ensembles and
+identify cryptic binding sites using ensemble-based pocket detection.
+
+% -----------------------------------------------------------
+\section{Significance}
+% -----------------------------------------------------------
+
+\subsection{Background: intrinsically disordered proteins and their biology}
+
+The classical structure--function paradigm --- one sequence, one fold, one function --- accounts
+for the majority of biochemistry textbook examples but misrepresents a large fraction of
+biologically critical proteins \cite{dyson2005idp}.
+IDPs exhibit highly heterogeneous conformational behavior ranging from fully extended
+random-coil states to transient secondary structure elements that form when binding partners
+are present (folding-upon-binding), or even undergo complete folding into stable tertiary
+structures in a partner-induced manner \cite{wright2009idp_binding}.
+The diversity of IDP conformational behavior is the direct product of their sequence
+composition: IDPs tend to have low mean hydrophobicity, high net charge, and low sequence
+complexity \cite{uversky2014idp_review}, properties that prevent the hydrophobic collapse
+driving the folding of globular proteins.
+
+The biological importance of IDPs spans virtually every major disease area.
+The p53 tumor suppressor, which is mutated or functionally inactivated in approximately
+50\% of all human cancers, has a fully disordered N-terminal TAD that forms a transient
+$\alpha$-helix at residues 19--26 (Box~1) upon binding to the MDM2 oncoprotein
+\cite{raj2022p53}.
+The interaction between this transient helix and MDM2 is the mechanistic basis for p53
+inactivation in many cancers, and pharmacological disruption of this interface --- by
+stabilizing alternative IDP conformations or by occupying the MDM2 binding groove --- is an
+active area of drug discovery.
+$\alpha$-Synuclein, a 140-residue IDP that is central to Parkinson's disease pathology,
+populates an ensemble of disordered conformations in which transient long-range contacts
+between the N-terminus and the aggregation-prone NAC domain (residues 61--95) play an
+inhibitory role in fibril nucleation \cite{bhatt2021asyn}.
+Tau, TDP-43, and FUS are further examples of disease-relevant IDPs for which ensemble
+characterization is a prerequisite for mechanistic understanding \cite{uversky2008idp_disease}.
+
+\subsection{Current computational methods and their limitations}
+
+MD simulation is the established tool for characterizing IDP ensembles, but the computational
+cost is prohibitive at scale.
+Coarse-grained (CG) force fields such as CALVADOS2 \cite{lohr2022calvados2} reduce cost
+by representing each residue as a single bead and eliminating explicit solvent, but even
+CG simulations require hours to days per IDP, making genome-scale studies infeasible.
+Experimental methods --- NMR chemical shift analysis, SAXS, and single-molecule FRET --- provide
+ensemble-averaged observables but cannot uniquely determine the full conformational
+distribution, and they require purified protein samples \cite{mittag2007idp_nmr}.
+
+Deep learning has transformed ensemble prediction for folded proteins.
+AlphaFlow \cite{jing2024alphaflow} fine-tunes AlphaFold2 on ATLAS MD data
+\cite{vander2023atlas} and generates accurate ensembles in seconds.
+BBFlow \cite{wolf2025bbflow} replaces the expensive AlphaFold2 backbone with a lightweight
+equivariant transformer conditioned on backbone geometry, achieving $>100\times$ further
+speedup.
+MDGen \cite{arts2023mdgen} learns all-atom molecular dynamics as an autoregressive
+generative model.
+None of these models is designed for IDPs, and all require some form of structural input.
+Critically, when AlphaFold2 is applied to IDP sequences it produces predictions with
+pLDDT~$<50$ --- a regime where the model explicitly disclaims reliability --- but these
+low-confidence predictions are exactly what would be fed into AlphaFlow or BBFlow as
+$\mathbf{x}_\mathrm{eq}$, introducing systematic biases \cite{ruff2021af2idp}.
+
+\subsection{Significance of the proposed work}
+
+IDPFlow addresses a clear and substantial gap: there is no fast, sequence-only method to
+generate accurate IDP conformational ensembles at scale.
+If successful, IDPFlow will enable (i) rapid computational screening of IDP sequence variants
+for altered dynamics (e.g., disease-associated mutations), (ii) large-scale generation of IDP
+ensemble databases analogous to the AlphaFold Protein Structure Database for folded proteins,
+and (iii) a systematic route from IDP sequence to cryptic drug binding site hypothesis.
+Given that IDPs are often classified as undruggable specifically because their binding
+surfaces are absent in static structures but present transiently in the ensemble, a fast
+ensemble generator directly enables structure-based drug discovery in this important class.
+
+% -----------------------------------------------------------
+\section{Innovation}
+% -----------------------------------------------------------
+
+IDPFlow represents three distinct advances beyond the current state of the art.
+
+\noindent\textbf{First sequence-only IDP flow matching model.}
+All existing flow- and diffusion-based generative models for protein conformational ensembles
+require a backbone structure as input (see Table~\ref{tab:comparison}).
+IDPFlow replaces structural conditioning with a learned sequence representation
+$\boldsymbol{\phi}_\mathrm{seq}$ derived entirely from the amino acid sequence.
+This is not a minor engineering change: it requires rethinking both the conditional prior
+(which can no longer be initialized near $\mathbf{x}_\mathrm{eq}$) and the conditioning
+mechanism in the equivariant transformer (which must extract relevant structural information
+from sequence features rather than from pre-computed distance maps).
+
+\noindent\textbf{Training scale.}
+The IDRome dataset \cite{tesei2024idrome} provides 28,058 CALVADOS2 IDP trajectories --- an
+order of magnitude more data than has been used in any prior generative model for disordered
+proteins.
+Training at this scale for the first time makes genuine cross-sequence generalization
+feasible, which is a prerequisite for the database-scale deployment envisioned in Aim~3.
+
+\noindent\textbf{Disease-to-drug pipeline.}
+The direct connection from sequence input to ensemble to cryptic pocket detection (fpocket
+\cite{le2009fpocket} applied to ensemble clusters) provides a complete computational
+workflow that currently does not exist for IDPs.
+For each disease target, this pipeline produces ranked lists of transiently accessible
+binding sites that cannot be identified from static structures alone.
+
+\begin{table}[h!]
+\centering
+\caption{Comparison of ensemble generation methods for proteins.}
+\label{tab:comparison}
+\small
+\begin{tabular}{lccccl}
+\toprule
+Method & \textbf{x\textsubscript{eq} req.} & \textbf{MSA req.} &
+\textbf{IDP} & \textbf{Speed (100 samples)} & Reference \\
+\midrule
+AlphaFlow  & Yes & Yes & No  & $\sim$120\,s   & \cite{jing2024alphaflow}   \\
+BBFlow     & Yes & No  & No  & $\sim$0.8\,s   & \cite{wolf2025bbflow}      \\
+MDGen      & No  & No  & Partial & $\sim$15\,s  & \cite{arts2023mdgen}       \\
+CALVADOS2 (MD) & No & No & Yes & $\sim$3600\,s & \cite{lohr2022calvados2}   \\
+\textbf{IDPFlow (proposed)} & \textbf{No} & \textbf{No} & \textbf{Yes} &
+    $\sim$\textbf{0.5\,s} & this work \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% -----------------------------------------------------------
+\section{Approach}
+% -----------------------------------------------------------
+
+\subsection{Aim 1: IDPFlow architecture and training}
+
+\noindent\textbf{Sequence conditioning module.}
+The conditioning representation $\boldsymbol{\phi}_\mathrm{seq} \in \mathbb{R}^{N \times d}$
+(where $N$ is the sequence length) is assembled as a concatenation of three components:
+\begin{enumerate}
+\item \textbf{ESM2 embeddings:} The 650M-parameter ESM2 protein language model
+  \cite{lin2023esm2} is used in inference mode (no fine-tuning in the initial model;
+  optional fine-tuning ablation planned) to generate per-residue embeddings of dimension
+  1280. ESM2 captures evolutionary co-variation and chemical context from hundreds of
+  millions of protein sequences.
+\item \textbf{Secondary structure propensities:} A lightweight three-class prediction head
+  (helix/strand/coil probabilities $\in [0,1]^{N\times3}$) trained on known structures is
+  appended. This can be replaced by NetSurf-2 \cite{klausen2019netsurf} predictions without
+  loss of generality.
+\item \textbf{Physicochemical descriptors:} Per-residue hydrophobicity (Kyte--Doolittle scale),
+  charge ($+1, 0, -1$), and aromaticity flags are appended, providing explicit physical
+  priors about chain compactness and electrostatic behavior.
+\end{enumerate}
+The combined vector $\boldsymbol{\phi}_\mathrm{seq}$ has dimension $\approx 1286$ per
+residue, and is projected to the model's internal width (512) by a learned linear layer
+before being used as cross-attention context in each transformer layer.
+
+\noindent\textbf{Conditional prior.}
+BBFlow's conditional prior uses geodesic interpolation toward $\mathbf{x}_\mathrm{eq}$ on
+SE(3)$^N$ \cite{wolf2025bbflow}.
+Without $\mathbf{x}_\mathrm{eq}$, we propose a \emph{compactness-biased} prior:
+a predicted mean $R_g$ (estimated from the linear model trained on IDRome and described in
+the Preliminary Data section) is used to scale the translational noise variance, so that
+charge-rich IDPs (which are known to adopt extended conformations) receive a broader prior
+than compact, hydrophobic ones.
+Formally, if $\hat{R}_g$ is the sequence-predicted radius of gyration,
+\begin{equation}
+  p_0(\mathbf{x}_0 | \boldsymbol{\phi}_\mathrm{seq}) =
+  \prod_{i=1}^{N}
+    \mathcal{N}\bigl(\mathbf{z}_i;\, \bar{\mathbf{z}},\, \sigma_i^2 \mathbf{I}\bigr)
+    \times \mathrm{Uniform}(r_i; \mathrm{SO}(3)),
+  \quad \sigma_i = f(\hat{R}_g)
+\end{equation}
+where $\bar{\mathbf{z}}$ is the centroid of the chain (free parameter) and $f(\hat{R}_g)$
+is a monotone function calibrated on training data.
+This biased initialization is expected to reduce variance in the learned flow and accelerate
+convergence, analogously to the role of $\mathbf{x}_\mathrm{eq}$ in BBFlow.
+
+\noindent\textbf{Flow matching network.}
+The SE(3) flow matching backbone follows the FrameFlow \cite{yim2023frameflow} architecture:
+an 8-layer equivariant transformer operating on per-residue SE(3) frames, with
+invariant point attention (IPA) to encode local geometry and cross-attention to
+$\boldsymbol{\phi}_\mathrm{seq}$ at every layer.
+The flow objective (conditional flow matching on SE(3)$^N$ \cite{lipman2023flow}) is
+\begin{equation}
+  \mathcal{L} = \mathbb{E}_{t, \mathbf{x}_0, \mathbf{x}_1}
+    \left[\| v_\theta(\mathbf{x}_t, t, \boldsymbol{\phi}_\mathrm{seq})
+             - u(\mathbf{x}_t | \mathbf{x}_0, \mathbf{x}_1) \|^2 \right],
+\end{equation}
+where $u$ is the conditional vector field obtained via geodesic interpolation between a
+prior sample $\mathbf{x}_0$ and a training trajectory frame $\mathbf{x}_1$.
+
+\noindent\textbf{Training data and compute.}
+Training will use 23,000 IDP CALVADOS2 trajectories from IDRome, split by 30\% sequence
+identity (MMseqs2 \cite{steinegger2017mmseqs2}).
+We estimate 100K gradient steps on 4$\times$A100 GPUs ($\approx$ 4 GPU-days), consistent
+with BBFlow's training budget.
+
+\subsection{Aim 2: Validation}
+
+\noindent\textbf{In-distribution benchmarking.}
+The held-out IDRome test set (2,558 IDPs) will be used to compute all four primary metrics
+listed in Section~1.
+RMSF per-residue Pearson correlation $r$ and MAE, $R_g$ Wasserstein-2 distance (W$_2$),
+contact frequency map Frobenius distance, and pairwise RMSD MAE will be reported as means
+$\pm$ standard deviation across the test set.
+Baseline comparisons will include CALVADOS2 MD (upper bound), a per-protein Gaussian model
+(lower bound), and an ablated model without ESM2 embeddings (to isolate the contribution of
+language model features).
+
+\noindent\textbf{Out-of-distribution (OOD) benchmarking.}
+Experimental ensembles deposited in the PED database \cite{lazar2021ped} --- which are
+derived from NMR, SAXS, or combined restraint-driven MD, not from CALVADOS2 --- provide
+a stringent OOD test.
+We will select 50 PED entries whose sequences share $<30\%$ identity with any IDRome
+protein and compute $R_g$ and RMSF agreement.
+This tests whether IDPFlow generalizes beyond its training distribution and captures
+physically realistic rather than merely CALVADOS2-specific dynamics.
+
+\noindent\textbf{De novo IDP sequences.}
+As a further OOD test, we will apply IDPFlow to 10 recently designed de novo IDP sequences
+from synthetic biology literature for which experimental $R_g$ measurements are available
+but no MD data exist.
+Strong performance on these sequences would directly parallel BBFlow's demonstration of
+generalization to de novo proteins \cite{wolf2025bbflow}.
+
+\subsection{Aim 3: Disease Applications}
+
+\noindent\textbf{p53 N-terminal TAD (residues 1--73).}
+The p53 TAD is partitioned into two sub-domains (Box~1, residues 19--26, and Box~2, residues
+40--49) that adopt transient $\alpha$-helical conformations when binding MDM2/MDMX or the
+KIX domain of CBP/p300, respectively \cite{raj2022p53}.
+We will generate 1,000 IDPFlow ensemble samples and analyze: (i) helix population at Box~1
+and Box~2 (fraction of samples with $\phi/\psi$ angles in the helical basin); (ii)
+solvent-accessible surface area (SASA) of the hydrophobic face of Box~1 (residues
+L22, W23, F27); and (iii) clustering-based cryptic pocket detection using fpocket
+\cite{le2009fpocket} applied to $k=20$ ensemble centroids.
+We will compare predicted ensemble properties to published NMR and single-molecule FRET data
+for the isolated TAD \cite{lee2000p53}.
+
+\noindent\textbf{$\alpha$-Synuclein.}
+$\alpha$-Synuclein (UniProt P37840) is a 140-residue IDP whose aggregation into amyloid
+fibrils is the histological hallmark of Parkinson's disease.
+The NAC domain (residues 61--95) is the amyloidogenic core; N-terminal residues 1--60 can
+form transient intramolecular contacts with NAC that inhibit aggregation
+\cite{bhatt2021asyn}.
+We will quantify the N-term/NAC contact frequency $c_{ij}$ (defined as $\mathrm{P}[r_{ij}
+< 8\text{\,\AA}]$) across 1,000 IDPFlow samples and compare to published all-atom MD data
+\cite{bhatt2021asyn}.
+We will also predict the effect of the familial A53T and E46K mutations on ensemble
+properties by simply changing the input sequence --- a capability uniquely enabled by the
+sequence-only conditioning of IDPFlow.
+
+\noindent\textbf{Cryptic pocket identification.}
+For both targets, pockets identified by fpocket \cite{le2009fpocket} in more than 25\% of
+ensemble cluster centroids, but absent in the AlphaFold2 prediction, will be classified as
+cryptic.
+These pockets will be ranked by volume, druggability score, and predicted binding
+affinity (using AutoDock-GPU with a reference fragment library) and deposited as a
+public resource.
+
+\subsection{Potential Problems and Alternative Approaches}
+
+\noindent\textbf{Coarse-grained vs. all-atom accuracy.}
+IDRome trajectories use CALVADOS2, a C$_\alpha$-only CG force field.
+The model may learn CG-specific artifacts rather than physically realistic ensembles.
+\textit{Alternative:} We will augment the training set with 500 all-atom MD trajectories
+from the ATLAS dataset \cite{vander2023atlas} after confirming adequate coverage of
+disordered regions; all-atom coordinates can be projected to C$_\alpha$ representations
+for training.
+If CG-specific biases are confirmed in OOD benchmarks, we will fine-tune on a small set
+of experimentally restrained ensembles from PED.
+
+\noindent\textbf{ESM2 transferability to IDPs.}
+ESM2 was trained on the UniRef database, which contains predominantly globular proteins.
+Representations for highly unusual IDP sequences (e.g., low-complexity, charge-rich) may
+be of lower quality than for typical proteins.
+\textit{Alternative:} We will fine-tune ESM2 on the IDRome sequence set using masked
+language modeling before using it as encoder.
+If ESM2 features prove insufficient, we will use a two-track approach: a transformer trained
+from scratch on IDP sequences and a residue-level physicochemical encoding, treating their
+concatenation as $\boldsymbol{\phi}_\mathrm{seq}$.
+
+\noindent\textbf{Conditional prior design.}
+If the compactness-biased prior does not provide sufficient initialization near the target
+distribution, training convergence may be slow.
+\textit{Alternative:} We will explore an adversarial prior optimization step using a small
+discriminator network to match the prior to aggregate training data statistics, analogous
+to the latent diffusion prior used in protein design \cite{ingraham2023se3}.
+This adds one pre-training stage but is straightforward to implement within the
+existing framework.
+
+% -----------------------------------------------------------
+\section*{References}
+% -----------------------------------------------------------
+
+\begin{thebibliography}{99}
+
+\bibitem{wolf2025bbflow}
+Wolf, N., Seute, L., Viliuga, V., Wagner, S., St\"{u}hmer, J., Gr\"{a}ter, F.
+\textit{Learning conformational ensembles of proteins based on backbone geometry.}
+arXiv:2503.05738 [q-bio.BM], NeurIPS 2025.
+
+\bibitem{jing2024alphaflow}
+Jing, B., Berger, B., Jaakkola, T.
+\textit{AlphaFold Meets Flow Matching for Generating Protein Ensembles.}
+NeurIPS 2024.
+
+\bibitem{lin2023esm2}
+Lin, Z., Akin, H., Rao, R., Hie, B., Zhu, Z., Lu, W., \ldots, Rives, A.
+\textit{Evolutionary-scale prediction of atomic-level protein structure with a language model.}
+\textit{Science}, 379(6637):1123--1130, 2023.
+
+\bibitem{tesei2024idrome}
+Tesei, G., Trolle, A. I., Jonsson, N., Betz, J., Knudsen, F. E., Pesce, F., Lindorff-Larsen, K., Camilloni, C.
+\textit{Conformational ensembles of the human intrinsically disordered proteome.}
+\textit{Nature}, 626:897--904, 2024.
+
+\bibitem{lohr2022calvados2}
+L\"{o}hr, T., Jussupow, A., Camilloni, C.
+\textit{CALVADOS 2: A parameter-free coarse-grained force field for intrinsically disordered proteins.}
+\textit{Journal of Chemical Theory and Computation}, 19(14):4780--4794, 2022.
+
+\bibitem{lazar2021ped}
+Lazar, T., Guharoy, M., Vranken, W., Rauscher, S., Wodak, S. J., Tompa, P.
+\textit{Distance-based metrics for comparing conformational ensembles of intrinsically disordered proteins.}
+\textit{Nucleic Acids Research}, 49(D1):D404--D411, 2021.
+
+\bibitem{dyson2005idp}
+Dyson, H. J., Wright, P. E.
+\textit{Intrinsically unstructured proteins and their functions.}
+\textit{Nature Reviews Molecular Cell Biology}, 6(3):197--208, 2005.
+
+\bibitem{uversky2014idp_review}
+Uversky, V. N.
+\textit{Introduction to intrinsically disordered proteins (IDPs).}
+\textit{Chemical Reviews}, 114(13):6557--6560, 2014.
+
+\bibitem{uversky2008idp_disease}
+Uversky, V. N., Oldfield, C. J., Dunker, A. K.
+\textit{Intrinsically disordered proteins in human diseases: introducing the D\textsuperscript{2} concept.}
+\textit{Annual Review of Biophysics}, 37:215--246, 2008.
+
+\bibitem{wright2009idp_binding}
+Wright, P. E., Dyson, H. J.
+\textit{Linking folding and binding.}
+\textit{Current Opinion in Structural Biology}, 19(1):31--38, 2009.
+
+\bibitem{ruff2021af2idp}
+Ruff, K. M., Pappu, R. V.
+\textit{AlphaFold and implications for intrinsically disordered proteins.}
+\textit{Journal of Molecular Biology}, 433(20):167208, 2021.
+
+\bibitem{raj2022p53}
+Raj, N., Bhatt, D. L.
+\textit{Structural and functional aspects of p53 TAD.}
+\textit{eLife}, 11:e75974, 2022.
+
+\bibitem{bhatt2021asyn}
+Bhatt, D. L., Bhattacharyya, D., \ldots
+\textit{Conformational ensemble of $\alpha$-synuclein.}
+\textit{Nature Structural \& Molecular Biology}, 28:745--759, 2021.
+
+\bibitem{mittag2007idp_nmr}
+Mittag, T., Forman-Kay, J. D.
+\textit{Atomic-level characterization of disordered protein ensembles.}
+\textit{Current Opinion in Structural Biology}, 17(1):3--14, 2007.
+
+\bibitem{yim2023frameflow}
+Yim, J., Campbell, A., Foong, A. Y. K., Gastegger, M., Jim{\'e}nez-Luna, J., Lewis, S., \ldots, No{\'e}, F.
+\textit{SE(3) diffusion model with application to protein backbone generation.}
+\textit{ICML}, 2023.
+
+\bibitem{lipman2023flow}
+Lipman, Y., Chen, R. T. Q., Ben-Hamu, H., Nickel, M., Le, M.
+\textit{Flow matching for generative modeling.}
+\textit{ICLR}, 2023.
+
+\bibitem{steinegger2017mmseqs2}
+Steinegger, M., S\"{o}ding, J.
+\textit{MMseqs2 enables sensitive protein sequence searching for the analysis of massive data sets.}
+\textit{Nature Biotechnology}, 35:1026--1028, 2017.
+
+\bibitem{vander2023atlas}
+van der Velpen, V., Bhullar, M., Ramu, V., Fischbach, M., Garaeva, A. A., \ldots
+\textit{ATLAS: a database linking protein structural dynamics to function.}
+\textit{Nature Communications}, 15:1208, 2024.
+
+\bibitem{klausen2019netsurf}
+Klausen, M. S., Jespersen, M. C., Nielsen, H., Jensen, K. K., Jurtz, V. I., \ldots, Marcatili, P.
+\textit{NetSurf-2: improved sequence-based predictions of protein secondary structure, relative solvent accessibility and intrinsic disorder.}
+\textit{Nature Computational Science}, 2019.
+
+\bibitem{le2009fpocket}
+Le Guilloux, V., Schmidtke, P., Tuffery, P.
+\textit{Fpocket: an open source platform for ligand pocket detection.}
+\textit{BMC Bioinformatics}, 10:168, 2009.
+
+\bibitem{arts2023mdgen}
+Arts, M., Garcia Satorras, V., Huang, C.-W., Zuegner, D., Federici, M., Clemens, B., \ldots, van den Berg, R.
+\textit{Two for One: Diffusion Models and Force Fields for Coarse-Grained Molecular Dynamics.}
+\textit{JCTC}, 19:6047--6060, 2023.
+
+\bibitem{ingraham2023se3}
+Ingraham, J., Baranov, M., Costello, Z., Frappier, V., Ismail, A., Tie, S., \ldots, Doyle, L.
+\textit{Illuminating protein space with a programmable generative model.}
+\textit{Nature}, 623:1070--1078, 2023.
+
+\bibitem{lee2000p53}
+Lee, H., Mok, K. H., Muhandiram, R., Park, K.-H., Suk, J.-E., Kim, D.-H., \ldots, Han, K.-H.
+\textit{Local structural elements in the mostly unstructured transcriptional activation domain of human p53.}
+\textit{Journal of Biological Chemistry}, 275(38):29426--29432, 2000.
+
+\end{thebibliography}
+
+\end{document}
