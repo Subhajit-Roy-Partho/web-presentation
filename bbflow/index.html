@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="fixes-slides-02-12.css">
   <link rel="stylesheet" href="fixes-slides-13-24.css">
   <link rel="stylesheet" href="fixes-slides-25-34.css">
+  <link rel="stylesheet" href="fixes-v2.css">
   <script>
     window.MathJax = {
       tex: { inlineMath: [['\\(', '\\)'], ['$', '$']], displayMath: [['\\[', '\\]']] },
@@ -681,7 +682,7 @@
               <circle cx="420" cy="218" r="10" style="fill:#c2410c;stroke:none"/>
               <circle cx="100" cy="300" r="10" style="fill:rgba(21,33,31,0.42);stroke:none"/>
               <circle cx="420" cy="298" r="10" style="fill:#c2410c;stroke:none"/>
-              <text class="diagram-note" x="46" y="372">Straighter paths = fewer network evaluations = faster generation.</text>
+              <text class="diagram-note" x="46" y="372" style="font-size:12px">Straighter paths = fewer network evaluations = faster generation.</text>
             </svg>
           </figure>
         </div>
@@ -1056,6 +1057,59 @@
         <footer>Algorithm 1 and Section 3 in Wolf et al., arXiv:2503.05738v2.</footer>
       </section>
 
+      <section class="slide" data-title="Sampling">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">BBFlow method</p>
+            <h2>Sampling: integrating the flow to generate a conformation</h2>
+            <p>Once trained, BBFlow generates each new backbone conformation by a simple forward integration — no diffusion reverse process, no folding trunk.</p>
+            <div class="algorithm">
+              <div><span>1</span><p>Sample \(x_0\) from the conditional prior: interpolate generic SE(3) noise 20% toward \(x_{\mathrm{eq}}\) along the geodesic.</p></div>
+              <div><span>2</span><p>Repeat for 20 ODE steps: compute \(\hat{v}=v_\theta(x_{t_k},t_k,x_{\mathrm{eq}})\) and step along the SE(3) geodesic.</p></div>
+              <div><span>3</span><p>Output \(x_1\): one backbone conformation — N residue frames each in SE(3).</p></div>
+              <div><span>4</span><p>Repeat independently 250+ times to build an ensemble; each call takes ~0.8 s on GPU for a 302-residue protein.</p></div>
+            </div>
+            <div class="callout">
+              Training minimises a velocity regression loss; sampling only integrates the learned field forward. The conditional prior keeps x<sub>0</sub> near the fold, so the short 20-step integration stays on-manifold.
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 560 420" role="img" aria-label="20-step ODE integration from prior to conformation">
+              <defs>
+                <marker id="vel-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L0,6 L8,3 z" fill="#f08c00"/>
+                </marker>
+              </defs>
+              <text class="diagram-title" x="42" y="44">20 ODE steps: prior &#x2192; backbone conformation</text>
+              <path class="geodesic" d="M88 310 C170 120 360 118 488 238"/>
+              <g class="moving-frame" transform="translate(88 310)">
+                <circle r="10"/><line x1="0" y1="0" x2="42" y2="-12"/><line x1="0" y1="0" x2="-12" y2="-40"/>
+                <text x="-36" y="46" style="fill:#064d5a;font-family:'IBM Plex Sans',sans-serif;font-size:13px">x&#x2080; (prior)</text>
+              </g>
+              <g class="moving-frame mid" transform="translate(196 202) rotate(18)">
+                <circle r="7"/><line x1="0" y1="0" x2="34" y2="-8"/><line x1="0" y1="0" x2="-8" y2="-32"/>
+              </g>
+              <g class="moving-frame mid" transform="translate(300 148) rotate(38)">
+                <circle r="7"/><line x1="0" y1="0" x2="34" y2="-8"/><line x1="0" y1="0" x2="-8" y2="-32"/>
+              </g>
+              <g class="moving-frame mid" transform="translate(400 162) rotate(54)">
+                <circle r="7"/><line x1="0" y1="0" x2="34" y2="-8"/><line x1="0" y1="0" x2="-8" y2="-32"/>
+              </g>
+              <g class="moving-frame end" transform="translate(488 238) rotate(66)">
+                <circle r="10"/><line x1="0" y1="0" x2="42" y2="-12"/><line x1="0" y1="0" x2="-12" y2="-40"/>
+                <text x="-52" y="56" transform="rotate(-66)" style="fill:#c2410c;font-family:'IBM Plex Sans',sans-serif;font-size:13px">x&#x2081; (conformation)</text>
+              </g>
+              <path d="M300 148 C328 136 352 140 374 154" style="fill:none;stroke:#f08c00;stroke-width:4;stroke-linecap:round;marker-end:url(#vel-arrow)"/>
+              <text class="diagram-note" x="262" y="126" style="fill:#8a5200;font-size:12px">v&#x03B8;(x&#x209C;, t, x&#x2091;&#x2093;)</text>
+              <path d="M88 324 C175 360 320 368 470 348" style="fill:none;stroke:rgba(11,114,133,0.25);stroke-width:4;stroke-dasharray:6 5;stroke-linecap:round"/>
+              <path d="M88 336 C180 374 325 380 475 358" style="fill:none;stroke:rgba(11,114,133,0.2);stroke-width:3;stroke-dasharray:6 5;stroke-linecap:round"/>
+              <text class="diagram-note" x="42" y="400" style="font-size:12px">Multiple independent samples (same x&#x2091;&#x2093;) build the ensemble.</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>Sampling procedure: BBFlow Section 3; 20 ODE steps per conformation, &#x03BE;=0.2 conditional prior, Wolf et al. 2025.</footer>
+      </section>
+
       <section class="slide" data-title="ATLAS">
         <div class="two-col">
           <div>
@@ -1418,14 +1472,14 @@
           </div>
           <figure class="svg-card">
             <svg viewBox="0 0 540 420" role="img" aria-label="Training compute comparison">
-              <text class="diagram-title" x="40" y="28">Compute to train each model</text>
+              <text class="diagram-title" x="40" y="22">Compute to train each model</text>
               <path class="axis" d="M56 310 H490 M56 310 V50"/>
-              <text class="axis-label" x="64" y="48" style="font-size:12px">Training GPU-hours (schematic)</text>
+              <text class="axis-label" x="64" y="56" style="font-size:12px">Training GPU-hours (schematic)</text>
               <rect x="80" y="180" width="60" height="130" rx="10" style="fill:rgba(11,114,133,0.75)"/>
               <text x="68" y="168" class="diagram-note" style="fill:#064d5a;font-weight:700">~144 h</text>
               <text x="72" y="330" class="diagram-note" style="font-weight:700">BBFlow<tspan x="62" dy="20">from scratch</tspan></text>
               <rect x="250" y="60" width="60" height="250" rx="10" style="fill:rgba(240,140,0,0.65)"/>
-              <text x="228" y="36" class="diagram-note" style="fill:#8a5200;font-weight:700">~1000s h</text>
+              <text x="228" y="50" class="diagram-note" style="fill:#8a5200;font-weight:700">~1000s h</text>
               <text x="230" y="330" class="diagram-note" style="font-weight:700">AlphaFold 2<tspan x="226" dy="20">original training</tspan></text>
               <rect x="380" y="120" width="60" height="190" rx="10" style="fill:rgba(194,65,12,0.55)"/>
               <text x="360" y="112" class="diagram-note" style="fill:#c2410c;font-weight:700">hundreds h</text>
