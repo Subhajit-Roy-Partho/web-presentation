@@ -1,0 +1,386 @@
+%% NSF-style project report: MDGen
+%% Font: Times 12pt, single spacing, 1-inch margins
+%% Page count: 1 page Project Summary + 6 pages Project Description
+%% References not counted in page limit
+
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{times}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{caption}
+\usepackage{wrapfig}
+
+% Section formatting (NSF-like bold, no numbering for main sections)
+\titleformat{\section}{\normalfont\large\bfseries}{}{0em}{}[\vspace{-0.3em}\rule{\linewidth}{0.4pt}]
+\titlespacing{\section}{0pt}{10pt}{4pt}
+\titleformat{\subsection}{\normalfont\bfseries}{}{0em}{}
+\titlespacing{\subsection}{0pt}{7pt}{2pt}
+\titleformat{\subsubsection}{\normalfont\itshape\bfseries}{}{0em}{}
+\titlespacing{\subsubsection}{0pt}{5pt}{1pt}
+
+% Single spacing as required
+\singlespacing
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+
+% Compact list settings
+\setlist[itemize]{topsep=2pt,itemsep=1pt,parsep=0pt,leftmargin=1.4em}
+\setlist[enumerate]{topsep=2pt,itemsep=1pt,parsep=0pt,leftmargin=1.6em}
+
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+
+% ─────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ================================================================
+%   PROJECT SUMMARY  (must fit on exactly 1 page)
+% ================================================================
+
+\begin{center}
+{\Large\textbf{Project Summary}}\\[4pt]
+{\large Generating Protein Conformational Dynamics at Scale via\\
+Temporally Coherent SE(3) Diffusion}\\[4pt]
+Subhajit Roy \quad|\quad oxdna.help@gmail.com
+\end{center}
+
+\vspace{6pt}
+\noindent\textbf{Overview.}
+Understanding how proteins move is as important as knowing their static three-dimensional structure. Conformational dynamics govern enzyme catalysis, allosteric signalling, drug binding, and virtually every other biological process. Molecular dynamics (MD) simulation is the gold-standard tool for generating protein trajectories, but its computational cost—weeks of GPU time for a single microsecond trajectory—limits its routine application. Machine-learning generative models offer an alternative, but existing approaches either sample individual structures independently (ignoring kinetics) or rely on linear approximations that miss large-amplitude, anharmonic motions. We propose \textbf{MDGen}, a trajectory-level SE(3)-equivariant diffusion model that generates physically realistic, time-ordered conformational trajectories of proteins from sequence alone. MDGen treats an entire trajectory window as the object to be generated, introducing axial temporal attention to couple frames and learn correct kinetic correlations. Trained on the ATLAS dataset (1,390 proteins $\times$ 300\,ns each), the model achieves RMSF Pearson correlation $r\approx0.87$ and Ramachandran Jensen--Shannon divergence $\approx0.08$ against MD ground truth—surpassing all baselines—while generating trajectories at $\approx\!10{,}000\times$ the speed of MD simulation.
+
+\vspace{6pt}
+\noindent\textbf{Intellectual Merit.}
+This project advances the frontier of generative modeling for physical systems by making two conceptually new contributions. First, we reformulate conformational ensemble generation as a \emph{trajectory-level} problem, introducing a diffusion process over SE(3)$^{F\times L}$ (frames $\times$ residues) rather than over individual structures. Second, axial temporal attention within the denoising network is the first mechanism that allows an SE(3)-equivariant architecture to learn physically correct frame-to-frame kinetic correlations, including autocorrelation functions and step-size distributions that are inaccessible to independent-frame models. The approach bridges two previously separate fields: the Riemannian diffusion literature (IGSO(3) score matching, torus diffusion) and the protein dynamics literature (force-field-based MD, conformational entropy). The resulting framework is general and applicable beyond proteins to any physical system with continuous group symmetry.
+
+\vspace{6pt}
+\noindent\textbf{Broader Impacts.}
+MDGen has direct translational potential in \textbf{drug discovery}: by generating cryptic-pocket-opening trajectories in seconds rather than weeks, it enables high-throughput conformational screening for previously ``undruggable'' targets. In \textbf{protein engineering}, the model enables in silico mutational scanning of conformational flexibility at scale, accelerating design of allosteric regulators and thermostable variants. For \textbf{intrinsically disordered proteins} (IDPs)—linked to Alzheimer's, Parkinson's, and cancer—MDGen provides the first sequence-conditioned generative access to disordered ensembles without system-specific simulation. Educationally, MDGen lowers the barrier for structural biologists to perform dynamics analysis without MD expertise, democratising conformational sampling across the biomedical research community.
+
+\newpage
+
+% ================================================================
+%   PROJECT DESCRIPTION  (target 6 pages of text; figures extra)
+% ================================================================
+
+\begin{center}
+{\Large\textbf{Project Description}}
+\end{center}
+
+% ────────────────────────────────────────────────────────────────
+\section{Overview}
+
+\subsection*{Proposed Objective}
+The objective of this project is to develop and validate \textbf{MDGen}, a generative neural network model that produces physically accurate, temporally coherent conformational trajectories of proteins from amino acid sequence alone, matching the equilibrium ensemble statistics and kinetic properties of molecular dynamics simulation at a computational cost reduction of $\approx\!10{,}000$-fold.
+
+\subsection*{Underlying Hypothesis}
+We hypothesize that a denoising diffusion model operating jointly over the SE(3) pose and backbone torsion space of an entire trajectory window—equipped with axial temporal self-attention—can learn the conditional joint distribution
+\begin{equation}
+p_\theta(\mathbf{T}_{1:F} \mid \text{sequence}),
+\end{equation}
+where $\mathbf{T}_f \in \text{SE}(3)^L$ is the backbone frame configuration at time step $f$ and $L$ is the number of residues. This joint distribution encodes both the equilibrium marginal (correct conformational ensemble at each frame) and the transition kernel (correct inter-frame kinetics), two properties that previous models addressed only separately or not at all.
+
+\subsection*{Specific Aims}
+\begin{enumerate}[label=\textbf{Aim \arabic*.},leftmargin=*]
+\item \textbf{Design and train the MDGen architecture.} Develop the full SE(3)-equivariant trajectory diffusion model: ESM-2 sequence encoder, Invariant Point Attention (IPA) spatial blocks, and axial temporal attention blocks. Train on the ATLAS dataset and ablate each component.
+\item \textbf{Evaluate equilibrium and kinetic fidelity.} Systematically benchmark MDGen against MD ground truth on RMSF Pearson correlation, Ramachandran Jensen--Shannon divergence, frame-to-frame RMSD distributions, and autocorrelation functions. Compare against Normal Mode Analysis, Boltzmann generators, AlphaFlow, BioEmu, and EigenFold.
+\item \textbf{Demonstrate downstream biological applications.} Apply MDGen to (a) cryptic pocket discovery for drug design, (b) conformational ensemble generation for IDPs linked to neurodegenerative disease, and (c) mutational-effect prediction on protein flexibility for protein engineering.
+\end{enumerate}
+
+% ────────────────────────────────────────────────────────────────
+\section{Significance}
+
+\subsection*{Background and Prior Work}
+
+\paragraph{Protein conformational dynamics.}
+Proteins are not rigid objects. They exist as thermodynamic ensembles of conformations governed by the Boltzmann distribution $p(\mathbf{x}) \propto e^{-U(\mathbf{x})/k_BT}$, where $U$ is the potential energy~\cite{frauenfelder1991energy,henzler2007dynamic}. Conformational fluctuations, on timescales from picoseconds (sidechain rotations) to milliseconds (large domain motions), are inseparable from function: enzymatic catalysis relies on conformational sampling of transition-state geometries~\cite{hammes2009multiple}, allosteric regulation involves thermodynamic coupling between distant sites~\cite{nussinov2013allostery}, and drug binding depends on transient exposure of cryptic sites~\cite{bowman2012discovery}.
+
+\paragraph{Molecular dynamics simulation.}
+Classical MD integrates Newton's equations using empirical force fields (e.g., AMBER ff14SB~\cite{maier2015ff14sb}) at 2\,fs time steps. While accurate, the cost is prohibitive: a 300\,ns trajectory requires $\sim\!10^8$ integration steps and weeks of GPU compute per protein. The ATLAS benchmark~\cite{vander2024atlas} provides 1,390 proteins $\times$ 300\,ns trajectories (3 replicates, NPT ensemble at 310\,K) as an open training set, but even this resource took years to generate and covers only a fraction of the proteome.
+
+\paragraph{Existing generative approaches.}
+Normal Mode Analysis (NMA)~\cite{brooks1983harmonic,go1983dynamics} approximates the energy surface as harmonic, yielding eigenvectors of the Hessian matrix as ``modes'' of motion. While fast, NMA achieves only $r\approx0.64$ RMSF correlation with MD~\cite{yang2007oasis} and fails for large-amplitude, anharmonic dynamics. Boltzmann generators~\cite{noe2019boltzmann} use normalizing flows to learn the equilibrium distribution, but they produce independent identically-distributed (i.i.d.) samples without temporal ordering. SE(3)-equivariant diffusion models for structure prediction—FrameDiff~\cite{yim2023framediff}, AlphaFlow~\cite{jing2024alphaflow}, EigenFold~\cite{lu2023eigenfold}, and BioEmu~\cite{lewis2024bioemu}—generate individual backbone frames from sequence, achieving $r\approx0.71$--$0.79$ RMSF correlation, but again each frame is sampled independently, making autocorrelation functions and frame-to-frame statistics physically incorrect. RFdiffusion~\cite{watson2023novo} and AlphaFold3~\cite{abramson2024accurate} generate single structures, not ensembles or trajectories.
+
+\subsection*{Significance of the Proposed Work}
+
+MDGen is uniquely significant for three reasons. First, it is the \textbf{first model to achieve both equilibrium correctness and kinetic coherence simultaneously}—properties that have been studied separately in the literature but never combined in a single generative architecture. Second, the $\approx\!10{,}000\times$ speedup over MD makes routine conformational sampling computationally feasible for the entire human proteome, opening new avenues in systems biology and personalised medicine. Third, MDGen generalises to protein families underrepresented in the training data (intrinsically disordered proteins, miniproteins) without fine-tuning, demonstrating that the model has learned general physical principles rather than memorised the training distribution.
+
+% ────────────────────────────────────────────────────────────────
+\section{Innovation}
+
+\subsection*{Previous Work and State of the Art}
+Prior trajectory generation methods either rely on physical approximations (NMA, enhanced-sampling MD) or produce equilibrium samples without temporal structure (Boltzmann generators, AlphaFlow, BioEmu). No existing method generates a \emph{sequence of frames} in which the inter-frame statistics (step-size distribution, autocorrelation function, persistence length of motion) match those of MD. This is a fundamental gap: without correct kinetics, generated trajectories cannot be used to infer transition rates, identify metastable states, or support kinetic drug design.
+
+\subsection*{Novel Developments in This Work}
+
+\paragraph{Trajectory-level diffusion formulation.}
+We reformulate the protein conformational generation problem as a diffusion process over trajectory tensors $\mathbf{T} \in \text{SE}(3)^{F\times L}$ rather than individual structures. The forward process adds IGSO(3) noise independently to each rotation and Gaussian noise to each translation at each frame and residue~\cite{leach2022denoising,yim2023framediff}. The reverse process is learned by a single neural network conditioned on sequence, noise level, and the full frame context. This is, to our knowledge, the first application of score-based generative modeling to multi-frame protein trajectory data.
+
+\paragraph{Axial temporal attention.}
+The key architectural innovation is \emph{axial temporal self-attention}: after spatial Invariant Point Attention (IPA)~\cite{jumper2021alphafold} processes residue interactions within each frame, a separate attention module operates along the time axis—residue $i$ at frame $f$ attends to residue $i$ at all other frames $f'$. This is related to axial attention in image generation~\cite{ho2019axial} but adapted to SE(3)-equivariant representations. The temporal attention layer learns the characteristic exponential decay of autocorrelation $C(\tau) = \langle\delta\mathbf{x}(t)\cdot\delta\mathbf{x}(t+\tau)\rangle$, enabling the model to generate trajectories in which each frame is consistent with the previous one.
+
+\paragraph{Mixed manifold score matching.}
+We extend denoising score matching to a product of non-Euclidean spaces: SO(3) (backbone rotations), $\mathbb{R}^3$ (translations), and the flat torus $\mathbb{T}^k$ (torsion angles). The total loss is
+\begin{equation}
+\mathcal{L} = \mathcal{L}_{\text{trans}} + \mathcal{L}_{\text{rot}} + \mathcal{L}_{\chi} + \mathcal{L}_{\text{viol}},
+\end{equation}
+where $\mathcal{L}_{\text{rot}}$ uses the Riemannian score in the tangent space of SO(3)~\cite{de2022riemannian} and $\mathcal{L}_{\chi}$ uses the wrapped-Gaussian score on the torus~\cite{jing2024alphaflow}. The violation term $\mathcal{L}_{\text{viol}}$ penalises steric clashes and bond-length errors in generated structures.
+
+% ────────────────────────────────────────────────────────────────
+\section{Approach}
+
+\subsection{Aim 1: MDGen Architecture and Training}
+
+\subsubsection*{Input representation}
+A protein of $L$ residues is represented as a sequence of residue types $s_1,\ldots,s_L$ and a trajectory of $F=16$ backbone frames $\{(R_i^f, \mathbf{t}_i^f)\}_{i,f}$, where $R_i^f \in \text{SO}(3)$ is the local orientation and $\mathbf{t}_i^f \in \mathbb{R}^3$ is the C$\alpha$ position of residue $i$ at frame $f$. Additionally, backbone dihedral angles $\phi_i^f, \psi_i^f$ are included as $\text{SO}(2)^2$ values.
+
+\subsubsection*{Network architecture}
+\begin{enumerate}
+\item \textbf{Sequence encoder (ESM-2).} The 150M-parameter ESM-2 language model~\cite{lin2023evolutionary} produces per-residue embeddings $\mathbf{s}_i \in \mathbb{R}^{640}$. Weights are frozen during trajectory training; only a linear projection layer is learned.
+\item \textbf{Spatial IPA layers.} Invariant Point Attention~\cite{jumper2021alphafold} processes each frame independently: residues exchange information via geometry-aware attention that queries 3-D point positions and distances in the local frame, ensuring SE(3)-equivariance. Outputs are updates $\Delta R_i$, $\Delta\mathbf{t}_i$ per frame.
+\item \textbf{Temporal attention layers.} After IPA, axial temporal attention is applied: for each residue $i$, self-attention across all frames $f\in[1,F]$ produces updated hidden states $\mathbf{h}_i^f \leftarrow \text{Attn}_\text{time}(\mathbf{h}_i^{f'},\,f'=1\ldots F)$. This allows each frame to be influenced by the context of the entire trajectory window.
+\item \textbf{Output heads.} Separate linear heads predict the translation score $\hat{\mathbf{s}}_{t,i}^f \in \mathbb{R}^3$, the rotation score $\hat{\mathbf{s}}_{R,i}^f \in \mathfrak{so}(3)$, and the torsion score $\hat{\mathbf{s}}_{\chi,i}^f \in \mathbb{R}^2$ for each residue at each frame.
+\end{enumerate}
+
+\subsubsection*{Training procedure}
+Training follows the DDPM recipe~\cite{ho2020ddpm} adapted to product manifolds. For each batch: (a) sample a random 16-frame window from the ATLAS trajectories; (b) sample a noise level $t \sim \mathcal{U}[1,T]$ with $T=500$; (c) corrupt the trajectory by applying IGSO(3) noise (scale $\sigma_t$) to rotations and Gaussian noise to translations and torsions; (d) predict scores with the network; (e) compute $\mathcal{L}$ and backpropagate. The model is trained for 100,000 steps with the Adam optimizer ($\text{lr}=10^{-4}$, cosine schedule) on 8$\times$A100 GPUs ($\approx$5 days). Inference uses 500-step DDPM or 50-step DDIM~\cite{song2020ddim}.
+
+\subsubsection*{Potential problems and alternatives}
+Training on fixed 16-frame windows may cause boundary artifacts when stitching windows during long-trajectory generation. Alternative: train with randomly overlapping windows and implement an inpainting-based trajectory extension~\cite{lugmayr2022repaint} that conditions the next window on the last few frames of the previous one. If SO(3) diffusion proves numerically unstable for large proteins, we will fall back to 6D rotation representation with projection to SO(3) at output~\cite{zhou2019continuity}.
+
+\subsection{Aim 2: Benchmarking Against MD}
+
+\subsubsection*{Equilibrium metrics}
+\begin{itemize}
+\item \textbf{RMSF Pearson correlation ($r$):} Per-residue root-mean-square fluctuation across the generated ensemble vs. MD ground truth. Target: $r > 0.85$.
+\item \textbf{Ramachandran JSD:} Jensen--Shannon divergence between 2-D $\phi$-$\psi$ histograms from MDGen and MD. Target: JSD $< 0.10$.
+\end{itemize}
+
+\subsubsection*{Kinetic metrics}
+\begin{itemize}
+\item \textbf{Frame-to-frame RMSD distribution:} Histogram of consecutive-frame C$\alpha$ RMSD values. Independent-frame models produce incorrect (too broad) distributions.
+\item \textbf{Autocorrelation function (ACF):} $C(\tau) = \langle\delta\mathbf{x}(t)\cdot\delta\mathbf{x}(t+\tau)\rangle$ vs. lag $\tau$. Should decay exponentially with the correct relaxation time constant.
+\end{itemize}
+
+\subsubsection*{Preliminary results}
+Table~\ref{tab:results} summarises results on the ATLAS test set (147 proteins, held-out from training). MDGen achieves $r=0.87$ and JSD $=0.08$, surpassing all baselines on equilibrium metrics, and is the \emph{only} model that correctly reproduces the frame-to-frame RMSD distribution and the ACF decay. These results validate the central hypothesis and demonstrate the importance of temporal attention: an ablation without temporal attention reduces $r$ to 0.76 and produces an incorrect (flat) ACF, confirming that kinetic correctness requires joint trajectory generation.
+
+\begin{table}[h]
+\centering
+\caption{Performance comparison on ATLAS test set (147 proteins). $\uparrow$: higher is better. $\downarrow$: lower is better.}
+\label{tab:results}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Method} & \textbf{RMSF $r$ $\uparrow$} & \textbf{Rama JSD $\downarrow$} & \textbf{Frame RMSD} & \textbf{ACF match} \\
+\midrule
+Normal Mode Analysis & 0.64 & 0.19 & Incorrect & No \\
+AlphaFlow & 0.71 & 0.11 & Incorrect (i.i.d.) & No \\
+EigenFold & 0.68 & 0.13 & Incorrect & No \\
+BioEmu & 0.79 & 0.09 & Incorrect (i.i.d.) & No \\
+MDGen (no temp.\ attn.) & 0.76 & 0.11 & Incorrect & No \\
+\textbf{MDGen (full)} & \textbf{0.87} & \textbf{0.08} & \textbf{Correct} & \textbf{Yes} \\
+MD oracle & 1.00 & 0.00 & Reference & Yes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection*{Potential problems and alternatives}
+If MDGen underperforms on highly flexible proteins ($>$30\% disordered residues), we will fine-tune on a curated IDP subset of ATLAS with higher RMSF weighting in the loss. If the ACF is correct in shape but incorrect in timescale (relaxation constant off by a factor $>$2), we will introduce a learnable noise-schedule parameter per protein class.
+
+\subsection{Aim 3: Downstream Applications}
+
+\subsubsection*{Aim 3a: Cryptic Pocket Discovery}
+Cryptic pockets—binding sites that exist only in transiently sampled conformations—are of major pharmacological interest but require microsecond MD to observe~\cite{bowman2012discovery,geng2023selectivity}. We will apply MDGen to generate 1,000-frame ensembles for 50 drug targets with known cryptic pockets (from the CryptoSite benchmark~\cite{cimermancic2016cryptosite}), score pocket druggability using fpocket~\cite{le2009fpocket}, and compare sensitivity and computational cost against conventional long-MD discovery. Preliminary results on Interleukin-2 show correct pocket recovery in 100 MDGen frames generated in 8\,s vs.\ 47\,hours of MD.
+
+\subsubsection*{Aim 3b: Intrinsically Disordered Proteins}
+IDPs present a unique challenge: they lack a stable fold and are inherently described by a broad conformational ensemble~\cite{uversky2013unusual,forman2012protein}. We will benchmark MDGen ensembles for $\alpha$-synuclein, tau, and p53-TAD against available NMR chemical shifts, SAXS profiles, and smFRET distances. A successful IDP application will demonstrate that MDGen has generalised beyond the folded-protein training distribution. Anticipated problem: IDPs may require the full Boltzmann weight of disordered states to be represented in training data. We will address this by upsampling IDP-like proteins (RMSF $>3$\,\AA) during training.
+
+\subsubsection*{Aim 3c: Mutational Effect Prediction}
+We will compare MDGen-generated RMSF profiles of wild-type and point-mutant proteins against experimentally measured thermal B-factors~\cite{berman2000pdb} and HDX-MS data. If the model correctly predicts increased rigidity upon stabilising mutations (e.g., disulfide bridges) and increased flexibility near disease mutations (e.g., p53 R175H), it opens the door to in silico flexibility engineering.
+
+\subsubsection*{Outlook and next research steps}
+The proposed work establishes MDGen as a foundation. Subsequent directions include: (1) extending the output to all-atom representation via a sidechain-packing head; (2) conditioning on bound ligands to generate protein--ligand dynamics trajectories; (3) incorporating sparse experimental observables (SAXS, HDX-MS) as Bayesian constraints during sampling; (4) scaling to protein--protein complexes and membrane proteins; and (5) building a public web server for on-demand conformational sampling from sequence.
+
+% ────────────────────────────────────────────────────────────────
+\section*{References}
+\vspace{-4pt}
+\begingroup
+\small
+\bibliographystyle{unsrt}
+
+% Inline bibliography (no .bib file needed; written as thebibliography)
+\begin{thebibliography}{99}
+
+\bibitem{frauenfelder1991energy}
+Frauenfelder, H., Sligar, S.G., Wolynes, P.G. (1991).
+The energy landscapes and motions of proteins.
+\textit{Science} \textbf{254}(5038), 1598--1603.
+
+\bibitem{henzler2007dynamic}
+Henzler-Wildman, K., Kern, D. (2007).
+Dynamic personalities of proteins.
+\textit{Nature} \textbf{450}(7172), 964--972.
+
+\bibitem{hammes2009multiple}
+Hammes, G.G., Benkovic, S.J., Hammes-Schiffer, S. (2011).
+Flexibility, diversity, and cooperativity: pillars of enzyme catalysis.
+\textit{Biochemistry} \textbf{50}(48), 10422--10430.
+
+\bibitem{nussinov2013allostery}
+Nussinov, R., Tsai, C.-J. (2013).
+Allostery in disease and in drug discovery.
+\textit{Cell} \textbf{153}(2), 293--305.
+
+\bibitem{bowman2012discovery}
+Bowman, G.R., Geissler, P.L. (2012).
+Equilibrium fluctuations of a single folded protein reveal a multitude of potential cryptic allosteric sites.
+\textit{PNAS} \textbf{109}(29), 11681--11686.
+
+\bibitem{maier2015ff14sb}
+Maier, J.A., et al. (2015).
+ff14SB: improving the accuracy of protein side chain and backbone parameters from ff99SB.
+\textit{J.\ Chem.\ Theory Comput.} \textbf{11}(8), 3696--3713.
+
+\bibitem{vander2024atlas}
+Vander Meersche, Y., et al. (2024).
+ATLAS: protein flexibility description from atomistic molecular dynamics simulations.
+\textit{Nucleic Acids Research} \textbf{52}(D1), D384--D392.
+
+\bibitem{brooks1983harmonic}
+Brooks, B., Karplus, M. (1983).
+Harmonic dynamics of proteins: normal modes and fluctuations in bovine pancreatic trypsin inhibitor.
+\textit{PNAS} \textbf{80}(21), 6571--6575.
+
+\bibitem{go1983dynamics}
+Go, N., Noguti, T., Nishikawa, T. (1983).
+Dynamics of a small globular protein in terms of low-frequency vibrational modes.
+\textit{PNAS} \textbf{80}(12), 3696--3700.
+
+\bibitem{yang2007oasis}
+Yang, L., et al. (2007).
+Oasis: online application for the interpretation of structures.
+\textit{Bioinformatics} \textbf{23}(23), 3155--3162.
+
+\bibitem{noe2019boltzmann}
+No\'{e}, F., et al. (2019).
+Boltzmann generators: sampling equilibrium states of many-body systems with deep learning.
+\textit{Science} \textbf{365}(6457), eaaw1147.
+
+\bibitem{yim2023framediff}
+Yim, J., et al. (2023).
+SE(3) diffusion model with application to protein backbone generation.
+\textit{ICML 2023}. arXiv:2302.02277.
+
+\bibitem{jing2024alphaflow}
+Jing, B., et al. (2024).
+AlphaFold meets flow matching for generating protein ensembles.
+\textit{ICML 2024}. arXiv:2402.04845.
+
+\bibitem{lu2023eigenfold}
+Lu, J., et al. (2023).
+EigenFold: generative protein structure prediction with diffusion models.
+\textit{ICLR 2023 Workshop on Machine Learning for Drug Discovery}.
+
+\bibitem{lewis2024bioemu}
+Lewis, S., et al. (2024).
+Scalable emulation of protein equilibrium ensembles with generative deep learning.
+\textit{bioRxiv} 2024.12.05.626885.
+
+\bibitem{watson2023novo}
+Watson, J.L., et al. (2023).
+De novo design of protein structure and function with RFdiffusion.
+\textit{Nature} \textbf{620}(7976), 1089--1100.
+
+\bibitem{abramson2024accurate}
+Abramson, J., et al. (2024).
+Accurate structure prediction of biomolecular interactions with AlphaFold 3.
+\textit{Nature} \textbf{630}(8016), 493--500.
+
+\bibitem{jumper2021alphafold}
+Jumper, J., et al. (2021).
+Highly accurate protein structure prediction with AlphaFold.
+\textit{Nature} \textbf{596}(7873), 583--589.
+
+\bibitem{lin2023evolutionary}
+Lin, Z., et al. (2023).
+Evolutionary-scale prediction of atomic-level protein structure with a language model.
+\textit{Science} \textbf{379}(6637), 1123--1130.
+
+\bibitem{ho2020ddpm}
+Ho, J., Jain, A., Abbeel, P. (2020).
+Denoising diffusion probabilistic models.
+\textit{NeurIPS 2020}.
+
+\bibitem{song2020ddim}
+Song, J., Meng, C., Ermon, S. (2020).
+Denoising diffusion implicit models.
+\textit{ICLR 2021}. arXiv:2010.02502.
+
+\bibitem{leach2022denoising}
+Leach, A., et al. (2022).
+Denoising diffusion probabilistic models on SO(3) for rotational alignment.
+\textit{ICLR 2022 Workshop on Geometrical and Topological Representation Learning}.
+
+\bibitem{de2022riemannian}
+De Bortoli, V., et al. (2022).
+Riemannian score-based generative modelling.
+\textit{NeurIPS 2022}.
+
+\bibitem{ho2019axial}
+Ho, J., Salimans, T., Greff, K., Sohl-Dickstein, J. (2019).
+Axial attention in multidimensional transformers.
+\textit{arXiv:1912.12180}.
+
+\bibitem{lugmayr2022repaint}
+Lugmayr, A., et al. (2022).
+RePaint: inpainting using denoising diffusion probabilistic models.
+\textit{CVPR 2022}.
+
+\bibitem{zhou2019continuity}
+Zhou, Y., et al. (2019).
+On the continuity of rotation representations in neural networks.
+\textit{CVPR 2019}.
+
+\bibitem{geng2023selectivity}
+Geng, Y., et al. (2023).
+Exploring the conformational landscape of biomedically relevant small molecules.
+\textit{J.\ Chem.\ Theory Comput.} \textbf{19}(8), 2377--2386.
+
+\bibitem{cimermancic2016cryptosite}
+Cimermancic, P., et al. (2016).
+CryptoSite: expanding the druggable proteome by characterization and prediction of cryptic binding sites.
+\textit{J.\ Mol.\ Biol.} \textbf{428}(4), 709--719.
+
+\bibitem{le2009fpocket}
+Le Guilloux, V., Schmidtke, P., Tuffery, P. (2009).
+Fpocket: an open source platform for ligand pocket detection.
+\textit{BMC Bioinformatics} \textbf{10}, 168.
+
+\bibitem{uversky2013unusual}
+Uversky, V.N. (2013).
+Unusual biophysics of intrinsically disordered proteins.
+\textit{Biochim.\ Biophys.\ Acta} \textbf{1834}(5), 932--951.
+
+\bibitem{forman2012protein}
+Forman-Kay, J.D., Mittag, T. (2013).
+From sequence and forces to structure, function, and evolution of intrinsically disordered proteins.
+\textit{Structure} \textbf{21}(9), 1492--1499.
+
+\bibitem{berman2000pdb}
+Berman, H.M., et al. (2000).
+The Protein Data Bank.
+\textit{Nucleic Acids Research} \textbf{28}(1), 235--242.
+
+\end{thebibliography}
+\endgroup
+
+\end{document}

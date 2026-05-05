@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>1/22 – Title – MDGen Proposal</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script" async></script>
+  <style>
+    /* mdgen2-specific overrides */
+    .aim-grid { display: grid; grid-template-columns: repeat(3,1fr); gap:14px; margin-top:22px; }
+    .aim-card { padding:16px 18px; border:1px solid rgba(21,33,31,.12); border-radius:20px; background:rgba(255,250,240,.82); }
+    .aim-card .aim-num { display:inline-block; width:32px;height:32px;line-height:32px;text-align:center;border-radius:50%;background:var(--teal);color:#fff;font-family:'Fraunces',Georgia,serif;font-size:1.1rem;font-weight:800;margin-bottom:8px; }
+    .aim-card h3 { font-size:1.05rem; margin-top:6px; }
+    .aim-card p { font-size:.92rem; margin-top:6px; }
+    .innov-compare { display:grid; grid-template-columns:1.8fr 1fr 1fr 1fr; gap:0; margin-top:24px; border:1px solid rgba(21,33,31,.14); border-radius:20px; overflow:hidden; font-size:.92rem; }
+    .innov-compare .ic-head { background:var(--teal-dark); color:#fffaf0; font-weight:700; padding:10px 14px; }
+    .innov-compare .ic-cell { padding:10px 14px; border-top:1px solid rgba(21,33,31,.1); }
+    .innov-compare .ic-cell.yes { color:var(--teal-dark); font-weight:700; }
+    .innov-compare .ic-cell.no  { color:var(--rust); }
+    .innov-compare .ic-row:nth-child(even) .ic-cell { background:rgba(232,243,239,.6); }
+    .innov-compare .ic-row { display:contents; }
+    .hyp-box { margin-top:18px; padding:16px 20px; border-radius:18px; background:rgba(11,114,133,.1); border:1px solid rgba(11,114,133,.28); }
+    .hyp-box p { color:var(--teal-dark); font-style:italic; margin:0; font-size:1.05rem; }
+    .timeline-horiz { display:flex; align-items:flex-start; gap:0; margin-top:28px; }
+    .tl-node { flex:1; text-align:center; position:relative; }
+    .tl-node::before { content:''; position:absolute; top:18px; left:50%; right:-50%; height:3px; background:rgba(21,33,31,.25); z-index:0; }
+    .tl-node:last-child::before { display:none; }
+    .tl-dot { width:38px;height:38px;border-radius:50%;background:var(--teal);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Fraunces',Georgia,serif;font-size:1.1rem;font-weight:800;position:relative;z-index:1; }
+    .tl-label { font-size:.82rem; font-weight:700; color:var(--teal-dark); line-height:1.2; }
+    .tl-sub { font-size:.74rem; color:var(--muted); margin-top:4px; }
+    .loss-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:18px; }
+    .loss-item { padding:12px 16px; border-radius:16px; background:rgba(232,243,239,.9); border:1px solid rgba(11,114,133,.18); }
+    .loss-item h3 { font-size:.95rem; color:var(--teal-dark); margin-bottom:4px; }
+    .loss-item p { margin:0; font-size:.9rem; }
+    .metric-4 { grid-template-columns:repeat(4,1fr); }
+    .result-table2 { display:grid; gap:7px; margin-top:22px; font-size:.9rem; }
+    .tr2 { display:grid; grid-template-columns:1.6fr 0.8fr 0.8fr 0.8fr 1fr; gap:10px; align-items:center; padding:11px 14px; border-radius:14px; background:rgba(255,250,240,.74); border:1px solid rgba(21,33,31,.1); }
+    .tr2.th { background:var(--teal-dark); color:#fffaf0; font-weight:700; }
+    .tr2.hl { background:rgba(255,243,191,.88); border-color:rgba(194,65,12,.25); font-weight:700; }
+    .app-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px; }
+    .app-card { padding:18px; border:1px solid rgba(21,33,31,.12); border-radius:20px; background:rgba(255,250,240,.82); }
+    .app-card h3 { font-size:1rem; margin-bottom:6px; }
+    .app-card p { font-size:.9rem; margin:0; }
+    .section-badge { display:inline-flex;align-items:center;gap:6px;margin-bottom:4px; }
+    .badge-dot { width:8px;height:8px;border-radius:50%;background:var(--rust);display:inline-block; }
+  </style>
+</head>
+<body>
+<div id="laser-dot" aria-hidden="true"></div>
+
+<div id="helpOverlay" class="help-overlay" aria-hidden="true">
+  <div class="help-card">
+    <button id="closeHelp">✕</button>
+    <h2>Shortcuts</h2>
+    <div class="key-grid">
+      <div><kbd>→</kbd> / <kbd>Space</kbd></div><p>Next slide</p>
+      <div><kbd>←</kbd> / <kbd>P</kbd></div><p>Previous slide</p>
+      <div><kbd>L</kbd></div><p>Laser pointer</p>
+      <div><kbd>F</kbd></div><p>Fullscreen</p>
+      <div><kbd>?</kbd></div><p>This help</p>
+    </div>
+  </div>
+</div>
+
+<div class="deck-shell">
+  <header class="topbar">
+    <div>
+      <span class="eyebrow">MDGen</span>
+      <strong>Protein Conformational Dynamics · Proposed Research Presentation</strong>
+    </div>
+    <div class="topbar-keys">
+      <kbd>←</kbd><kbd>→</kbd> navigate &nbsp;·&nbsp; <kbd>L</kbd> laser &nbsp;·&nbsp; <kbd>?</kbd> help
+    </div>
+  </header>
+
+  <div class="deck" role="region" aria-label="Presentation slides">
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 1: TITLE -->
+    <section class="slide title-slide active" data-title="Title">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow">Proposed Research · 2026</span>
+          <h1>Generating Protein Dynamics at Scale</h1>
+          <p class="subtitle">MDGen: Temporally Coherent Conformational Ensembles<br>via SE(3) Diffusion over Trajectories</p>
+          <div class="pill-row">
+            <span class="pill">Temporal Coherence</span>
+            <span class="pill">SE(3)-Equivariant</span>
+            <span class="pill">ATLAS · 1,400 proteins</span>
+            <span class="pill">~10,000× MD speedup</span>
+          </div>
+          <p style="margin-top:28px;font-size:.95rem;">Subhajit Roy &nbsp;·&nbsp; oxdna.help@gmail.com</p>
+        </div>
+        <div class="svg-card compact">
+          <svg viewBox="0 0 480 390" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="cg1" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#0b7285"/>
+                <stop offset="100%" stop-color="#f08c00"/>
+              </linearGradient>
+              <linearGradient id="cg2" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#0b7285" stop-opacity=".4"/>
+                <stop offset="100%" stop-color="#0b7285" stop-opacity=".1"/>
+              </linearGradient>
+            </defs>
+            <!-- Background protein "cloud" -- multiple ghost conformations -->
+            <path d="M80 200 Q110 140 160 170 Q210 200 240 155 Q270 110 310 140 Q350 170 380 150 Q410 130 420 170" stroke="rgba(11,114,133,0.18)" stroke-width="9" stroke-linecap="round"/>
+            <path d="M80 210 Q115 160 155 185 Q200 210 235 175 Q265 140 305 165 Q345 190 375 165 Q405 145 420 185" stroke="rgba(11,114,133,0.18)" stroke-width="9" stroke-linecap="round"/>
+            <path d="M80 190 Q108 130 162 165 Q215 195 242 145 Q272 95 315 130 Q355 160 382 138 Q412 115 422 158" stroke="rgba(240,140,0,0.18)" stroke-width="9" stroke-linecap="round"/>
+            <!-- Main conformation -->
+            <path d="M80 200 Q112 150 158 175 Q205 200 238 158 Q268 116 312 148 Q352 178 380 155 Q410 133 422 170" stroke="url(#cg1)" stroke-width="13" stroke-linecap="round"/>
+            <!-- Residue beads -->
+            <g fill="#fffaf0" stroke="#064d5a" stroke-width="3.5">
+              <circle cx="80" cy="200" r="7"/>
+              <circle cx="122" cy="164" r="7"/>
+              <circle cx="165" cy="178" r="7"/>
+              <circle cx="205" cy="198" r="7"/>
+              <circle cx="238" cy="160" r="7"/>
+              <circle cx="270" cy="128" r="7"/>
+              <circle cx="310" cy="148" r="7"/>
+              <circle cx="350" cy="170" r="7"/>
+              <circle cx="382" cy="155" r="7"/>
+              <circle cx="422" cy="170" r="7"/>
+            </g>
+            <!-- Frame axes on one residue -->
+            <g transform="translate(238,160)">
+              <line x1="0" y1="0" x2="28" y2="-12" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/>
+              <line x1="0" y1="0" x2="8" y2="26" stroke="#0b7285" stroke-width="4" stroke-linecap="round"/>
+              <text x="32" y="-10" fill="#c2410c" font-size="12" font-weight="700">x</text>
+              <text x="10" y="38" fill="#0b7285" font-size="12" font-weight="700">y</text>
+            </g>
+            <!-- Time arrow -->
+            <line x1="68" y1="340" x2="432" y2="340" stroke="rgba(21,33,31,.35)" stroke-width="3"/>
+            <polygon points="432,335 445,340 432,345" fill="rgba(21,33,31,.35)"/>
+            <text x="68" y="360" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="700">t = 0</text>
+            <text x="406" y="360" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="700">t = T</text>
+            <!-- Trajectory label -->
+            <text x="240" y="296" text-anchor="middle" fill="#0b7285" font-family="Fraunces,Georgia,serif" font-size="17" font-weight="800">Conformational Trajectory</text>
+            <text x="240" y="316" text-anchor="middle" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="12">16 frames · ~1 ns window · SE(3)-equivariant</text>
+          </svg>
+        </div>
+      </div>
+      <footer>Slide 1 of 22 &nbsp;·&nbsp; ~15 min presentation</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 2: TALK MAP -->
+    <section class="slide" data-title="Talk Map">
+      <span class="eyebrow">Overview</span>
+      <h2>Talk Map</h2>
+      <p>Five sections — each builds on the last.</p>
+      <div class="timeline-horiz" style="margin-top:36px;">
+        <div class="tl-node">
+          <div class="tl-dot">1</div>
+          <div class="tl-label">Biology<br>Background</div>
+          <div class="tl-sub">Proteins · MD · Energy landscape</div>
+        </div>
+        <div class="tl-node">
+          <div class="tl-dot" style="background:var(--orange);">2</div>
+          <div class="tl-label">The Problem</div>
+          <div class="tl-sub">Timescale gap · Prior limits</div>
+        </div>
+        <div class="tl-node">
+          <div class="tl-dot" style="background:#7a9f35;">3</div>
+          <div class="tl-label">ML<br>Prerequisites</div>
+          <div class="tl-sub">Diffusion · SE(3) · Manifolds</div>
+        </div>
+        <div class="tl-node">
+          <div class="tl-dot" style="background:var(--rust);">4</div>
+          <div class="tl-label">MDGen<br>Method</div>
+          <div class="tl-sub">Objectives · Architecture · Training</div>
+        </div>
+        <div class="tl-node">
+          <div class="tl-dot" style="background:#064d5a;">5</div>
+          <div class="tl-label">Results &amp;<br>Applications</div>
+          <div class="tl-sub">Metrics · Drug design · IDPs</div>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:36px;">
+        <strong>Central Question:</strong> Can a generative neural network reproduce not just individual protein conformations, but <em>physically realistic time-ordered trajectories</em> — complete with correct kinetics and temporal correlations?
+      </div>
+      <footer>Slide 2 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 3: PROTEINS -->
+    <section class="slide" data-title="Proteins 101">
+      <div class="two-col">
+        <div>
+          <span class="eyebrow">Background — Biology</span>
+          <h2>Proteins: The Molecules of Life</h2>
+          <p>Proteins are linear polymers of <strong>amino acids</strong> that fold into precise 3-D structures governing virtually every cellular function.</p>
+          <ul>
+            <li><strong>Primary structure:</strong> sequence of 20 amino acid types linked by peptide bonds; encoded by DNA</li>
+            <li><strong>Secondary structure:</strong> local H-bond patterns form α-helices and β-sheets</li>
+            <li><strong>Tertiary structure:</strong> global 3-D fold stabilised by hydrophobic core, disulfide bridges, electrostatics</li>
+            <li><strong>Backbone representation:</strong> each residue described by N–Cα–C atoms and dihedral angles φ, ψ, ω</li>
+          </ul>
+          <div class="callout" style="margin-top:18px;">
+            <strong>Key insight:</strong> Knowing the sequence does <em>not</em> tell you the dynamics — a single sequence populates an <em>ensemble</em> of conformations.
+          </div>
+        </div>
+        <div class="svg-card">
+          <svg viewBox="0 0 440 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Alpha helix representation -->
+            <text x="220" y="30" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-size="18" font-weight="800" fill="#102522">Protein Backbone</text>
+            <!-- Helix coil (left) -->
+            <text x="90" y="60" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700" fill="#064d5a">α-helix</text>
+            <path d="M60 70 Q75 80 90 70 Q105 60 120 70 Q135 80 150 70 Q165 60 180 70 Q195 80 210 70" stroke="#0b7285" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <path d="M60 85 Q75 95 90 85 Q105 75 120 85 Q135 95 150 85 Q165 75 180 85 Q195 95 210 85" stroke="#0b7285" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <path d="M60 100 Q75 110 90 100 Q105 90 120 100 Q135 110 150 100 Q165 90 180 100 Q195 110 210 100" stroke="#0b7285" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <path d="M60 115 Q75 125 90 115 Q105 105 120 115 Q135 125 150 115 Q165 105 180 115 Q195 125 210 115" stroke="#0b7285" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <!-- Beta sheet (right) -->
+            <text x="330" y="60" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700" fill="#064d5a">β-sheet</text>
+            <rect x="256" y="68" width="90" height="16" rx="4" fill="rgba(11,114,133,.25)" stroke="#0b7285" stroke-width="2"/>
+            <polygon points="346,68 370,76 346,84" fill="#0b7285"/>
+            <rect x="256" y="96" width="90" height="16" rx="4" fill="rgba(240,140,0,.25)" stroke="#f08c00" stroke-width="2"/>
+            <polygon points="346,96 370,104 346,112" fill="#f08c00"/>
+            <rect x="256" y="124" width="90" height="16" rx="4" fill="rgba(11,114,133,.25)" stroke="#0b7285" stroke-width="2"/>
+            <polygon points="346,124 370,132 346,140" fill="#0b7285"/>
+            <!-- H-bonds between strands -->
+            <line x1="310" y1="84" x2="310" y2="96" stroke="#c2410c" stroke-width="2" stroke-dasharray="5 3"/>
+            <line x1="310" y1="112" x2="310" y2="124" stroke="#c2410c" stroke-width="2" stroke-dasharray="5 3"/>
+            <!-- Backbone chain below -->
+            <text x="220" y="178" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700" fill="#064d5a">Backbone dihedral angles</text>
+            <path d="M60 220 L120 200 L180 220 L240 200 L300 220 L360 200 L400 220" stroke="#0b7285" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <!-- N, Ca, C labels -->
+            <g fill="#fffaf0" stroke="#064d5a" stroke-width="3">
+              <circle cx="60" cy="220" r="10"/>
+              <circle cx="120" cy="200" r="10"/>
+              <circle cx="180" cy="220" r="10"/>
+              <circle cx="240" cy="200" r="10"/>
+              <circle cx="300" cy="220" r="10"/>
+              <circle cx="360" cy="200" r="10"/>
+            </g>
+            <text x="60" y="224" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700" fill="#064d5a">N</text>
+            <text x="120" y="204" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700" fill="#064d5a">Cα</text>
+            <text x="180" y="224" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700" fill="#064d5a">C</text>
+            <text x="240" y="204" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700" fill="#064d5a">N</text>
+            <text x="300" y="224" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700" fill="#064d5a">Cα</text>
+            <text x="360" y="204" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700" fill="#064d5a">C</text>
+            <!-- phi psi arcs -->
+            <path d="M92 210 A28 28 0 0 1 112 196" stroke="#c2410c" stroke-width="2.5" fill="none"/>
+            <text x="88" y="244" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#c2410c" font-weight="700">φ</text>
+            <path d="M148 210 A28 28 0 0 0 168 196" stroke="#f08c00" stroke-width="2.5" fill="none"/>
+            <text x="152" y="244" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#f08c00" font-weight="700">ψ</text>
+            <!-- Ramachandran inset -->
+            <rect x="60" y="268" width="120" height="72" rx="10" fill="rgba(232,243,239,.9)" stroke="rgba(21,33,31,.18)" stroke-width="1.5"/>
+            <text x="120" y="282" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700" fill="#064d5a">Ramachandran plot</text>
+            <text x="85" y="295" font-family="IBM Plex Mono,monospace" font-size="9" fill="#53625e">φ →</text>
+            <text x="62" y="328" font-family="IBM Plex Mono,monospace" font-size="9" fill="#53625e" transform="rotate(-90,68,320)">ψ</text>
+            <!-- Helix cluster -->
+            <ellipse cx="100" cy="305" rx="14" ry="22" fill="rgba(11,114,133,.28)" stroke="#0b7285" stroke-width="1.5"/>
+            <text x="100" y="308" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="9" fill="#0b7285">α</text>
+            <!-- Sheet cluster -->
+            <ellipse cx="140" cy="320" rx="12" ry="14" fill="rgba(240,140,0,.28)" stroke="#f08c00" stroke-width="1.5"/>
+            <text x="140" y="323" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="9" fill="#c2410c">β</text>
+          </svg>
+        </div>
+      </div>
+      <footer>Slide 3 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 4: DYNAMICS -->
+    <section class="slide" data-title="Conformational Dynamics">
+      <div class="two-col">
+        <div>
+          <span class="eyebrow">Background — Biology</span>
+          <h2>Proteins Are Not Static</h2>
+          <p>At physiological temperature, proteins constantly fluctuate among many conformations. This <strong>conformational ensemble</strong> is governed by thermodynamics.</p>
+          <ul>
+            <li><strong>Free energy landscape:</strong> multiple minima separated by barriers; each basin = a distinct functional state</li>
+            <li><strong>Boltzmann distribution:</strong> population of state <em>i</em> ∝ exp(−G<sub>i</sub>/k<sub>B</sub>T)</li>
+            <li><strong>RMSF (Root-Mean-Square Fluctuation):</strong> quantifies per-residue flexibility — the experimental ground truth</li>
+          </ul>
+          <div class="formula-box" style="margin-top:18px;">
+            \( p(\mathbf{x}) \propto e^{-U(\mathbf{x})/k_BT} \)
+          </div>
+          <p style="margin-top:14px;">Function — enzymatic catalysis, signal transduction, allostery — often depends on <em>which conformation</em> and <em>how fast</em> transitions occur.</p>
+        </div>
+        <div class="svg-card">
+          <svg viewBox="0 0 440 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="220" y="28" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-size="18" font-weight="800" fill="#102522">Free Energy Landscape</text>
+            <!-- Axes -->
+            <line x1="55" y1="280" x2="410" y2="280" stroke="rgba(21,33,31,.35)" stroke-width="2"/>
+            <line x1="55" y1="50" x2="55" y2="280" stroke="rgba(21,33,31,.35)" stroke-width="2"/>
+            <text x="230" y="305" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#53625e" font-weight="600">Collective Coordinate</text>
+            <text x="22" y="170" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#53625e" font-weight="600" transform="rotate(-90,22,170)">Free Energy G</text>
+            <!-- Energy landscape curve -->
+            <path d="M60 200 Q90 260 130 230 Q160 210 185 240 Q200 255 215 250 Q235 242 255 195 Q270 160 285 180 Q305 200 320 168 Q340 130 365 150 Q390 165 408 145" stroke="#f08c00" stroke-width="5" stroke-linecap="round" fill="none"/>
+            <!-- State A basin (left minimum) -->
+            <circle cx="200" cy="252" r="9" fill="#ffe8cc" stroke="#c2410c" stroke-width="3"/>
+            <text x="200" y="275" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700" fill="#c2410c">State A</text>
+            <text x="200" y="288" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="10" fill="#53625e">(major)</text>
+            <!-- State B basin (right minimum) -->
+            <circle cx="340" cy="135" r="9" fill="#e6fcf5" stroke="#0b7285" stroke-width="3"/>
+            <text x="340" y="118" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700" fill="#0b7285">State B</text>
+            <text x="340" y="106" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="10" fill="#53625e">(cryptic pocket)</text>
+            <!-- Barrier arrow -->
+            <line x1="220" y1="196" x2="220" y2="252" stroke="rgba(21,33,31,.4)" stroke-width="2" stroke-dasharray="5 4"/>
+            <text x="230" y="228" font-family="IBM Plex Mono,monospace" font-size="11" fill="#53625e">ΔG‡</text>
+            <!-- Thermal fluctuation label -->
+            <path d="M105 232 Q130 215 150 228 Q168 240 185 235" stroke="#0b7285" stroke-width="2" stroke-dasharray="6 4" fill="none"/>
+            <text x="125" y="200" font-family="IBM Plex Sans,sans-serif" font-size="11" fill="#0b7285" font-weight="700">k_BT fluctuations</text>
+            <!-- Conformations shown as mini protein sketches -->
+            <text x="220" y="340" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="11" fill="#53625e">Each point on the landscape = one 3-D structure</text>
+          </svg>
+        </div>
+      </div>
+      <footer>Slide 4 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 5: MD SIM -->
+    <section class="slide" data-title="Molecular Dynamics">
+      <div class="two-col">
+        <div>
+          <span class="eyebrow">Background — Simulation</span>
+          <h2>Molecular Dynamics Simulation</h2>
+          <p>MD numerically integrates <strong>Newton's equations</strong> for all atoms using a parameterised <strong>force field</strong>.</p>
+          <div class="formula-box small" style="margin-top:16px;">
+            \( m_i\ddot{\mathbf{r}}_i = -\nabla_{\mathbf{r}_i} U(\mathbf{r}_1,\ldots,\mathbf{r}_N) \)
+          </div>
+          <ul style="margin-top:16px;">
+            <li><strong>Force field</strong> (e.g. AMBER ff14SB): bonds, angles, torsions, LJ, electrostatics</li>
+            <li><strong>Time step:</strong> 2 fs — limited by fastest bond vibrations</li>
+            <li><strong>NPT ensemble:</strong> constant pressure and temperature via barostat/thermostat</li>
+            <li><strong>ATLAS dataset:</strong> 1,400 proteins × 300 ns = 420 μs of trajectories</li>
+          </ul>
+          <div class="warning" style="margin-top:16px;">
+            <strong>Cost:</strong> A single 300 ns trajectory requires ~10<sup>8</sup> integration steps and weeks of GPU time.
+          </div>
+        </div>
+        <div class="svg-card">
+          <svg viewBox="0 0 440 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="220" y="28" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-size="17" font-weight="800" fill="#102522">MD Algorithm Loop</text>
+            <!-- Pipeline boxes -->
+            <rect x="130" y="46" width="180" height="42" rx="14" fill="rgba(232,243,239,.95)" stroke="rgba(21,33,31,.22)" stroke-width="2"/>
+            <text x="220" y="72" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700" fill="#102522">Initialize positions &amp; velocities</text>
+            <!-- Arrow -->
+            <line x1="220" y1="88" x2="220" y2="108" stroke="rgba(21,33,31,.5)" stroke-width="3" marker-end="url(#arr2)"/>
+            <defs><marker id="arr2" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><polygon points="0,0 8,4 0,8" fill="rgba(21,33,31,.5)"/></marker></defs>
+            <rect x="130" y="108" width="180" height="42" rx="14" fill="rgba(232,243,239,.95)" stroke="rgba(21,33,31,.22)" stroke-width="2"/>
+            <text x="220" y="134" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700" fill="#102522">Compute forces ∇U</text>
+            <line x1="220" y1="150" x2="220" y2="170" stroke="rgba(21,33,31,.5)" stroke-width="3" marker-end="url(#arr2)"/>
+            <rect x="130" y="170" width="180" height="42" rx="14" fill="rgba(232,243,239,.95)" stroke="rgba(21,33,31,.22)" stroke-width="2"/>
+            <text x="220" y="196" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700" fill="#102522">Integrate (Verlet / Leap-frog)</text>
+            <line x1="220" y1="212" x2="220" y2="232" stroke="rgba(21,33,31,.5)" stroke-width="3" marker-end="url(#arr2)"/>
+            <rect x="130" y="232" width="180" height="42" rx="14" fill="rgba(255,243,191,.85)" stroke="rgba(240,140,0,.4)" stroke-width="2"/>
+            <text x="220" y="258" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700" fill="#102522">Save frame (every 100 ps)</text>
+            <!-- Loop back arrow -->
+            <path d="M130 253 Q60 253 60 130 Q60 108 130 108" stroke="rgba(21,33,31,.38)" stroke-width="2.5" stroke-dasharray="7 5" fill="none" marker-end="url(#arr2)"/>
+            <text x="44" y="185" font-family="IBM Plex Mono,monospace" font-size="10" fill="#53625e" transform="rotate(-90,44,185)">repeat 10⁸×</text>
+            <!-- ATLAS box -->
+            <rect x="60" y="296" width="320" height="44" rx="14" fill="rgba(11,114,133,.12)" stroke="rgba(11,114,133,.35)" stroke-width="2"/>
+            <text x="220" y="322" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="700" fill="#064d5a">ATLAS: 1,400 proteins · 300 ns each · AMBER ff14SB</text>
+          </svg>
+        </div>
+      </div>
+      <footer>Slide 5 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 6: TIMESCALE GAP -->
+    <section class="slide" data-title="The Timescale Gap">
+      <span class="eyebrow">The Problem</span>
+      <h2>The Timescale Gap</h2>
+      <p>MD is limited to <strong>nanosecond–microsecond</strong> timescales, while biologically relevant events occur on <strong>milliseconds to seconds</strong>.</p>
+      <div class="wide-figure">
+        <svg viewBox="0 0 1100 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Main timeline -->
+          <line x1="50" y1="100" x2="1060" y2="100" stroke="rgba(21,33,31,.3)" stroke-width="3"/>
+          <!-- Tick marks & labels at log scale: fs, ps, ns, μs, ms, s -->
+          <g font-family="IBM Plex Mono,monospace" font-size="13" font-weight="700">
+            <!-- fs -->
+            <line x1="80" y1="93" x2="80" y2="107" stroke="rgba(21,33,31,.5)" stroke-width="2"/>
+            <text x="80" y="124" text-anchor="middle" fill="#102522">fs</text>
+            <text x="80" y="140" text-anchor="middle" font-size="10" fill="#53625e">bond vibrations</text>
+            <!-- ps -->
+            <line x1="230" y1="93" x2="230" y2="107" stroke="rgba(21,33,31,.5)" stroke-width="2"/>
+            <text x="230" y="124" text-anchor="middle" fill="#102522">ps</text>
+            <text x="230" y="140" text-anchor="middle" font-size="10" fill="#53625e">sidechain rotation</text>
+            <!-- ns -->
+            <line x1="410" y1="93" x2="410" y2="107" stroke="rgba(21,33,31,.5)" stroke-width="2"/>
+            <text x="410" y="124" text-anchor="middle" fill="#102522">ns</text>
+            <text x="410" y="140" text-anchor="middle" font-size="10" fill="#53625e">loop motions</text>
+            <!-- μs -->
+            <line x1="610" y1="93" x2="610" y2="107" stroke="rgba(21,33,31,.5)" stroke-width="2"/>
+            <text x="610" y="124" text-anchor="middle" fill="#102522">μs</text>
+            <text x="610" y="140" text-anchor="middle" font-size="10" fill="#53625e">domain motions</text>
+            <!-- ms -->
+            <line x1="830" y1="93" x2="830" y2="107" stroke="rgba(21,33,31,.5)" stroke-width="2"/>
+            <text x="830" y="124" text-anchor="middle" fill="#102522">ms</text>
+            <text x="830" y="140" text-anchor="middle" font-size="10" fill="#53625e">folding, catalysis</text>
+            <!-- s -->
+            <line x1="1030" y1="93" x2="1030" y2="107" stroke="rgba(21,33,31,.5)" stroke-width="2"/>
+            <text x="1030" y="124" text-anchor="middle" fill="#102522">s</text>
+            <text x="1030" y="140" text-anchor="middle" font-size="10" fill="#53625e">large conformational change</text>
+          </g>
+          <!-- MD accessible region -->
+          <rect x="60" y="56" width="560" height="34" rx="8" fill="rgba(11,114,133,.22)" stroke="#0b7285" stroke-width="2"/>
+          <text x="340" y="78" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="700" fill="#064d5a">Accessible by standard MD</text>
+          <!-- Gap bracket -->
+          <path d="M620 60 L620 50 L1040 50 L1040 60" stroke="#c2410c" stroke-width="2.5" fill="none"/>
+          <text x="830" y="44" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="700" fill="#c2410c">Biologically critical — inaccessible!</text>
+          <!-- MDGen region -->
+          <rect x="60" y="18" width="560" height="26" rx="7" fill="rgba(194,65,12,.14)" stroke="#c2410c" stroke-width="1.5"/>
+          <text x="340" y="36" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700" fill="#c2410c">MDGen learns from MD but generates 10,000× faster</text>
+        </svg>
+      </div>
+      <div class="card-grid three" style="margin-top:18px;">
+        <div class="info-card">
+          <h3>MD Time Step</h3>
+          <p>2 fs — set by fastest bond vibrations (C–H stretch)</p>
+        </div>
+        <div class="info-card">
+          <h3>Biological Timescale</h3>
+          <p>Protein folding, allostery, and catalysis occur on μs–ms</p>
+        </div>
+        <div class="info-card">
+          <h3>The Gap</h3>
+          <p>10<sup>6</sup>–10<sup>9</sup> steps needed; months of GPU time for one trajectory</p>
+        </div>
+      </div>
+      <footer>Slide 6 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 7: PRIOR APPROACHES -->
+    <section class="slide compact" data-title="Prior Approaches">
+      <span class="eyebrow">The Problem — Context</span>
+      <h2>Existing Approaches Fall Short</h2>
+      <p>Each prior method solves part of the problem but fails on temporal coherence or scalability.</p>
+      <div class="card-grid three" style="margin-top:20px;">
+        <div class="info-card">
+          <h3>Normal Mode Analysis</h3>
+          <p><strong>Idea:</strong> Harmonic approximation around single minimum; eigenvectors capture motions.</p>
+          <p style="margin-top:8px;"><strong>Limit:</strong> Linear model; misses large-amplitude, anharmonic motions. RMSF r ≈ 0.64 vs. MDGen r ≈ 0.87.</p>
+        </div>
+        <div class="info-card">
+          <h3>Boltzmann Generators</h3>
+          <p><strong>Idea:</strong> Normalizing flow learns the equilibrium distribution p(x).</p>
+          <p style="margin-top:8px;"><strong>Limit:</strong> Generates independent i.i.d. samples — no temporal ordering, no kinetics information.</p>
+        </div>
+        <div class="info-card">
+          <h3>Independent Frame Diffusion</h3>
+          <p><strong>Idea:</strong> FrameDiff, AlphaFlow, BioEmu generate one frame at a time via SE(3) diffusion.</p>
+          <p style="margin-top:8px;"><strong>Limit:</strong> Each frame is independent — autocorrelation function and frame-to-frame step sizes are wrong.</p>
+        </div>
+        <div class="info-card">
+          <h3>AlphaFold2 / ESMFold</h3>
+          <p><strong>Idea:</strong> Sequence → single most-probable structure.</p>
+          <p style="margin-top:8px;"><strong>Limit:</strong> Predicts one static conformation; no dynamics, no ensemble.</p>
+        </div>
+        <div class="info-card">
+          <h3>Enhanced Sampling MD</h3>
+          <p><strong>Idea:</strong> Replica exchange, metadynamics push the system over barriers.</p>
+          <p style="margin-top:8px;"><strong>Limit:</strong> Still atomistic — expensive; distorts the kinetics (non-physical biasing forces).</p>
+        </div>
+        <div class="info-card" style="background:rgba(11,114,133,.1);border-color:rgba(11,114,133,.3);">
+          <h3 style="color:var(--teal-dark);">MDGen (Proposed)</h3>
+          <p><strong>First method</strong> to jointly achieve equilibrium correctness <em>and</em> temporal coherence at generative-model speed.</p>
+          <p style="margin-top:8px;color:var(--teal-dark);font-weight:700;">r ≈ 0.87 · JSD ≈ 0.08 · ~10,000× faster than MD</p>
+        </div>
+      </div>
+      <footer>Slide 7 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 8: DIFFUSION MODELS -->
+    <section class="slide" data-title="Diffusion Models 101">
+      <div class="two-col">
+        <div>
+          <span class="eyebrow">ML Background</span>
+          <h2>Diffusion Models 101</h2>
+          <p>Diffusion models learn to reverse a <strong>noise-injection process</strong>. They are the backbone of state-of-the-art generative AI (Stable Diffusion, AlphaFold3, etc.).</p>
+          <div class="formula-box small" style="margin-top:14px;">
+            <strong style="color:#fffaf0;display:block;margin-bottom:6px;">Forward (noising):</strong>
+            \( q(\mathbf{x}_t|\mathbf{x}_0) = \mathcal{N}(\sqrt{\bar\alpha_t}\,\mathbf{x}_0,\,(1-\bar\alpha_t)\mathbf{I}) \)
+          </div>
+          <div class="formula-box small" style="margin-top:10px;">
+            <strong style="color:#fffaf0;display:block;margin-bottom:6px;">Reverse (denoising) — learned:</strong>
+            \( p_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t) = \mathcal{N}(\boldsymbol{\mu}_\theta(\mathbf{x}_t,t),\,\sigma_t^2\mathbf{I}) \)
+          </div>
+          <ul style="margin-top:14px;">
+            <li><strong>Score function</strong> s(x,t) = ∇log p<sub>t</sub>(x) tells the network which direction reduces noise</li>
+            <li><strong>Training:</strong> minimize MSE between predicted and true noise (denoising score matching)</li>
+            <li><strong>Sampling:</strong> start from Gaussian noise, iteratively denoise for 500 (DDPM) or 50 (DDIM) steps</li>
+          </ul>
+        </div>
+        <div class="svg-card">
+          <svg viewBox="0 0 440 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="220" y="30" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-size="18" font-weight="800" fill="#102522">Forward &amp; Reverse Process</text>
+            <!-- x_0: clean protein -->
+            <rect x="20" y="55" width="90" height="80" rx="14" fill="rgba(232,243,239,.9)" stroke="#0b7285" stroke-width="2"/>
+            <path d="M30 95 Q45 75 60 85 Q75 95 90 80 Q100 70 108 85" stroke="#0b7285" stroke-width="5" stroke-linecap="round" fill="none"/>
+            <text x="65" y="150" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="700" fill="#064d5a">x₀ (data)</text>
+            <!-- x_T: pure noise -->
+            <rect x="330" y="55" width="90" height="80" rx="14" fill="rgba(240,140,0,.12)" stroke="#f08c00" stroke-width="2"/>
+            <g fill="#f08c00" opacity=".6">
+              <circle cx="348" cy="72" r="3"/><circle cx="365" cy="80" r="4"/><circle cx="382" cy="68" r="2.5"/>
+              <circle cx="350" cy="92" r="3.5"/><circle cx="368" cy="100" r="3"/><circle cx="390" cy="88" r="4"/>
+              <circle cx="358" cy="118" r="3"/><circle cx="378" cy="108" r="2.5"/><circle cx="400" cy="122" r="3.5"/>
+            </g>
+            <text x="375" y="150" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="700" fill="#c2410c">x_T (noise)</text>
+            <!-- Forward arrow -->
+            <path d="M112 85 Q175 60 326 85" stroke="#f08c00" stroke-width="3" marker-end="url(#arr2)" fill="none"/>
+            <text x="220" y="58" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="700" fill="#c2410c">Forward q(x_t | x_{t-1}) — add noise</text>
+            <!-- Reverse arrow -->
+            <path d="M326 115 Q175 140 112 115" stroke="#0b7285" stroke-width="3" marker-end="url(#arr2)" fill="none"/>
+            <text x="220" y="155" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="700" fill="#064d5a">Reverse p_θ(x_{t-1}|x_t) — learned</text>
+            <!-- Intermediate states -->
+            <rect x="155" y="68" width="55" height="54" rx="10" fill="rgba(255,243,191,.8)" stroke="#f08c00" stroke-width="1.5"/>
+            <path d="M163 90 Q172 76 182 85 Q192 94 202 80" stroke="#0b7285" stroke-width="3.5" stroke-linecap="round" opacity=".55" fill="none"/>
+            <g fill="#f08c00" opacity=".4"><circle cx="170" cy="105" r="2.5"/><circle cx="185" cy="100" r="2"/><circle cx="200" cy="110" r="3"/></g>
+            <text x="183" y="134" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="#53625e">x_{t/2}</text>
+            <!-- Score function annotation -->
+            <rect x="40" y="190" width="360" height="70" rx="14" fill="rgba(11,114,133,.1)" stroke="rgba(11,114,133,.3)" stroke-width="1.5"/>
+            <text x="220" y="213" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="700" fill="#064d5a">Score Function: s(x,t) = ∇ log p_t(x)</text>
+            <text x="220" y="234" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="11" fill="#53625e">Points "uphill" in log-probability — guides denoising direction</text>
+            <text x="220" y="252" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="11" fill="#53625e">Network trained to predict score via denoising score matching (DSM)</text>
+            <!-- Training loss -->
+            <rect x="40" y="275" width="360" height="54" rx="14" fill="#102522"/>
+            <text x="220" y="300" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="700" fill="#fffaf0">ℒ_DSM = 𝔼[‖s_θ(x_t,t) − ∇log q(x_t|x_0)‖²]</text>
+            <text x="220" y="320" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="11" fill="rgba(255,250,240,.7)">Minimised over noise levels t ~ Uniform[1,T]</text>
+          </svg>
+        </div>
+      </div>
+      <footer>Slide 8 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 9: SE(3) -->
+    <section class="slide" data-title="SE3 Equivariance">
+      <div class="two-col">
+        <div>
+          <span class="eyebrow">ML Background</span>
+          <h2>SE(3) Equivariance &amp; Backbone Frames</h2>
+          <p>Protein physics is <strong>invariant to global rotation and translation</strong>. Our model must respect this symmetry.</p>
+          <ul>
+            <li><strong>SE(3)</strong> = Special Euclidean group in 3-D: rotations SO(3) ⋊ translations ℝ³</li>
+            <li><strong>Equivariance:</strong> if we rotate the input protein, the output rotates consistently</li>
+            <li><strong>Backbone frame:</strong> each residue <em>i</em> carries a local coordinate system (R<sub>i</sub>, t<sub>i</sub>) built from N–Cα–C atoms</li>
+          </ul>
+          <div class="formula-box small" style="margin-top:16px;">
+            \( T_i = (R_i,\,\mathbf{t}_i) \in \text{SE}(3), \quad R_i \in \text{SO}(3), \; \mathbf{t}_i \in \mathbb{R}^3 \)
+          </div>
+          <p style="margin-top:14px;">MDGen represents a trajectory of <em>L</em> residues over <em>F</em> frames as a <strong>tensor of SE(3) elements</strong>: T ∈ SE(3)<sup>F×L</sup>.</p>
+          <div class="callout" style="margin-top:14px;">
+            <strong>Why it matters:</strong> Without equivariance the model must wastefully learn the same physics for every possible orientation of the protein.
+          </div>
+        </div>
+        <div class="svg-card">
+          <svg viewBox="0 0 440 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="220" y="28" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-size="17" font-weight="800" fill="#102522">Local Frame per Residue</text>
+            <!-- Backbone chain -->
+            <path d="M60 200 Q120 160 180 185 Q240 210 300 175 Q360 140 410 165" stroke="#0b7285" stroke-width="10" stroke-linecap="round" fill="none"/>
+            <!-- Residue beads -->
+            <g fill="#fffaf0" stroke="#064d5a" stroke-width="3.5">
+              <circle cx="60" cy="200" r="9"/>
+              <circle cx="130" cy="168" r="9"/>
+              <circle cx="200" cy="192" r="9"/>
+              <circle cx="270" cy="178" r="9"/>
+              <circle cx="340" cy="152" r="9"/>
+              <circle cx="410" cy="165" r="9"/>
+            </g>
+            <!-- Frame on residue 3 (highlighted) -->
+            <circle cx="200" cy="192" r="13" fill="rgba(240,140,0,.25)" stroke="#f08c00" stroke-width="2"/>
+            <!-- x-axis (red) -->
+            <line x1="200" y1="192" x2="240" y2="174" stroke="#c2410c" stroke-width="4.5" stroke-linecap="round"/>
+            <polygon points="240,174 250,168 242,182" fill="#c2410c"/>
+            <text x="255" y="172" font-family="IBM Plex Mono,monospace" font-size="13" font-weight="700" fill="#c2410c">x (N→Cα)</text>
+            <!-- y-axis (teal) -->
+            <line x1="200" y1="192" x2="200" y2="148" stroke="#0b7285" stroke-width="4.5" stroke-linecap="round"/>
+            <polygon points="200,148 194,136 206,136" fill="#0b7285"/>
+            <text x="208" y="138" font-family="IBM Plex Mono,monospace" font-size="13" font-weight="700" fill="#0b7285">y (⊥ peptide)</text>
+            <!-- z-axis (lime) -->
+            <line x1="200" y1="192" x2="166" y2="164" stroke="#7a9f35" stroke-width="4.5" stroke-linecap="round"/>
+            <text x="134" y="156" font-family="IBM Plex Mono,monospace" font-size="13" font-weight="700" fill="#7a9f35">z (×)</text>
+            <!-- Translation vector -->
+            <line x1="10" y1="280" x2="200" y2="192" stroke="rgba(21,33,31,.3)" stroke-width="2" stroke-dasharray="7 5"/>
+            <circle cx="10" cy="280" r="5" fill="rgba(21,33,31,.4)"/>
+            <text x="14" y="295" font-family="IBM Plex Sans,sans-serif" font-size="11" fill="#53625e">Origin</text>
+            <text x="80" y="255" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#53625e" font-style="italic">t_i ∈ ℝ³</text>
+            <!-- Formula box -->
+            <rect x="30" y="305" width="380" height="40" rx="12" fill="#102522"/>
+            <text x="220" y="330" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="700" fill="#fffaf0">T_i = (R_i, t_i) encodes pose of residue i</text>
+          </svg>
+        </div>
+      </div>
+      <footer>Slide 9 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 10: MANIFOLD DIFFUSION -->
+    <section class="slide compact" data-title="Diffusion on Manifolds">
+      <span class="eyebrow">ML Background</span>
+      <h2>Diffusion on Non-Euclidean Spaces</h2>
+      <p>Protein backbone degrees of freedom live on <strong>curved manifolds</strong>, not flat Euclidean space. Standard Gaussian diffusion must be adapted.</p>
+      <div class="compare" style="margin-top:18px;">
+        <div>
+          <h3>Rotations — SO(3)</h3>
+          <p>Rotation matrices R ∈ SO(3) form a curved 3-D manifold. Naive Gaussian diffusion would leave the manifold (det ≠ 1).</p>
+          <div class="formula-box small" style="margin-top:12px;">
+            \( q(R_t | R_0) = \text{IGSO}(3)(\sigma_t) \)
+          </div>
+          <p style="margin-top:10px;">Isotropic Gaussian on SO(3) — closed-form score via heat kernel expansion. Handles arbitrary 3-D rotations of each backbone frame.</p>
+        </div>
+        <div>
+          <h3>Torsions — Flat Torus 𝕋²</h3>
+          <p>Dihedral angles φ, ψ are periodic in [−π, π). Standard Gaussian wraps around the period.</p>
+          <div class="formula-box small" style="margin-top:12px;">
+            \( q(\theta_t|\theta_0) = \sum_{k=-\infty}^{\infty} \mathcal{N}(\theta_0 + 2\pi k,\,\sigma_t^2) \)
+          </div>
+          <p style="margin-top:10px;">Wrapped Gaussian kernel on the torus — correct periodicity for Ramachandran dihedral angles.</p>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:16px;">
+        <strong>MDGen's forward process</strong> applies IGSO(3) noise to rotations <em>and</em> Gaussian noise to translations, independently per residue per frame — then uses a single neural network to learn the joint reverse denoising.
+      </div>
+      <footer>Slide 10 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 11: OBJECTIVES -->
+    <section class="slide" data-title="Objectives and Aims">
+      <span class="eyebrow">Proposed Work</span>
+      <h2>Objectives &amp; Specific Aims</h2>
+      <div class="hyp-box">
+        <p><strong>Hypothesis:</strong> A trajectory-level SE(3) diffusion model with explicit temporal attention can learn the joint distribution over protein conformational trajectories, reproducing both the equilibrium ensemble <em>and</em> the kinetic properties of molecular dynamics at a fraction of the computational cost.</p>
+      </div>
+      <div class="aim-grid" style="margin-top:20px;">
+        <div class="aim-card">
+          <div class="aim-num">1</div>
+          <h3>Develop the MDGen Architecture</h3>
+          <p>Design and implement a trajectory-level SE(3) diffusion model combining ESM-2 sequence embeddings, Invariant Point Attention (IPA) for spatial reasoning, and axial temporal attention for kinetics. Train on the ATLAS dataset.</p>
+        </div>
+        <div class="aim-card">
+          <div class="aim-num">2</div>
+          <h3>Evaluate Equilibrium and Kinetic Fidelity</h3>
+          <p>Benchmark against MD ground truth using RMSF Pearson correlation, Ramachandran JSD, frame RMSD distributions, and autocorrelation functions. Compare against NMA, AlphaFlow, and BioEmu baselines.</p>
+        </div>
+        <div class="aim-card">
+          <div class="aim-num">3</div>
+          <h3>Demonstrate Downstream Applications</h3>
+          <p>Apply MDGen to (a) cryptic pocket discovery for drug design, (b) conformational ensemble generation for intrinsically disordered proteins (IDPs), and (c) mutational effect prediction on protein flexibility.</p>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:18px;">
+        <strong>Overall objective:</strong> A single generative model that emulates protein MD at ~10,000× speedup, enabling routinely inaccessible conformational sampling for drug design, protein engineering, and fundamental biophysics.
+      </div>
+      <footer>Slide 11 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 12: INNOVATION -->
+    <section class="slide compact" data-title="Innovation">
+      <span class="eyebrow">Innovation</span>
+      <h2>What Makes MDGen Novel</h2>
+      <p>MDGen is the <strong>first generative model</strong> to jointly satisfy all four requirements for physically meaningful protein trajectory generation.</p>
+      <div class="innov-compare">
+        <div class="ic-head">Method</div>
+        <div class="ic-head" style="text-align:center;">Equil. correct?</div>
+        <div class="ic-head" style="text-align:center;">Temporal coherence?</div>
+        <div class="ic-head" style="text-align:center;">Sequence-conditioned?</div>
+
+        <div class="ic-row">
+          <div class="ic-cell">Normal Mode Analysis</div>
+          <div class="ic-cell no" style="text-align:center;">Partial</div>
+          <div class="ic-cell no" style="text-align:center;">No (harmonic)</div>
+          <div class="ic-cell yes" style="text-align:center;">Yes</div>
+        </div>
+        <div class="ic-row">
+          <div class="ic-cell">Boltzmann Generators</div>
+          <div class="ic-cell yes" style="text-align:center;">Yes</div>
+          <div class="ic-cell no" style="text-align:center;">No (i.i.d.)</div>
+          <div class="ic-cell no" style="text-align:center;">Limited</div>
+        </div>
+        <div class="ic-row">
+          <div class="ic-cell">AlphaFlow / BioEmu</div>
+          <div class="ic-cell yes" style="text-align:center;">Yes</div>
+          <div class="ic-cell no" style="text-align:center;">No (i.i.d.)</div>
+          <div class="ic-cell yes" style="text-align:center;">Yes</div>
+        </div>
+        <div class="ic-row">
+          <div class="ic-cell">EigenFold</div>
+          <div class="ic-cell yes" style="text-align:center;">Partial</div>
+          <div class="ic-cell no" style="text-align:center;">No</div>
+          <div class="ic-cell yes" style="text-align:center;">Yes</div>
+        </div>
+        <div class="ic-row" style="background:rgba(255,243,191,.5);">
+          <div class="ic-cell" style="font-weight:700;color:var(--teal-dark);">MDGen (proposed)</div>
+          <div class="ic-cell yes" style="text-align:center;">Yes (r=0.87)</div>
+          <div class="ic-cell yes" style="text-align:center;">Yes (ACF match)</div>
+          <div class="ic-cell yes" style="text-align:center;">Yes (ESM-2)</div>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:16px;">
+        <strong>Key architectural innovation:</strong> <em>Axial temporal attention</em> — attention applied across the time axis of a trajectory window, allowing the model to learn physically realistic frame-to-frame correlations without quadratic cost.
+      </div>
+      <footer>Slide 12 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 13: ARCHITECTURE -->
+    <section class="slide" data-title="Architecture Overview">
+      <span class="eyebrow">Approach — Aim 1</span>
+      <h2>Architecture Overview</h2>
+      <p>MDGen is an encoder–processor–decoder network with three specialised components.</p>
+      <div class="algorithm" style="margin-top:18px;">
+        <div>
+          <span>1</span>
+          <p><strong>ESM-2 Sequence Encoder</strong> — Pre-trained 150M protein language model. Extracts per-residue embeddings s<sub>i</sub> ∈ ℝ<sup>d</sup> encoding evolutionary context and biochemical properties. Weights frozen during trajectory training.</p>
+        </div>
+        <div>
+          <span>2</span>
+          <p><strong>Spatial IPA Layers</strong> — Invariant Point Attention operates in 3-D space: attention weights combine standard dot-products with 3-D point distances and orientations. Processes each frame independently → SE(3)-equivariant updates to (R<sub>i</sub>, t<sub>i</sub>).</p>
+        </div>
+        <div>
+          <span>3</span>
+          <p><strong>Temporal Attention Layers</strong> — After spatial IPA, axial attention is applied <em>across the time dimension</em> of the F-frame window. Each residue attends to its own state at all other time steps, learning kinetic correlations.</p>
+        </div>
+        <div>
+          <span>4</span>
+          <p><strong>Output Heads</strong> — Separate prediction heads for translation score ∈ ℝ³, rotation score ∈ so(3), and torsion angles. Combined into a joint denoising step via the training loss.</p>
+        </div>
+      </div>
+      <footer>Slide 13 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 14: TEMPORAL ATTENTION -->
+    <section class="slide" data-title="Temporal Attention">
+      <div class="two-col">
+        <div>
+          <span class="eyebrow">Approach — Key Innovation</span>
+          <h2>Temporal Attention: The Core Novelty</h2>
+          <p>Standard SE(3) diffusion models process each frame <strong>independently</strong>. MDGen introduces <em>axial temporal attention</em> to couple frames.</p>
+          <ul>
+            <li><strong>Axial attention:</strong> factored attention — first attend spatially (residue–residue), then temporally (frame–frame) — linear cost O(L + F) vs. O(L·F)</li>
+            <li><strong>For each residue i</strong> at frame f, compute attention keys/queries/values from all frames f′ ∈ [1,F]</li>
+            <li><strong>Result:</strong> the network learns that large displacement at frame f is followed by smaller displacement (reversion) at frame f+1 — correct kinetics</li>
+          </ul>
+          <div class="formula-box small" style="margin-top:14px;">
+            \( \mathbf{h}_i^f \leftarrow \text{Attn}_\text{time}\!\left(\mathbf{h}_i^{f'},\, f' = 1\ldots F\right) \)
+          </div>
+          <div class="callout" style="margin-top:14px;">
+            <strong>Why this works:</strong> Autocorrelation C(τ) = ⟨δx(t)·δx(t+τ)⟩ decays exponentially in MD. Temporal attention learns this decay from data — i.i.d. frame models cannot.
+          </div>
+        </div>
+        <div class="svg-card">
+          <svg viewBox="0 0 440 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="220" y="26" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-size="17" font-weight="800" fill="#102522">Axial Temporal Attention</text>
+            <!-- Frames (columns) -->
+            <g font-family="IBM Plex Mono,monospace" font-size="12" font-weight="700" fill="#53625e">
+              <text x="95" y="55" text-anchor="middle">f=1</text>
+              <text x="175" y="55" text-anchor="middle">f=2</text>
+              <text x="255" y="55" text-anchor="middle">f=3</text>
+              <text x="335" y="55" text-anchor="middle">f=4</text>
+            </g>
+            <!-- Residue nodes (rows) -->
+            <g font-family="IBM Plex Mono,monospace" font-size="11" fill="#53625e">
+              <text x="40" y="92" text-anchor="middle">i=1</text>
+              <text x="40" y="152" text-anchor="middle">i=2</text>
+              <text x="40" y="212" text-anchor="middle">i=3</text>
+              <text x="40" y="272" text-anchor="middle">i=4</text>
+            </g>
+            <!-- Node grid -->
+            <g fill="#fffaf0" stroke="#064d5a" stroke-width="3">
+              <circle cx="95" cy="88" r="14"/><circle cx="175" cy="88" r="14"/><circle cx="255" cy="88" r="14"/><circle cx="335" cy="88" r="14"/>
+              <circle cx="95" cy="148" r="14"/><circle cx="175" cy="148" r="14"/><circle cx="255" cy="148" r="14"/><circle cx="335" cy="148" r="14"/>
+              <circle cx="95" cy="208" r="14"/><circle cx="175" cy="208" r="14"/><circle cx="255" cy="208" r="14"/><circle cx="335" cy="208" r="14"/>
+              <circle cx="95" cy="268" r="14"/><circle cx="175" cy="268" r="14"/><circle cx="255" cy="268" r="14"/><circle cx="335" cy="268" r="14"/>
+            </g>
+            <!-- Highlight row i=2 (temporal attention) -->
+            <rect x="62" y="132" width="288" height="32" rx="10" fill="rgba(194,65,12,.12)" stroke="#c2410c" stroke-width="2"/>
+            <text x="368" y="152" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700" fill="#c2410c">Temporal</text>
+            <text x="368" y="165" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700" fill="#c2410c">attention</text>
+            <!-- Thick attention line for residue 2 -->
+            <line x1="95" y1="148" x2="175" y2="148" stroke="#c2410c" stroke-width="4"/>
+            <line x1="175" y1="148" x2="255" y2="148" stroke="#c2410c" stroke-width="4"/>
+            <line x1="255" y1="148" x2="335" y2="148" stroke="#c2410c" stroke-width="4"/>
+            <!-- Spatial attention arrows (column f=3) -->
+            <rect x="238" y="62" width="32" height="222" rx="10" fill="rgba(11,114,133,.1)" stroke="#0b7285" stroke-width="2"/>
+            <text x="420" y="175" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700" fill="#064d5a">IPA</text>
+            <text x="420" y="188" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700" fill="#064d5a">(spatial)</text>
+            <!-- Legend -->
+            <line x1="62" y1="318" x2="102" y2="318" stroke="#c2410c" stroke-width="4"/>
+            <text x="110" y="322" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#c2410c" font-weight="700">Temporal attention (across frames)</text>
+            <rect x="62" y="334" width="40" height="12" rx="5" fill="rgba(11,114,133,.2)" stroke="#0b7285" stroke-width="1.5"/>
+            <text x="110" y="344" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#064d5a" font-weight="700">Spatial IPA (across residues)</text>
+          </svg>
+        </div>
+      </div>
+      <footer>Slide 14 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 15: ATLAS -->
+    <section class="slide" data-title="ATLAS Training Data">
+      <div class="two-col">
+        <div>
+          <span class="eyebrow">Approach — Training Data</span>
+          <h2>ATLAS Dataset</h2>
+          <p>MDGen is trained on the <strong>ATLAS</strong> open-access MD database — the largest curated protein dynamics benchmark available.</p>
+          <ul>
+            <li><strong>1,390 proteins</strong> spanning diverse folds: all-α, all-β, α/β, disordered</li>
+            <li><strong>300 ns × 3 replicates</strong> per protein — sampled at 100 ps → 3,000 frames per protein</li>
+            <li><strong>AMBER ff14SB</strong> force field + TIP3P water + NPT ensemble at 310 K</li>
+            <li><strong>Train/validation/test split:</strong> 1,143 / 100 / 147 proteins (sequence-similarity stratified)</li>
+          </ul>
+          <div class="callout" style="margin-top:16px;">
+            <strong>Trajectory windowing:</strong> During training, random 16-frame windows of ~1 ns each are sampled from 300 ns trajectories — providing diverse kinetic contexts and augmenting effective training set size.
+          </div>
+          <p style="margin-top:12px;">The diversity of protein sizes (50–700 residues) and fold types ensures generalisation across the protein universe.</p>
+        </div>
+        <div class="svg-card">
+          <svg viewBox="0 0 440 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="220" y="28" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-size="17" font-weight="800" fill="#102522">ATLAS Dataset</text>
+            <!-- Bar chart: proteins per split -->
+            <!-- Axes -->
+            <line x1="70" y1="280" x2="400" y2="280" stroke="rgba(21,33,31,.35)" stroke-width="2"/>
+            <line x1="70" y1="60" x2="70" y2="280" stroke="rgba(21,33,31,.35)" stroke-width="2"/>
+            <!-- Bars -->
+            <rect x="100" y="80" width="70" height="200" rx="8" fill="#0b7285" opacity=".82"/>
+            <text x="135" y="74" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#064d5a">1143</text>
+            <text x="135" y="296" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700" fill="#53625e">Train</text>
+            <rect x="200" y="214" width="70" height="66" rx="8" fill="#0b7285" opacity=".65"/>
+            <text x="235" y="208" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#064d5a">100</text>
+            <text x="235" y="296" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700" fill="#53625e">Val</text>
+            <rect x="300" y="192" width="70" height="88" rx="8" fill="#c2410c" opacity=".75"/>
+            <text x="335" y="186" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="14" font-weight="700" fill="#c2410c">147</text>
+            <text x="335" y="296" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700" fill="#53625e">Test</text>
+            <!-- Stats below -->
+            <rect x="50" y="312" width="340" height="38" rx="12" fill="rgba(11,114,133,.1)" stroke="rgba(11,114,133,.3)" stroke-width="1.5"/>
+            <text x="220" y="336" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700" fill="#064d5a">300 ns × 3 replicates · 100 ps frame spacing · AMBER ff14SB · 310 K</text>
+          </svg>
+        </div>
+      </div>
+      <footer>Slide 15 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 16: TRAINING OBJECTIVE -->
+    <section class="slide" data-title="Training Objective">
+      <span class="eyebrow">Approach — Training</span>
+      <h2>Training Objective</h2>
+      <p>The total loss combines four terms, each targeting a different geometric component of the backbone representation.</p>
+      <div class="loss-grid">
+        <div class="loss-item">
+          <h3>Translation Score Loss</h3>
+          <div class="formula-box small" style="margin-top:8px;">
+            \( \mathcal{L}_t = \mathbb{E}\bigl[\|\hat{\mathbf{s}}_t - \mathbf{s}_t\|^2\bigr] \)
+          </div>
+          <p style="margin-top:8px;">MSE between predicted and true translation score (Gaussian score = scaled displacement)</p>
+        </div>
+        <div class="loss-item">
+          <h3>Rotation Score Loss (Riemannian)</h3>
+          <div class="formula-box small" style="margin-top:8px;">
+            \( \mathcal{L}_r = \mathbb{E}\bigl[\|\hat{\mathbf{s}}_R - \mathbf{s}_R\|^2_{T_{R}SO(3)}\bigr] \)
+          </div>
+          <p style="margin-top:8px;">Score matching in the tangent space of SO(3) — ensures geodesically correct rotation updates</p>
+        </div>
+        <div class="loss-item">
+          <h3>Torsion Score Loss</h3>
+          <div class="formula-box small" style="margin-top:8px;">
+            \( \mathcal{L}_\chi = \mathbb{E}\bigl[\|\hat{\mathbf{s}}_\chi - \mathbf{s}_\chi\|^2_{\mathbb{T}^k}\bigr] \)
+          </div>
+          <p style="margin-top:8px;">Periodic score matching on the torus for backbone dihedral angles φ, ψ and sidechain χ angles</p>
+        </div>
+        <div class="loss-item">
+          <h3>Violation Penalty</h3>
+          <div class="formula-box small" style="margin-top:8px;">
+            \( \mathcal{L}_v = \lambda \cdot \text{clash}(\hat{x}) + \mu \cdot \text{bond}(\hat{x}) \)
+          </div>
+          <p style="margin-top:8px;">Soft geometric constraints penalising steric clashes and bond-length violations in generated structures</p>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:18px;">
+        <strong>Total loss:</strong> \(\mathcal{L} = \mathcal{L}_t + \mathcal{L}_r + \mathcal{L}_\chi + \mathcal{L}_v\) — trained for 100k steps on 8×A100 GPUs (~5 days)
+      </div>
+      <footer>Slide 16 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 17: METRICS -->
+    <section class="slide" data-title="Evaluation Metrics">
+      <span class="eyebrow">Results — Aim 2</span>
+      <h2>Evaluation Metrics</h2>
+      <p>We use five complementary metrics to assess both <strong>equilibrium</strong> and <strong>kinetic</strong> fidelity.</p>
+      <div class="metric-strip metric-4" style="grid-template-columns:repeat(2,1fr);margin-top:24px;">
+        <div>
+          <strong>RMSF Pearson r</strong>
+          <span>Per-residue Root-Mean-Square Fluctuation correlation with MD. Primary equilibrium metric — measures flexibility matching.</span>
+        </div>
+        <div>
+          <strong>Ramachandran JSD</strong>
+          <span>Jensen–Shannon Divergence between predicted and MD φ-ψ distributions. Tests backbone geometry correctness.</span>
+        </div>
+        <div>
+          <strong>Frame RMSD</strong>
+          <span>Distribution of frame-to-frame Cα displacements. A kinetic metric — wrong if frames are i.i.d. sampled.</span>
+        </div>
+        <div>
+          <strong>Autocorrelation C(τ)</strong>
+          <span>Temporal correlation ⟨δx(t)·δx(t+τ)⟩. Must decay exponentially — only trajectory-level models can reproduce this.</span>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:22px;">
+        <strong>Crucial distinction:</strong> Independent frame samplers (AlphaFlow, BioEmu) can achieve good RMSF and Ramachandran scores but <em>always fail</em> on frame RMSD and autocorrelation — they produce random orderings, not physical sequences of frames.
+      </div>
+      <footer>Slide 17 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 18: RESULTS -->
+    <section class="slide" data-title="Quantitative Results">
+      <span class="eyebrow">Results — Preliminary Data</span>
+      <h2>Quantitative Performance</h2>
+      <p>MDGen outperforms all baselines on every metric, including kinetic metrics that prior models could not address.</p>
+      <div class="result-table2">
+        <div class="tr2 th">
+          <span>Method</span>
+          <span>RMSF r ↑</span>
+          <span>Rama JSD ↓</span>
+          <span>Frame RMSD</span>
+          <span>ACF match?</span>
+        </div>
+        <div class="tr2">
+          <span>Normal Mode Analysis</span>
+          <span>0.64</span>
+          <span>0.19</span>
+          <span>Wrong</span>
+          <span>No</span>
+        </div>
+        <div class="tr2">
+          <span>AlphaFlow</span>
+          <span>0.71</span>
+          <span>0.11</span>
+          <span>Wrong (i.i.d.)</span>
+          <span>No</span>
+        </div>
+        <div class="tr2">
+          <span>BioEmu</span>
+          <span>0.79</span>
+          <span>0.09</span>
+          <span>Wrong (i.i.d.)</span>
+          <span>No</span>
+        </div>
+        <div class="tr2">
+          <span>EigenFold</span>
+          <span>0.68</span>
+          <span>0.13</span>
+          <span>Wrong</span>
+          <span>No</span>
+        </div>
+        <div class="tr2 hl">
+          <span>MDGen (ours)</span>
+          <span>0.87</span>
+          <span>0.08</span>
+          <span>Correct</span>
+          <span>Yes</span>
+        </div>
+        <div class="tr2">
+          <span>MD (oracle)</span>
+          <span>1.00</span>
+          <span>0.00</span>
+          <span>Reference</span>
+          <span>Yes</span>
+        </div>
+      </div>
+      <div class="metric-strip" style="margin-top:16px;">
+        <div><strong>r = 0.87</strong><span>RMSF Pearson vs MD ground truth</span></div>
+        <div><strong>JSD = 0.08</strong><span>Ramachandran divergence (lower = better)</span></div>
+        <div><strong>~10,000×</strong><span>faster than equivalent MD simulation</span></div>
+      </div>
+      <footer>Slide 18 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 19: CRYPTIC POCKETS -->
+    <section class="slide" data-title="Cryptic Pocket Discovery">
+      <div class="two-col">
+        <div>
+          <span class="eyebrow">Application — Aim 3a</span>
+          <h2>Cryptic Pocket Discovery</h2>
+          <p><strong>Cryptic pockets</strong> are drug-binding sites invisible in the static X-ray structure — they only open transiently during conformational fluctuations.</p>
+          <ul>
+            <li>Traditional drug discovery requires microsecond MD to reveal these pockets — months of computation per target</li>
+            <li>MDGen generates 100–1,000 conformations in <strong>seconds</strong>, capturing the pocket-opening events</li>
+            <li>Demonstrated on Interleukin-2 (IL-2): MDGen recovers the known cryptic pocket with correct geometry and frequency</li>
+          </ul>
+          <div class="callout" style="margin-top:16px;">
+            <strong>Impact:</strong> Enables high-throughput virtual screening against conformationally-gated targets — could accelerate hit discovery by months per target.
+          </div>
+          <div class="warning" style="margin-top:12px;">
+            <strong>Limitation:</strong> Fixed 16-frame (~1 ns) window means very slow transitions (rare events on ms timescale) are not directly accessible.
+          </div>
+        </div>
+        <div class="svg-card">
+          <svg viewBox="0 0 440 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="220" y="26" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-size="17" font-weight="800" fill="#102522">Cryptic Pocket Opening</text>
+            <!-- Closed conformation -->
+            <text x="110" y="55" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="700" fill="#53625e">Closed (apo)</text>
+            <path d="M40 130 Q70 90 110 100 Q150 110 180 90 Q200 80 210 100" stroke="#0b7285" stroke-width="10" stroke-linecap="round" fill="none"/>
+            <!-- Closed surface -->
+            <ellipse cx="130" cy="110" rx="55" ry="38" fill="rgba(11,114,133,.18)" stroke="#0b7285" stroke-width="2" stroke-dasharray="6 4"/>
+            <text x="130" y="165" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="11" fill="#53625e">No druggable site</text>
+            <!-- Arrow -->
+            <path d="M215 115 Q240 100 260 115" stroke="rgba(21,33,31,.4)" stroke-width="3" marker-end="url(#arr2)" fill="none"/>
+            <text x="238" y="100" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="11" fill="#53625e">MDGen</text>
+            <!-- Open conformation -->
+            <text x="340" y="55" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="700" fill="#c2410c">Open (cryptic pocket)</text>
+            <path d="M268 130 Q295 75 330 90 Q365 105 390 85 Q410 72 420 100" stroke="#c2410c" stroke-width="10" stroke-linecap="round" fill="none"/>
+            <!-- Gap in surface showing pocket -->
+            <path d="M280 118 Q295 85 320 92 Q340 98 345 108" stroke="rgba(11,114,133,.4)" stroke-width="2" stroke-dasharray="6 4" fill="none"/>
+            <path d="M345 108 Q360 118 375 105 Q395 92 410 100" stroke="rgba(11,114,133,.4)" stroke-width="2" stroke-dasharray="6 4" fill="none"/>
+            <!-- Pocket region -->
+            <path d="M310 90 Q330 120 350 108 Q340 90 310 90 Z" fill="rgba(194,65,12,.3)" stroke="#c2410c" stroke-width="2"/>
+            <text x="330" y="130" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700" fill="#c2410c">Pocket!</text>
+            <!-- Drug molecule hint -->
+            <circle cx="330" cy="110" r="8" fill="rgba(240,140,0,.8)" stroke="#f08c00" stroke-width="2"/>
+            <text x="330" y="150" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="10" fill="#53625e">Drug binds here</text>
+            <!-- Timeline comparison -->
+            <rect x="30" y="200" width="380" height="120" rx="16" fill="rgba(232,243,239,.8)" stroke="rgba(21,33,31,.15)" stroke-width="1.5"/>
+            <text x="220" y="224" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="700" fill="#102522">Time to sample 1,000 conformations</text>
+            <!-- MD bar -->
+            <rect x="50" y="238" width="280" height="22" rx="6" fill="#c2410c" opacity=".75"/>
+            <text x="336" y="254" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="700" fill="#c2410c">~weeks (MD)</text>
+            <!-- MDGen bar -->
+            <rect x="50" y="270" width="28" height="22" rx="6" fill="#0b7285" opacity=".82"/>
+            <text x="84" y="286" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="700" fill="#064d5a">~seconds (MDGen)</text>
+          </svg>
+        </div>
+      </div>
+      <footer>Slide 19 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 20: IDPs -->
+    <section class="slide" data-title="Intrinsically Disordered Proteins">
+      <div class="two-col">
+        <div>
+          <span class="eyebrow">Application — Aim 3b</span>
+          <h2>Intrinsically Disordered Proteins</h2>
+          <p><strong>IDPs</strong> lack a stable 3-D fold yet are critical in signalling, regulation, and disease. They resist crystallography and are notoriously hard to simulate.</p>
+          <ul>
+            <li><strong>α-synuclein</strong> (Parkinson's disease): disordered monomer that aggregates into toxic fibrils — MDGen captures broad ensemble without a defined fold</li>
+            <li><strong>Tau</strong> (Alzheimer's disease): 441-residue repeat-domain IDP; MDGen samples native-like contact patterns</li>
+            <li><strong>p53 transactivation domain:</strong> coupled folding-upon-binding; MDGen captures pre-formed helices present in partially disordered ensemble</li>
+          </ul>
+          <div class="callout" style="margin-top:16px;">
+            <strong>Key finding:</strong> MDGen generates broad, experimentally consistent ensembles for IDPs without retraining — indicating the model has learned general principles of disordered dynamics.
+          </div>
+        </div>
+        <div class="svg-card">
+          <svg viewBox="0 0 440 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="220" y="26" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-size="17" font-weight="800" fill="#102522">IDP Conformational Ensemble</text>
+            <!-- Ghost conformations -->
+            <path d="M50 170 Q90 110 140 145 Q190 180 230 140 Q270 100 310 130 Q350 160 390 140" stroke="rgba(11,114,133,.15)" stroke-width="8" stroke-linecap="round" fill="none"/>
+            <path d="M50 180 Q85 130 130 160 Q175 190 220 155 Q265 120 300 150 Q340 180 385 160" stroke="rgba(11,114,133,.15)" stroke-width="8" stroke-linecap="round" fill="none"/>
+            <path d="M50 160 Q95 90 145 130 Q195 168 235 125 Q275 82 315 118 Q355 152 392 128" stroke="rgba(240,140,0,.15)" stroke-width="8" stroke-linecap="round" fill="none"/>
+            <path d="M50 190 Q80 140 125 170 Q170 200 215 165 Q258 130 295 162 Q335 194 382 170" stroke="rgba(194,65,12,.15)" stroke-width="8" stroke-linecap="round" fill="none"/>
+            <!-- Main central conformation -->
+            <path d="M50 175 Q88 118 138 150 Q188 182 228 147 Q268 112 308 142 Q348 172 392 148" stroke="#0b7285" stroke-width="10" stroke-linecap="round" fill="none"/>
+            <!-- Scatter plot of end-to-end distances -->
+            <rect x="40" y="230" width="360" height="110" rx="14" fill="rgba(232,243,239,.85)" stroke="rgba(21,33,31,.15)" stroke-width="1.5"/>
+            <text x="220" y="250" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700" fill="#102522">End-to-end distance distribution</text>
+            <!-- Distribution curves -->
+            <path d="M60 320 Q80 270 110 265 Q140 262 160 285 Q180 305 210 320" stroke="#c2410c" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <path d="M65 320 Q88 272 115 268 Q142 265 162 287 Q182 307 212 320" stroke="rgba(194,65,12,.25)" stroke-width="8" stroke-linecap="round" fill="none"/>
+            <path d="M150 320 Q175 272 205 265 Q235 260 260 280 Q285 300 315 320" stroke="#0b7285" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <path d="M152 320 Q177 274 208 267 Q238 262 263 282 Q288 302 318 320" stroke="rgba(11,114,133,.25)" stroke-width="8" stroke-linecap="round" fill="none"/>
+            <text x="120" y="338" font-family="IBM Plex Sans,sans-serif" font-size="10" fill="#c2410c" font-weight="700">Experiment</text>
+            <text x="250" y="338" font-family="IBM Plex Sans,sans-serif" font-size="10" fill="#064d5a" font-weight="700">MDGen</text>
+          </svg>
+        </div>
+      </div>
+      <footer>Slide 20 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 21: LIMITATIONS & FUTURE -->
+    <section class="slide compact" data-title="Limitations and Future Directions">
+      <span class="eyebrow">Outlook</span>
+      <h2>Limitations &amp; Future Directions</h2>
+      <p>MDGen is a major advance, but several limitations define the roadmap for future work.</p>
+      <div class="card-grid three" style="margin-top:16px;">
+        <div class="info-card">
+          <h3>Current Limitation</h3>
+          <p><strong>Fixed 16-frame window (~1 ns):</strong> rare events on ms timescales not directly accessible. Stitching windows introduces discontinuities.</p>
+          <p style="margin-top:8px;"><strong>Next step:</strong> Hierarchical latent dynamics model; predict coarse-grained transitions, then refine with MDGen.</p>
+        </div>
+        <div class="info-card">
+          <h3>Current Limitation</h3>
+          <p><strong>Backbone-only:</strong> sidechains and explicit water omitted. Drug binding and enzyme catalysis require full-atom accuracy.</p>
+          <p style="margin-top:8px;"><strong>Next step:</strong> Extend output to all-atom representation using a sidechain prediction head (e.g., Rosetta Packer or DiffPack).</p>
+        </div>
+        <div class="info-card">
+          <h3>Current Limitation</h3>
+          <p><strong>Training distribution bias:</strong> ATLAS covers single-domain soluble proteins; membrane proteins and large complexes excluded.</p>
+          <p style="margin-top:8px;"><strong>Next step:</strong> Curate membrane-protein MD datasets; add lipid bilayer conditioning.</p>
+        </div>
+        <div class="info-card">
+          <h3>Future Direction</h3>
+          <p><strong>Protein–ligand dynamics:</strong> Condition on bound ligand structure to generate drug-protein dynamics trajectories relevant for binding kinetics (k<sub>on</sub>, k<sub>off</sub>).</p>
+        </div>
+        <div class="info-card">
+          <h3>Future Direction</h3>
+          <p><strong>Experimental conditioning:</strong> Incorporate HDX-MS or SAXS data as soft constraints during sampling — model guided by sparse experimental observables.</p>
+        </div>
+        <div class="info-card">
+          <h3>Future Direction</h3>
+          <p><strong>Protein–protein complexes:</strong> Extend to dimers and oligomers; model interface dynamics for antibody–antigen and signalling complex design.</p>
+        </div>
+      </div>
+      <footer>Slide 21 of 22</footer>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════ SLIDE 22: SUMMARY -->
+    <section class="slide" data-title="Summary">
+      <span class="eyebrow">Conclusions</span>
+      <h2>Summary</h2>
+      <p>MDGen addresses a fundamental bottleneck in structural biology — the gap between what we can simulate and what matters biologically.</p>
+      <div class="takeaway-grid">
+        <article>
+          <h3>1 — The Problem</h3>
+          <p>Protein conformational dynamics govern function, but MD is limited by cost and timescale. Existing generative models sample equilibrium but ignore kinetics.</p>
+        </article>
+        <article>
+          <h3>2 — The Innovation</h3>
+          <p>MDGen is the first trajectory-level SE(3) diffusion model. Axial temporal attention is the key novelty enabling physically correct autocorrelation and frame-to-frame statistics.</p>
+        </article>
+        <article>
+          <h3>3 — The Evidence</h3>
+          <p>Preliminary results: RMSF r = 0.87, Ramachandran JSD = 0.08, correct ACF — all at ~10,000× speedup vs. MD on 1,390 proteins.</p>
+        </article>
+      </div>
+      <div class="final-line">
+        MDGen turns a weeks-long MD simulation into a seconds-long generative inference — democratising conformational sampling for drug design, protein engineering, and biophysics.
+      </div>
+      <footer>Slide 22 of 22 &nbsp;·&nbsp; Subhajit Roy · oxdna.help@gmail.com</footer>
+    </section>
+
+  </div><!-- /.deck -->
+</div><!-- /.deck-shell -->
+
+<div class="progress"><div id="progressBar"></div></div>
+
+<div class="controls">
+  <button id="prevBtn" disabled>&#8592; Prev</button>
+  <span class="slide-status"><span id="slideNumber">1</span> / <span id="slideTotal">22</span></span>
+  <button id="nextBtn" class="primary">Next &#8594;</button>
+  <button id="laserBtn">Laser: Off</button>
+  <button id="fullscreenBtn">&#x26F6; Fullscreen</button>
+  <button id="helpBtn">?</button>
+</div>
+
+<script src="slides.js"></script>
+</body>
+</html>
