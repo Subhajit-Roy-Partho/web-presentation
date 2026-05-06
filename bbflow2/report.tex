@@ -62,9 +62,10 @@ IDP ensembles from the Protein Ensemble Database (PED) \cite{lazar2021ped} using
 radius-of-gyration distributions, per-residue RMSF, contact frequency maps, and pairwise RMSD;
 (3) apply IDPFlow to the disease-relevant p53 N-terminal transactivation domain (TAD) and
 $\alpha$-synuclein to identify transient structural features and cryptic binding sites.
-Preliminary re-analysis of a 200-IDP subset of IDRome shows that sequence-derived
-physicochemical descriptors alone predict mean $R_g$ with $R^2 = 0.87$ (cross-validated),
-supporting the feasibility of sequence-conditioned ensemble learning.
+Published feasibility data support the premise: IDRome provides proteome-scale IDP
+trajectories, CALVADOS2 captures sequence-dependent IDP compactness, and BBFlow shows that
+SE(3) flow matching can learn protein ensemble distributions orders of magnitude faster than
+MD for folded proteins.
 
 \noindent\textbf{Broader Impacts.}
 All trained model weights and code will be released as open-source software (MIT license),
@@ -305,8 +306,7 @@ before being used as cross-attention context in each transformer layer.
 BBFlow's conditional prior uses geodesic interpolation toward $\mathbf{x}_\mathrm{eq}$ on
 SE(3)$^N$ \cite{wolf2025bbflow}.
 Without $\mathbf{x}_\mathrm{eq}$, we propose a \emph{compactness-biased} prior:
-a predicted mean $R_g$ (estimated from the linear model trained on IDRome and described in
-the Preliminary Data section) is used to scale the translational noise variance, so that
+a sequence-predicted mean $R_g$ is used to scale the translational noise variance, so that
 charge-rich IDPs (which are known to adopt extended conformations) receive a broader prior
 than compact, hydrophobic ones.
 Formally, if $\hat{R}_g$ is the sequence-predicted radius of gyration,
@@ -435,10 +435,6 @@ discriminator network to match the prior to aggregate training data statistics, 
 to the latent diffusion prior used in protein design \cite{ingraham2023se3}.
 This adds one pre-training stage but is straightforward to implement within the
 existing framework.
-
-% -----------------------------------------------------------
-\section*{References}
-% -----------------------------------------------------------
 
 \begin{thebibliography}{99}
 

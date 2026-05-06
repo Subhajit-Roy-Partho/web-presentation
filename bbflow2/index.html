@@ -807,76 +807,53 @@
         <div class="two-col">
           <div>
             <p class="section-tag">Preliminary Data</p>
-            <h2>Sequence features predict IDP compactness — supporting our hypothesis</h2>
-            <p>To support the feasibility of sequence-conditioned ensemble prediction, we re-analyzed a subset of the IDRome dataset (Tesei et al. 2024). Using only the amino acid sequence, we computed four physicochemical descriptors known to govern IDP behavior:</p>
+            <h2>Published evidence makes the proposal feasible</h2>
+            <p>The proposal does not require inventing a new data source. It combines three already-demonstrated ingredients into a new IDP-specific model:</p>
             <ul style="margin-top:10px">
-              <li><strong>FCR</strong> — fraction of charged residues</li>
-              <li><strong>NCPR</strong> — net charge per residue</li>
-              <li><strong>&kappa;</strong> — charge patterning parameter (Das &amp; Pappu)</li>
-              <li><strong>&lt;H&gt;</strong> — mean hydrophobicity (Kyte–Doolittle)</li>
+              <li><strong>IDRome:</strong> 28,058 human IDP trajectories from CALVADOS2 coarse-grained MD.</li>
+              <li><strong>Sequence physics:</strong> charge, hydrophobicity, and charge patterning govern IDP compactness.</li>
+              <li><strong>BBFlow:</strong> SE(3) flow matching can learn protein backbone ensembles from MD data.</li>
+              <li><strong>ESM2:</strong> protein language embeddings provide per-residue sequence context at scale.</li>
             </ul>
-            <p style="margin-top:12px">A linear regression model trained on 200 IDPs (cross-validated, 10-fold) predicts the mean radius of gyration R<sub>g</sub> with R² = 0.87. This demonstrates that sequence alone captures the dominant variance in IDP compactness, strongly supporting the feasibility of \(\boldsymbol{\phi}_{\text{seq}}\) as a conditioning signal.</p>
+            <p style="margin-top:12px">Our preliminary position is therefore evidence-based: if sequence determines IDP ensemble statistics and BBFlow learns MD-like backbone distributions, then replacing \(x_{eq}\) with \(\boldsymbol{\phi}_{\text{seq}}\) is a testable and well-motivated next step.</p>
             <div class="callout" style="margin-top:14px">
-              <strong>Note:</strong> All data shown are from publicly available IDRome trajectories. The linear model is merely a proof-of-concept; IDPFlow will use deep representations (ESM2) that capture far richer information.
+              <strong>Preliminary data used here:</strong> published IDRome trajectories, BBFlow ATLAS results, and established IDP sequence-property relationships. New regression and ablation results are part of Aim 1.
             </div>
           </div>
           <figure class="svg-card">
-            <svg viewBox="0 0 560 420" role="img" aria-label="Scatter plot: predicted vs MD Rg for IDPs">
+            <svg viewBox="0 0 560 420" role="img" aria-label="Feasibility evidence chain for IDPFlow">
               <defs>
                 <marker id="arr9" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
                   <path d="M1 1 L6 4 L1 7 Z" fill="rgba(21,33,31,0.55)"/>
                 </marker>
               </defs>
-              <text class="diagram-title" x="30" y="32">Sequence → Rg prediction (re-analysis, IDRome)</text>
-              <!-- Axes -->
-              <line x1="70" y1="350" x2="510" y2="350" stroke="rgba(21,33,31,0.35)" stroke-width="2.5" marker-end="url(#arr9)"/>
-              <line x1="70" y1="350" x2="70" y2="70" stroke="rgba(21,33,31,0.35)" stroke-width="2.5" marker-end="url(#arr9)"/>
-              <text x="520" y="355" class="diagram-note" font-size="12">MD Rg (Å) →</text>
-              <text x="22" y="76" class="diagram-note" font-size="12" transform="rotate(-90,38,210)">Predicted Rg (Å) →</text>
-              <!-- Axis tick labels -->
-              <text x="70" y="368" text-anchor="middle" class="diagram-note" font-size="11">20</text>
-              <text x="180" y="368" text-anchor="middle" class="diagram-note" font-size="11">30</text>
-              <text x="290" y="368" text-anchor="middle" class="diagram-note" font-size="11">40</text>
-              <text x="400" y="368" text-anchor="middle" class="diagram-note" font-size="11">50</text>
-              <text x="510" y="368" text-anchor="middle" class="diagram-note" font-size="11">60</text>
-              <text x="54" y="354" text-anchor="end" class="diagram-note" font-size="11">20</text>
-              <text x="54" y="244" text-anchor="end" class="diagram-note" font-size="11">35</text>
-              <text x="54" y="134" text-anchor="end" class="diagram-note" font-size="11">50</text>
-              <!-- Grid lines -->
-              <line x1="70" y1="244" x2="505" y2="244" stroke="rgba(21,33,31,0.07)" stroke-width="1.5"/>
-              <line x1="70" y1="134" x2="505" y2="134" stroke="rgba(21,33,31,0.07)" stroke-width="1.5"/>
-              <line x1="180" y1="70" x2="180" y2="350" stroke="rgba(21,33,31,0.07)" stroke-width="1.5"/>
-              <line x1="290" y1="70" x2="290" y2="350" stroke="rgba(21,33,31,0.07)" stroke-width="1.5"/>
-              <line x1="400" y1="70" x2="400" y2="350" stroke="rgba(21,33,31,0.07)" stroke-width="1.5"/>
-              <!-- y=x ideal line -->
-              <line x1="70" y1="350" x2="510" y2="80" stroke="rgba(194,65,12,0.35)" stroke-width="2" stroke-dasharray="10 6"/>
-              <text x="490" y="72" class="diagram-note" font-size="11" fill="#c2410c">ideal (y=x)</text>
-              <!-- Scatter points (approximate IDRome-like distribution) -->
-              <circle cx="98" cy="324" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
-              <circle cx="130" cy="298" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
-              <circle cx="157" cy="278" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
-              <circle cx="184" cy="253" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
-              <circle cx="215" cy="226" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
-              <circle cx="244" cy="212" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
-              <circle cx="270" cy="194" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
-              <circle cx="302" cy="178" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
-              <circle cx="336" cy="157" r="7" fill="rgba(11,114,133,0.7)" stroke="#fffaf0" stroke-width="2"/>
-              <circle cx="368" cy="138" r="7" fill="rgba(240,140,0,0.85)" stroke="#fffaf0" stroke-width="2"/>
-              <circle cx="400" cy="118" r="7" fill="rgba(240,140,0,0.85)" stroke="#fffaf0" stroke-width="2"/>
-              <circle cx="432" cy="100" r="7" fill="rgba(240,140,0,0.85)" stroke="#fffaf0" stroke-width="2"/>
-              <!-- Notable labels -->
-              <text x="116" y="310" class="diagram-note" font-size="10" fill="#0b7285">p27 KID</text>
-              <text x="262" y="186" class="diagram-note" font-size="10" fill="#0b7285">p53 TAD</text>
-              <text x="419" y="94" class="diagram-note" font-size="10" fill="#8a5200">α-synuclein</text>
-              <text x="450" y="112" class="diagram-note" font-size="10" fill="#8a5200">NUP153</text>
-              <!-- R-squared label -->
-              <rect x="90" y="88" width="150" height="40" rx="12" fill="rgba(194,65,12,0.1)" stroke="#c2410c" stroke-width="1.5"/>
-              <text x="165" y="106" text-anchor="middle" fill="#c2410c" font-size="14" font-weight="700">R² = 0.87</text>
-              <text x="165" y="122" text-anchor="middle" class="diagram-note" font-size="11">linear model, 10-fold CV</text>
+              <text class="diagram-title" x="30" y="32">Feasibility evidence chain</text>
+              <rect x="40" y="74" width="190" height="86" rx="16" fill="rgba(232,243,239,0.92)" stroke="rgba(11,114,133,0.35)" stroke-width="2"/>
+              <text x="135" y="102" text-anchor="middle" fill="#064d5a" font-size="15" font-weight="700">IDRome</text>
+              <text x="135" y="126" text-anchor="middle" class="diagram-note" font-size="12">28,058 IDP trajectories</text>
+              <text x="135" y="145" text-anchor="middle" class="diagram-note" font-size="12">training data exists</text>
+              <rect x="330" y="74" width="190" height="86" rx="16" fill="rgba(255,243,191,0.86)" stroke="rgba(240,140,0,0.35)" stroke-width="2"/>
+              <text x="425" y="102" text-anchor="middle" fill="#8a5200" font-size="15" font-weight="700">Sequence Physics</text>
+              <text x="425" y="126" text-anchor="middle" class="diagram-note" font-size="12">charge + hydrophobicity</text>
+              <text x="425" y="145" text-anchor="middle" class="diagram-note" font-size="12">predict compactness trends</text>
+              <rect x="40" y="234" width="190" height="86" rx="16" fill="rgba(255,250,240,0.92)" stroke="rgba(194,65,12,0.35)" stroke-width="2"/>
+              <text x="135" y="262" text-anchor="middle" fill="#7a2b0d" font-size="15" font-weight="700">BBFlow</text>
+              <text x="135" y="286" text-anchor="middle" class="diagram-note" font-size="12">SE(3) flow matching</text>
+              <text x="135" y="305" text-anchor="middle" class="diagram-note" font-size="12">works for folded ensembles</text>
+              <rect x="330" y="234" width="190" height="86" rx="16" fill="rgba(232,243,239,0.92)" stroke="rgba(122,159,53,0.35)" stroke-width="2"/>
+              <text x="425" y="262" text-anchor="middle" fill="#526e1f" font-size="15" font-weight="700">ESM2 Context</text>
+              <text x="425" y="286" text-anchor="middle" class="diagram-note" font-size="12">per-residue embeddings</text>
+              <text x="425" y="305" text-anchor="middle" class="diagram-note" font-size="12">sequence-only input</text>
+              <line x1="230" y1="117" x2="324" y2="117" stroke="rgba(21,33,31,0.38)" stroke-width="2.5" marker-end="url(#arr9)"/>
+              <line x1="135" y1="160" x2="135" y2="228" stroke="rgba(21,33,31,0.38)" stroke-width="2.5" marker-end="url(#arr9)"/>
+              <line x1="230" y1="277" x2="324" y2="277" stroke="rgba(21,33,31,0.38)" stroke-width="2.5" marker-end="url(#arr9)"/>
+              <path d="M425 160 C425 190 250 188 250 210 C250 232 335 232 360 250" fill="none" stroke="rgba(21,33,31,0.28)" stroke-width="2.5" stroke-dasharray="8 6" marker-end="url(#arr9)"/>
+              <rect x="118" y="350" width="324" height="42" rx="16" fill="rgba(194,65,12,0.1)" stroke="rgba(194,65,12,0.28)" stroke-width="1.5"/>
+              <text x="280" y="376" text-anchor="middle" fill="#7a2b0d" font-size="15" font-weight="700">Testable next step: sequence-conditioned SE(3) flow</text>
             </svg>
           </figure>
         </div>
-        <footer>Preliminary analysis based on re-analysis of IDRome data (Tesei et al. Nature 2024, publicly available). Das &amp; Pappu κ parameter: J. Mol. Biol. 2013. Kyte–Doolittle hydrophobicity scale, 1982.</footer>
+        <footer>Feasibility evidence: IDRome, Tesei et al. Nature 2024; CALVADOS2, Loehr et al. JCTC; BBFlow, Wolf et al. 2025; ESM2, Lin et al. Science 2023.</footer>
       </section>
 
       <!-- ===== SLIDE 14: INNOVATION ===== -->
