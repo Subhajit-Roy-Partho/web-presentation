@@ -1,0 +1,470 @@
+% BBFlow NSF-style Report --- Times 12pt, single spacing, 1-inch margins
+% Project Summary: 1 page | Project Description: 6 pages | References separate
+\documentclass[12pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}          % Times New Roman
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\singlespacing
+\usepackage[parfill]{parskip}
+\setlength{\parskip}{6pt}
+\usepackage{titlesec}
+\titleformat{\section}{\normalfont\bfseries\large}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalfont\bfseries}{}{0em}{}
+\titlespacing*{\section}{0pt}{12pt}{4pt}
+\titlespacing*{\subsection}{0pt}{8pt}{2pt}
+
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+
+\pagestyle{plain}
+
+\begin{document}
+
+% ============================================================
+%  PROJECT SUMMARY  (1 page)
+% ============================================================
+\begin{center}
+  {\large\bfseries Project Summary}\\[4pt]
+  \textbf{BBFlow: Learning Conformational Ensembles of Proteins\\
+  from Backbone Geometry via SE(3) Flow Matching}
+\end{center}
+
+\noindent\textbf{Overview.}
+Protein function is governed not by a single static structure but by a
+\emph{conformational ensemble} drawn from the Boltzmann distribution. Molecular
+dynamics (MD) simulation is the established route to such ensembles, but the
+cost of overcoming free-energy barriers and reaching ergodicity makes broad
+sampling prohibitive for most proteins. Recent deep generative MD emulators
+(AlphaFlow, ESMFlow, ConfDiff, BioEmu) approach this problem by fine-tuning
+large pre-trained folding models such as AlphaFold~2 or ESMFold, which
+inherit a costly dependence on Multiple Sequence Alignments (MSAs) or protein
+language model embeddings -- so-called \emph{evolutionary information}. This
+dependence is slow at inference, biases predictions toward natural sequences,
+and breaks down on \emph{de novo} designs and intrinsically novel sequences
+where evolutionary signal is absent. The proposed work introduces
+\textbf{BBFlow}~\cite{wolf2025bbflow}, an SE(3) flow-matching model that
+generates protein backbone ensembles conditioned solely on the equilibrium
+backbone \emph{geometry} of the target protein, eliminating the dependence on
+folding-model weights and evolutionary information altogether.
+
+\noindent\textbf{Intellectual Merit.}
+Three specific aims will be pursued. (1) \emph{Reformulate ensemble generation
+as structure-conditioned flow matching}: instead of $p(x)$ conditioned on
+sequence, learn $p(x \mid x_{\mathrm{eq}})$ on the Riemannian manifold
+$\mathrm{SE}(3)^N$, with conditioning provided by the equilibrium backbone via
+a binned pairwise-distance map and equivariant local-frame direction vectors.
+(2) \emph{Introduce a structure-conditioned prior $p_0(x_0 \mid x_{\mathrm{eq}})$}
+through partial geodesic interpolation between unconditional noise and
+$x_{\mathrm{eq}}$ -- an idea inspired by stochastic interpolants and partial
+denoising, but novel in the flow-matching ensemble setting. (3) \emph{Validate
+on the ATLAS MD benchmark, on a curated set of \emph{de novo} proteins, and on
+multi-chain complexes}, comparing against AlphaFlow, ESMFlow-T, ConfDiff,
+BioEmu, and distilled variants of AlphaFlow on RMSF, pairwise RMSD, PCA
+$\mathcal{W}_2$, DCCM, transient-contact Jaccard, and per-conformation inference
+time. Preliminary published data already establish feasibility: BBFlow trained
+from scratch in three GPU-days reaches accuracy competitive with AlphaFlow-T
+while being roughly $40\times$ faster, generalizes to \emph{de novo} proteins
+where MSA-dependent baselines collapse, and -- although trained only on
+monomers -- transfers to multi-chain assemblies. The conditional prior, the
+distance encoding, and the index-free architecture are each shown to be
+necessary in ablation.
+
+\noindent\textbf{Broader Impacts.}
+Decoupling MD emulation from large folding models lowers the compute cost of
+ensemble generation by more than an order of magnitude, opening MD-quality
+sampling to laboratories and pipelines without TPU-scale resources. Public
+release of model weights, training and inference code, and benchmark scripts
+(\url{https://github.com/graeter-group/bbflow}) supports reproducibility and
+reuse. By extending ensemble prediction to \emph{de novo} and multi-chain
+proteins -- regimes uncovered by current state-of-the-art models -- BBFlow
+enables \emph{flexibility-aware protein design}, allowing dynamics screening to
+be incorporated directly into design loops for binders, biocatalysts, and
+allosteric switches. Trainees gain experience in geometric deep learning,
+Riemannian generative modelling, and quantitative biophysics, and the work
+provides instructional examples in NeurIPS-level ML and structural biology
+courses.
+
+\textbf{Keywords:} flow matching; SE(3) equivariance; conformational ensemble;
+molecular dynamics emulation; protein backbone; de novo proteins.
+
+\newpage
+
+% ============================================================
+%  PROJECT DESCRIPTION  (6 pages)
+% ============================================================
+\begin{center}
+  {\large\bfseries Project Description}
+\end{center}
+
+\section{Overview, Hypothesis, and Specific Aims}
+
+\noindent\textbf{Objective.} The objective of the proposed work is to develop and
+benchmark \textbf{BBFlow}, an SE(3) flow-matching generative model that produces
+short-timescale, MD-consistent backbone conformational ensembles of proteins
+conditioned solely on the protein's equilibrium backbone geometry, without any
+reliance on multiple-sequence-alignment (MSA) features, protein language model
+embeddings, or pre-trained folding-model weights.
+
+\noindent\textbf{Central Hypothesis.} The pairwise-distance map and local-frame
+directional encoding of an equilibrium backbone $x_{\mathrm{eq}}$ contain
+sufficient geometric information to determine, up to MD precision, the
+short-timescale Boltzmann distribution $p(x \mid x_{\mathrm{eq}})$ of backbone
+conformations -- and conditioning a flow-matching prior on $x_{\mathrm{eq}}$
+yields a model that is faster, more transferable, and less biased than
+sequence-conditioned ensemble generators built atop large folding models.
+
+\noindent\textbf{Specific Aims.}
+\begin{itemize}
+  \item \textbf{Aim~1 -- Architecture and conditioning.} Adapt the GAFL/FrameDiff
+  SE(3)-equivariant graph network with Clifford Frame Attention (CFA), and
+  condition it on $x_{\mathrm{eq}}$ via (i) a binned $C_\alpha$ pairwise distance
+  map and (ii) equivariant pairwise direction vectors expressed in residue-local
+  frames. Remove the absolute residue-index feature to discourage memorization
+  and enable transfer to multi-chain inputs.
+  \item \textbf{Aim~2 -- Conditional prior on $\mathrm{SE}(3)^N$.} Replace the
+  unconditional Gaussian/uniform prior of standard flow matching with a
+  \emph{conditional} prior $p_0(x_0 \mid x_{\mathrm{eq}})$ constructed by partial
+  geodesic interpolation, $x_0 = \gamma(x_{\mathrm{uncond}}, x_{\mathrm{eq}}, \xi)$,
+  with $\xi \in (0,1)$. Train end-to-end with the SE(3) flow-matching loss on the
+  ATLAS dataset.
+  \item \textbf{Aim~3 -- Benchmarking and transferability.} Evaluate on the
+  ATLAS test set, on a held-out set of \emph{de novo} proteins generated by
+  RFdiffusion and FrameFlow, and on five multi-chain protein complexes. Compare
+  against AlphaFlow, AlphaFlow-T, ESMFlow-T, ConfDiff, BioEmu, and distilled
+  AlphaFlow variants on six standard ensemble metrics plus per-conformation
+  inference time, with ablations isolating the contribution of each design
+  choice.
+\end{itemize}
+
+\section{Significance and Background}
+
+\subsection{Conformational ensembles are essential to protein function}
+Enzymatic catalysis~\cite{benkovic2008}, allosteric regulation~\cite{bernetti2024},
+and ligand binding~\cite{karplus2005} are all governed by transitions across the
+free-energy landscape rather than by a single equilibrium structure. Sampling
+this landscape with all-atom MD~\cite{abraham2015gromacs,adcock2006md}, while
+physically rigorous, is computationally limited: meaningful sampling for a
+single mid-sized protein typically demands hundreds of nanoseconds to
+microseconds of trajectory, a wall-clock cost that scales poorly to proteome-
+or design-library-scale screens.
+
+\subsection{Folding models predict structures, not ensembles}
+The accuracy revolution of AlphaFold~2~\cite{jumper2021af2}, RoseTTAFold-3T~\cite{baek2021rosettafold},
+and the protein language model ESMFold~\cite{lin2023esm2} predicts a single
+\emph{equilibrium} structure per sequence and gives no direct access to
+conformational distributions. Their predictive power derives from
+\emph{evolutionary information} encoded either in the MSA processed by the
+Evoformer or implicitly in pLM weights -- features that are expensive to compute
+and unavailable for genuinely novel (e.g.\ \emph{de novo} designed) sequences.
+
+\subsection{Generative MD emulators and their limitations}
+A first generation of generative ensemble models adapts these folding models:
+AlphaFlow~\cite{jing2024alphaflow} fine-tunes AlphaFold~2 to emulate the ATLAS
+MD dataset~\cite{vandermeersche2024atlas} via flow matching; ESMFlow-T
+substitutes the ESMFold backbone; ConfDiff~\cite{wang2024confdiff} replaces the
+structure module with a diffusion model; BioEmu~\cite{lewis2025bioemu} targets
+broader equilibrium ensembles via a separately trained model. All four inherit
+two costs from their parents: (i) per-sample inference of an Evoformer-class
+network, yielding $\mathcal{O}(10\text{--}30\,\mathrm{s})$ per conformation, and
+(ii) sensitivity to MSA quality, which is structurally absent for \emph{de novo}
+proteins. Empirically, AlphaFlow-T over-stabilizes ensembles (median RMSF
+$1.17~$\AA{} vs.\ MD's $1.48~$\AA), AlphaFlow without templates fails on
+\emph{de novo} proteins, and BioEmu does not target ATLAS-style MD emulation.
+
+\subsection{Significance of the proposed work}
+The proposed BBFlow model addresses each limitation in a single architectural
+move: by conditioning on \emph{geometry} ($x_{\mathrm{eq}}$) instead of
+\emph{sequence}, it removes the Evoformer/pLM bottleneck, runs in
+$\sim 0.8~\mathrm{s}$ per conformation, and is independent of evolutionary
+information -- the property that makes AlphaFlow brittle on \emph{de novo}
+sequences. As MD itself begins from an initial structure, conditioning on
+$x_{\mathrm{eq}}$ does not impose any cost above the existing MD workflow, and a
+folding-model$+$BBFlow pipeline remains $\sim 30\times$ faster than AlphaFlow even
+when only a sequence is available. The work thereby reframes MD emulation as a
+\emph{structure-to-ensemble} problem, with direct relevance to dynamics-aware
+\emph{de novo} design~\cite{viliuga2025flexibility, komorowska2025nmatune,
+guo2025dynamic}.
+
+\section{Innovation}
+
+\subsection{Geometric, evolution-free conditioning}
+Prior MD emulators inject conditioning via the Evoformer's processing of an MSA
+or via pLM embeddings. The proposed work replaces this with two purely
+geometric features computed from $x_{\mathrm{eq}}$:
+\begin{align}
+  s_{ij} &= \mathrm{bin}\!\left(\|z_i - z_j\|_2\right) \quad\text{(22 bins, $0$--$20\,\text{\AA}$)},\\
+  e_{ij} &= r_i^{-1}\!\left(\frac{z_j-z_i}{\|z_j-z_i\|_2}\right), \quad \|z_i-z_j\| < 5\,\text{\AA},
+\end{align}
+where $(r_i, z_i) \in \mathrm{SE}(3)$ is the local frame of residue~$i$. The
+first is a soft contact map -- shown in MSA-based methods to be the implicit
+target representation of evolutionary information~\cite{lin2023esm2} -- and the
+second is a strictly equivariant directional cue absent from prior ensemble
+generators.
+
+\subsection{A conditional prior for flow matching}
+Standard flow matching~\cite{lipman2023flowmatching} uses an unconditional prior
+$p_0$ (Gaussian translations, uniform $\mathrm{SO}(3)$ rotations). The proposed
+work introduces a \emph{conditional} prior obtained by partial geodesic
+interpolation between unconditional noise and $x_{\mathrm{eq}}$,
+\begin{align}
+  x_{\mathrm{uncond}} &\sim p_{\mathrm{uncond}}, \qquad
+  x_0 = \gamma(x_{\mathrm{uncond}}, x_{\mathrm{eq}}, \xi), \quad \xi=0.2,
+\end{align}
+where $\gamma(\cdot, \cdot, 0) = x_{\mathrm{uncond}}$ and $\gamma(\cdot, \cdot, 1)
+= x_{\mathrm{eq}}$. Conceptually this is a flow-matching analogue of partial
+denoising in diffusion~\cite{lu2024str2str} and a generalization of stochastic
+interpolants~\cite{albergo2022interpolants} to manifold-valued conditioning. To
+the best of our knowledge, BBFlow is the first ensemble model on $\mathrm{SE}(3)^N$
+to adopt a structure-conditioned prior of this form.
+
+\subsection{Index-free, transferable architecture}
+Folding-style architectures~\cite{jumper2021af2,jing2024alphaflow,yim2023fast}
+embed an absolute residue index, which encodes a fixed chain ordering and ties
+the model to single-chain inputs. The proposed architecture removes the index
+encoding altogether, relying only on geometric features. Ablation
+(Sec.~\ref{sec:approach}) demonstrates that this choice both improves accuracy
+and -- more importantly -- enables zero-shot transfer to multi-chain complexes,
+which existing baselines cannot ingest without re-engineering.
+
+\subsection{Distinction from contemporaneous work}
+ESMFlow-T, AlphaFlow-T, AlphaFlow-T$_{12\mathrm{L,dist}}$ and Li et al.~\cite{li2024improving}
+attack the inference-time problem by \emph{compressing} pre-trained folding
+models. The proposed work attacks it by \emph{redefining the input
+representation}, eliminating the folding-model dependency rather than
+distilling it. MDGen~\cite{jing2024mdgen} models full all-atom trajectories
+with consistent time evolution; the proposed work trades temporal consistency
+for a stationary distribution and gains substantial speed and robustness.
+
+\section{Approach}\label{sec:approach}
+
+\subsection{Aim 1: Geometric conditioning of an SE(3) flow}
+
+\paragraph{Manifold and vector field.}
+Each backbone residue is represented by a frame $x_i = (r_i, z_i) \in
+\mathrm{SE}(3)$ with $r_i \in \mathrm{SO}(3)$ and $z_i \in \mathbb{R}^3$, and a
+protein of length~$N$ is an element of $\mathcal{M} \equiv \mathrm{SE}(3)^N$. A
+time-dependent conditional vector field
+\begin{align}
+  v(x, t, x_{\mathrm{eq}}) : \mathcal{M} \times [0,1] \times \mathcal{M}_{\mathrm{eq}} \to T_x\mathcal{M}
+\end{align}
+defines the flow $\phi_t$ via $\frac{d}{dt}\phi_t = v(\phi_t, t, x_{\mathrm{eq}})$,
+$\phi_0 = x$. Following~\cite{yim2023se3,bose2024se3}, the SE(3) target vector
+field decomposes into rotational and translational components,
+\begin{align}
+  v_{\mathrm{SO}(3)}(r_t, t \mid r_1) = \frac{\log_{r_t}(r_1)}{1 - t}, \qquad
+  v_{\mathbb{R}^3}(z_t, t \mid z_1) = \frac{z_1 - z_t}{1 - t}.
+\end{align}
+
+\paragraph{Network.}
+The vector field is parameterized by an SE(3)-equivariant graph neural network
+adapted from GAFL~\cite{wagner2024gafl}, comprising 6 message-passing blocks
+of Clifford Frame Attention. Inputs are (i) the noised frames $x_t$ at time~$t$,
+(ii) the binned distance map $s_{ij}$, (iii) the local-frame direction vectors
+$e_{ij}$ for residue pairs within $5~$\AA, and (iv) a 128-dimensional embedding
+of the amino-acid type. Crucially, no absolute residue index is supplied -- the
+ordering is recovered from $x_{\mathrm{eq}}$.
+
+\subsection{Aim 2: Conditional prior and training}
+The conditional prior $p_0(\cdot \mid x_{\mathrm{eq}})$ is constructed by
+geodesic interpolation, with $\xi = 0.2$ chosen by validation. Training
+minimizes the SE(3) flow-matching loss
+\begin{align}
+  \mathcal{L}_{\mathrm{FM}}
+  = \mathbb{E}\!\left[\left\| v - \hat{v}(x_t, t, x_{\mathrm{eq}})\right\|^2_{\mathrm{SE}(3)}\right],
+  \quad \|v\|^2_{\mathrm{SE}(3)} \equiv \tfrac{1}{2}\,\mathrm{Tr}(v_r v_r^T) + \|v_z\|_2^2,
+\end{align}
+with $t \sim \mathcal{U}(0,1)$, $(x_1, x_{\mathrm{eq}}) \sim p_{\mathrm{data}}$,
+and $x_0 \sim p_0(\cdot \mid x_{\mathrm{eq}})$. An auxiliary loss following
+\cite{yim2023se3} stabilizes early training. We train on the
+ATLAS~\cite{vandermeersche2024atlas} split of \cite{jing2024alphaflow}
+(1265/39/82 train/val/test) for 3 days on two NVIDIA A100-40GB GPUs, using 20
+flow timesteps and 250 sampled conformations per protein at inference.
+
+\subsection{Aim 3: Benchmarking}
+
+\paragraph{Metrics.}
+We report (i) per-residue Root Mean Square Fluctuation (RMSF) Pearson~$r$ and
+mean absolute error (MAE), (ii) median RMSF (probing systematic
+over/under-stabilization), (iii) pairwise RMSD MAE, (iv) PCA
+$\mathcal{W}_2$-distance against MD on the first two principal components,
+(v) Pearson~$r$ of the Dynamic Cross-Correlation Matrix (DCCM), (vi) transient-
+contact Jaccard $J_{\mathrm{tr}}$, and (vii) inference time per generated
+conformation on a 302-residue test protein.
+
+\paragraph{Preliminary results -- ATLAS benchmark.}
+Table~\ref{tab:atlas} summarises performance on the ATLAS test set. BBFlow is
+\textbf{$\sim 40\times$ faster} than AlphaFlow-T at comparable accuracy, achieves
+the best pairwise RMSD MAE (0.77~\AA), and matches the MD median RMSF (1.49~\AA{}
+vs.\ MD 1.48~\AA) -- avoiding the over-stabilization of AlphaFlow-T (1.17~\AA).
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccccc}
+\toprule
+Model & RMSF $r\uparrow$ & RMSF MAE$\downarrow$ & Pw-RMSD MAE$\downarrow$ & DCCM $r\uparrow$ & PCA $\mathcal{W}_2\downarrow$ & Time [s]$\downarrow$\\
+\midrule
+AlphaFlow         & 0.86 & 0.59 & 1.35 & 0.86 & 1.47 & 32.0 \\
+ConfDiff          & 0.88 & 0.62 & 1.45 & 0.86 & 1.41 & 20.2 \\
+AlphaFlow-T       & 0.92 & 0.41 & \textbf{0.91} & 0.89 & 1.28 & 32.6 \\
+ESMFlow-T         & 0.92 & 0.52 & 0.94 & 0.89 & 1.48 & 11.2 \\
+AlphaFlow-T$_{\mathrm{dist}}$ & 0.92 & 0.68 & 1.41 & 0.88 & 1.43 & 3.3 \\
+\textbf{BBFlow (proposed)} & 0.90 & \underline{0.42} & \underline{0.77} & 0.87 & \underline{1.33} & \textbf{0.8} \\
+\bottomrule
+\end{tabular}
+\caption{Performance on the ATLAS test set. BBFlow matches or improves on the
+distilled AlphaFlow variants while being more than an order of magnitude
+faster than AlphaFlow-T at comparable accuracy. Adapted from~\cite{wolf2025bbflow}.}
+\label{tab:atlas}
+\end{table}
+
+\paragraph{Preliminary results -- de novo proteins.}
+On 50 \emph{de novo} proteins generated by RFdiffusion~\cite{watson2023rfdiffusion}
+and FrameFlow~\cite{yim2024framefw} with three 100-ns MD trajectories each,
+AlphaFlow without templates collapses to RMSF $r=0.47$ and BioEmu to $r=0.60$,
+whereas BBFlow reaches $r=0.84$ with a pairwise RMSD MAE of 0.32~\AA{} -- the
+strongest result among methods that do not consume the equilibrium structure
+as a template.
+
+\paragraph{Preliminary results -- multi-chain proteins.}
+On five protein dimers (1BGS, 8HXR, 5EY7, and two further complexes), DCCM
+correlations of 0.85, 0.72, and 0.89 are obtained between BBFlow- and
+MD-derived ensembles, capturing both intra- and inter-chain motions despite
+training only on monomers. AlphaFlow fails on the same inputs without parser
+modifications.
+
+\paragraph{Ablation.}
+A targeted ablation (Tab.~\ref{tab:abl}) confirms that (i) the conditional
+prior, (ii) the direction encoding, and (iii) removal of the residue-index
+feature each contribute; the binned distance encoding is essential -- removing
+it raises RMSF MAE from $0.42$ to $5.88$~\AA. Even without amino-acid identity,
+BBFlow remains competitive with non-template AlphaFlow.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccccccc}
+\toprule
+Variant & Cond.\ prior & Dist.\ enc. & Dir.\ enc. & AA enc. & Index enc. & RMSF MAE & Pw-RMSD MAE & DCCM $r$\\
+\midrule
+\textbf{BBFlow (full)} & \checkmark & \checkmark & \checkmark & \checkmark &  & \textbf{0.42} & \textbf{0.77} & \underline{0.87}\\
+$-$cond.\ prior   &              & \checkmark & \checkmark & \checkmark & \checkmark & 0.52 & 1.15 & 0.85\\
+$-$direction enc. &              & \checkmark &              & \checkmark & \checkmark & 0.48 & 0.90 & 0.86\\
+$+$index enc.     & \checkmark   & \checkmark & \checkmark & \checkmark & \checkmark & 0.42 & 0.82 & 0.88\\
+$-$AA enc.        & \checkmark   & \checkmark &              &              & \checkmark & 0.54 & 0.93 & 0.85\\
+$-$distance enc.  & \checkmark   &              &              & \checkmark & \checkmark & 5.88 & 7.08 & 0.55\\
+\bottomrule
+\end{tabular}
+\caption{Ablation on the ATLAS test set. The binned distance encoding is
+essential; the conditional prior, direction encoding, and absence of index
+encoding each yield measurable improvements. Adapted from~\cite{wolf2025bbflow}.}
+\label{tab:abl}
+\end{table}
+
+\subsection{Outlook and alternative approaches}
+
+\paragraph{Next steps.}
+Three follow-on directions extend the proposed work. (a) \emph{Side-chain and
+all-atom ensembles}: BBFlow currently generates backbone frames only; coupling
+to a fixed-backbone packer or to MDGen-style atomistic generators is a natural
+extension for ligand-binding studies. (b) \emph{Longer-timescale ensembles}:
+training on $\mu$s-scale trajectories from D.~E.~Shaw or AlphaFlow-MD would
+expand BBFlow beyond the 300-ns regime captured by ATLAS. (c) \emph{Integration
+with de novo design}: coupling BBFlow with RFdiffusion in a closed loop would
+allow direct optimization of designed flexibility, building on
+NMA-tune~\cite{komorowska2025nmatune} and FlexFlow~\cite{viliuga2025flexibility}.
+
+\paragraph{Risks and alternatives.}
+\emph{Risk 1: rare events and transient contacts.} BBFlow's transient-contact
+Jaccard ($29\%$) trails AlphaFlow-T ($47\%$), suggesting that rare specific
+contacts may require evolutionary priors. \emph{Mitigation}: introduce an
+optional pLM channel, fine-tune on contact-rich trajectories, or augment the
+loss with a contact-prediction term. \emph{Risk 2: dependence on the input
+structure.} If $x_{\mathrm{eq}}$ is unavailable, a single AlphaFold~2 prediction
+suffices and the AlphaFold~$+$~BBFlow pipeline remains $\sim 30\times$ faster than
+AlphaFlow at comparable accuracy. Robustness to noisy inputs is verified by
+adding $0.1$--$0.2~$\AA{} Gaussian noise to backbone coordinates and to using random
+MD frames as $x_{\mathrm{eq}}$, with only minor degradation. \emph{Risk 3:
+distributional scope.} As an MD emulator, BBFlow cannot predict alternative
+folded states far from $x_{\mathrm{eq}}$ without retraining on transition-rich
+trajectories; specialized models such as Str2Str~\cite{lu2024str2str} can be
+used in that regime, accepting reduced MD-emulation fidelity.
+
+\paragraph{Deliverables.}
+(D1) Trained BBFlow weights, training code, and evaluation scripts released
+under a permissive licence at \url{https://github.com/graeter-group/bbflow};
+(D2) public benchmark on ATLAS, \emph{de novo}, and multi-chain test sets;
+(D3) a peer-reviewed publication (NeurIPS~2025); (D4) tutorial materials for
+incorporating BBFlow into protein design pipelines.
+
+% ============================================================
+%  REFERENCES
+% ============================================================
+\renewcommand{\refname}{\large References}
+\begin{thebibliography}{99}\setlength{\itemsep}{2pt}\small
+
+\bibitem{wolf2025bbflow} N.~Wolf, L.~Seute, V.~Viliuga, S.~Wagner, J.~St\"uhmer, F.~Gr\"ater. Learning conformational ensembles of proteins based on backbone geometry. \emph{NeurIPS}, 2025. arXiv:2503.05738.
+
+\bibitem{benkovic2008} S.~J.~Benkovic, G.~G.~Hammes, S.~Hammes-Schiffer. Free-energy landscape of enzyme catalysis. \emph{Biochemistry}, 47(11):3317--3321, 2008.
+
+\bibitem{bernetti2024} M.~Bernetti, S.~Bosio, V.~Bresciani, F.~Falchi, M.~Masetti et al. Probing allosteric communication with combined molecular dynamics simulations and network analysis. \emph{Curr.\ Opin.\ Struct.\ Biol.}, 86:1--10, 2024.
+
+\bibitem{karplus2005} M.~Karplus, J.~Kuriyan. Molecular dynamics and protein function. \emph{PNAS}, 102(19):6679--6685, 2005.
+
+\bibitem{abraham2015gromacs} M.~J.~Abraham et al. GROMACS: high performance molecular simulations through multi-level parallelism from laptops to supercomputers. \emph{SoftwareX}, 1--2:19--25, 2015.
+
+\bibitem{adcock2006md} S.~A.~Adcock, J.~A.~McCammon. Molecular dynamics: survey of methods for simulating the activity of proteins. \emph{Chem.\ Rev.}, 106(5):1589--1615, 2006.
+
+\bibitem{jumper2021af2} J.~Jumper et al. Highly accurate protein structure prediction with AlphaFold. \emph{Nature}, 596:583--589, 2021.
+
+\bibitem{baek2021rosettafold} M.~Baek et al. Accurate prediction of protein structures and interactions using a three-track neural network. \emph{Science}, 373(6557):871--876, 2021.
+
+\bibitem{lin2023esm2} Z.~Lin et al. Evolutionary-scale prediction of atomic-level protein structure with a language model. \emph{Science}, 379(6637):1123--1130, 2023.
+
+\bibitem{jing2024alphaflow} B.~Jing, B.~Berger, T.~Jaakkola. AlphaFold meets flow matching for generating protein ensembles. \emph{ICML}, 2024.
+
+\bibitem{vandermeersche2024atlas} Y.~Vander Meersche, G.~Cretin, A.~Gheeraert, J.-C.~Gelly, T.~Galochkina. ATLAS: protein flexibility description from atomistic molecular dynamics simulations. \emph{Nucleic Acids Res.}, 52(D1):D384--D392, 2024.
+
+\bibitem{wang2024confdiff} Y.~Wang et al. Protein conformation generation via force-guided SE(3) diffusion models. \emph{ICML}, 2024.
+
+\bibitem{lewis2025bioemu} S.~Lewis et al. Scalable emulation of protein equilibrium ensembles with generative deep learning. \emph{Science}, 389(6761):eadv9817, 2025.
+
+\bibitem{lipman2023flowmatching} Y.~Lipman, R.~T.~Q.~Chen, H.~Ben-Hamu, M.~Nickel, M.~Le. Flow matching for generative modeling. \emph{ICLR}, 2023.
+
+\bibitem{albergo2022interpolants} M.~S.~Albergo, E.~Vanden-Eijnden. Building normalizing flows with stochastic interpolants. \emph{ICLR}, 2022.
+
+\bibitem{lu2024str2str} J.~Lu, B.~Zhong, Z.~Zhang, J.~Tang. Str2Str: a score-based framework for zero-shot protein conformation sampling. \emph{ICLR}, 2024.
+
+\bibitem{yim2023se3} J.~Yim et al. Fast protein backbone generation with SE(3) flow matching. arXiv:2310.05297, 2023.
+
+\bibitem{yim2023fast} J.~Yim et al. SE(3) diffusion model with application to protein backbone generation. \emph{ICML}, 2023.
+
+\bibitem{yim2024framefw} J.~Yim et al. Improved motif-scaffolding with SE(3) flow matching. \emph{TMLR}, 2024.
+
+\bibitem{bose2024se3} J.~Bose et al. SE(3)-stochastic flow matching for protein backbone generation. \emph{ICLR}, 2024.
+
+\bibitem{wagner2024gafl} S.~Wagner, L.~Seute, V.~Viliuga, N.~Wolf, F.~Gr\"ater, J.~Stuehmer. Generating highly designable proteins with geometric algebra flow matching. \emph{NeurIPS}, 2024.
+
+\bibitem{watson2023rfdiffusion} J.~L.~Watson et al. De novo design of protein structure and function with RFdiffusion. \emph{Nature}, 2023.
+
+\bibitem{li2024improving} S.~Li et al. Improving AlphaFlow for efficient protein ensembles generation. arXiv:2407.12053, 2024.
+
+\bibitem{jing2024mdgen} B.~Jing, H.~Stark, T.~Jaakkola, B.~Berger. Generative modeling of molecular dynamics trajectories. \emph{NeurIPS}, 2024.
+
+\bibitem{viliuga2025flexibility} V.~Viliuga, L.~Seute, N.~Wolf, S.~Wagner, A.~Elofsson, J.~St\"uhmer, F.~Gr\"ater. Flexibility-conditioned protein structure design with flow matching. \emph{ICML}, 2025.
+
+\bibitem{komorowska2025nmatune} U.~J.~Komorowska, F.~Vargas, A.~Rondina, P.~Lio, M.~Jamnik. NMA-tune: generating highly designable and dynamics aware protein backbones. \emph{ICML}, 2025.
+
+\bibitem{guo2025dynamic} A.~B.~Guo et al. Deep learning-guided design of dynamic proteins. \emph{Science}, 388(6749):eadr7094, 2025.
+
+\end{thebibliography}
+
+\end{document}

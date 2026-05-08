@@ -1,0 +1,79 @@
+This is BibTeX, Version 0.99d (TeX Live 2017)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: mdgen2_report.aux
+The style file: unsrt.bst
+I found no \bibdata command---while reading file mdgen2_report.aux
+Warning--I didn't find a database entry for "frauenfelder1991energy"
+Warning--I didn't find a database entry for "henzler2007dynamic"
+Warning--I didn't find a database entry for "hammes2009multiple"
+Warning--I didn't find a database entry for "nussinov2013allostery"
+Warning--I didn't find a database entry for "bowman2012discovery"
+Warning--I didn't find a database entry for "maier2015ff14sb"
+Warning--I didn't find a database entry for "vander2024atlas"
+Warning--I didn't find a database entry for "brooks1983harmonic"
+Warning--I didn't find a database entry for "go1983dynamics"
+Warning--I didn't find a database entry for "yang2007oasis"
+Warning--I didn't find a database entry for "noe2019boltzmann"
+Warning--I didn't find a database entry for "yim2023framediff"
+Warning--I didn't find a database entry for "jing2024alphaflow"
+Warning--I didn't find a database entry for "lu2023eigenfold"
+Warning--I didn't find a database entry for "lewis2024bioemu"
+Warning--I didn't find a database entry for "watson2023novo"
+Warning--I didn't find a database entry for "abramson2024accurate"
+Warning--I didn't find a database entry for "leach2022denoising"
+Warning--I didn't find a database entry for "jumper2021alphafold"
+Warning--I didn't find a database entry for "ho2019axial"
+Warning--I didn't find a database entry for "de2022riemannian"
+Warning--I didn't find a database entry for "lin2023evolutionary"
+Warning--I didn't find a database entry for "ho2020ddpm"
+Warning--I didn't find a database entry for "song2020ddim"
+Warning--I didn't find a database entry for "lugmayr2022repaint"
+Warning--I didn't find a database entry for "zhou2019continuity"
+Warning--I didn't find a database entry for "geng2023selectivity"
+Warning--I didn't find a database entry for "cimermancic2016cryptosite"
+Warning--I didn't find a database entry for "le2009fpocket"
+Warning--I didn't find a database entry for "uversky2013unusual"
+Warning--I didn't find a database entry for "forman2012protein"
+Warning--I didn't find a database entry for "berman2000pdb"
+You've used 0 entries,
+            1791 wiz_defined-function locations,
+            476 strings with 4056 characters,
+and the built_in function-call counts, 18 in all, are:
+= -- 0
+> -- 0
+< -- 0
++ -- 0
+- -- 0
+* -- 2
+:= -- 7
+add.period$ -- 0
+call.type$ -- 0
+change.case$ -- 0
+chr.to.int$ -- 0
+cite$ -- 0
+duplicate$ -- 0
+empty$ -- 1
+format.name$ -- 0
+if$ -- 1
+int.to.chr$ -- 0
+int.to.str$ -- 0
+missing$ -- 0
+newline$ -- 3
+num.names$ -- 0
+pop$ -- 0
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 1
+stack$ -- 0
+substring$ -- 0
+swap$ -- 0
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 0
+while$ -- 0
+width$ -- 0
+write$ -- 2
+(There was 1 error message)
