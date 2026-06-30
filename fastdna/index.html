@@ -808,6 +808,269 @@
         <footer>Flow matching: Lipman et al. ICLR 2023; Albergo &amp; Vanden-Eijnden 2022; t-bias for protein flow: Yim et al. 2023.</footer>
       </section>
 
+      <!-- ===== SLIDE: DIFFUSION vs FLOW THEORY ===== -->
+      <section class="slide compact" data-title="From Diffusion to Flow Matching">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Theory · Generative Models</p>
+            <h2>From SDE diffusion to ODE flow matching: same marginals, cleaner paths</h2>
+
+            <p>Diffusion models and flow matching are both continuous-time generative models that learn to transport a noise distribution p₀ to a data distribution p₁. They differ in the stochastic process used and the training objective.</p>
+
+            <div class="formula-box small" style="margin-top:14px">
+              <strong>Diffusion (DDPM / Score Matching):</strong>
+              \[\text{Forward SDE:}\quad dx = f(x,t)\,dt + g(t)\,dW_t\]
+              \[p_{t|0}(x|x_0) = \mathcal{N}\!\left(x;\,\alpha_t x_0,\,\sigma_t^2 I\right)\]
+              \[\text{Reverse SDE (denoising):}\quad dx = \left[f - g^2\nabla_x\!\log p_t\right]dt + g\,d\bar{W}_t\]
+              The score \(\nabla_x\!\log p_t\) is learned by minimising \(\mathbb{E}[\|\hat{s}_\theta(x_t,t) - \nabla_x\!\log p_{t|0}\|^2]\). Sampling requires hundreds of reverse SDE steps because Brownian noise is added and removed — the path is stochastic.
+            </div>
+
+            <div class="formula-box small" style="margin-top:12px">
+              <strong>Probability Flow ODE (Song et al. 2021):</strong>
+              \[\frac{dx}{dt} = f(x,t) - \tfrac{1}{2}g(t)^2\,\nabla_x\!\log p_t(x)\]
+              Every diffusion SDE has an <em>equivalent deterministic ODE</em> that produces the same marginal distributions \(p_t\) at every t. Sampling becomes an ODE solve — fewer function evaluations, invertible, no stochastic noise.
+            </div>
+
+            <div class="formula-box small" style="margin-top:12px">
+              <strong>Flow Matching (Lipman et al. 2022):</strong>
+              \[\frac{dx}{dt} = v_\theta(x_t, t), \quad \mathcal{L}_\text{FM} = \mathbb{E}_{t,x_0,x_1}\!\left[\|v_\theta(x_t,t) - u_t(x_t)\|^2\right]\]
+              \[x_t = (1-t)x_0 + t x_1, \quad u_t = x_1 - x_0 \quad\text{[conditional target velocity]}\]
+              Key insight: instead of learning the score \(\nabla\log p_t\) (which requires marginalising over all data), learn the conditional velocity \(u_t(x_t|x_0,x_1) = x_1 - x_0\) — a simple constant. The marginal flow velocity \(v_t\) is automatically recovered as the mean of conditional velocities under the posterior.
+            </div>
+
+            <div class="callout" style="margin-top:12px">
+              <strong>Why flow matching for DNA?</strong> DNA origami has SE(3)⁶ᴺ geometry (positions + orientations). SDE diffusion on SO(3) is complex (Brownian motion on Lie groups). Flow matching on SO(3) uses geodesic interpolation R_t = R₀·exp(t·log(R₀ᵀR₁)) — a straight line on the manifold. No stochastic differential equations needed on curved space.
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 520 520" role="img" aria-label="Diffusion vs flow matching theory diagram">
+              <defs>
+                <marker id="arrth" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#0b7285"/>
+                </marker>
+                <marker id="arrthr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#c2410c"/>
+                </marker>
+                <marker id="arrthg" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#3d8f3d"/>
+                </marker>
+              </defs>
+              <text x="260" y="22" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">Diffusion SDE vs Flow ODE vs Flow Matching</text>
+
+              <!-- Panel 1: Diffusion SDE paths (noisy, many steps) -->
+              <rect x="15" y="34" width="148" height="168" rx="8" fill="rgba(194,65,12,0.07)" stroke="rgba(194,65,12,0.25)" stroke-width="1.2"/>
+              <text x="89" y="52" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Diffusion SDE</text>
+              <text x="89" y="65" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">dx = f dt + g dW</text>
+              <!-- Noise source (left) -->
+              <circle cx="38" cy="150" r="14" fill="rgba(194,65,12,0.3)" stroke="#c2410c" stroke-width="2"/>
+              <text x="38" y="155" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Mono,monospace" font-size="8">p₀</text>
+              <!-- Data (right) -->
+              <circle cx="148" cy="150" r="14" fill="rgba(11,114,133,0.4)" stroke="#0b7285" stroke-width="2"/>
+              <text x="148" y="155" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="8">p₁</text>
+              <!-- Noisy zigzag paths -->
+              <path d="M52 148 C60 130 65 162 75 140 C82 125 88 158 95 138 C102 120 108 155 115 135 C122 118 128 148 135 142" fill="none" stroke="#c2410c" stroke-width="1.5" opacity="0.7"/>
+              <path d="M52 152 C58 168 66 138 74 158 C83 175 89 145 97 162 C105 178 112 148 120 165 C128 178 134 158 135 155" fill="none" stroke="#c2410c" stroke-width="1.5" opacity="0.5"/>
+              <path d="M52 150 C63 142 69 160 78 148 C87 138 92 152 100 143 C108 135 115 150 122 140 C130 130 134 148 135 148" fill="none" stroke="#c2410c" stroke-width="1.5" opacity="0.9"/>
+              <text x="89" y="188" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="8">stochastic · slow</text>
+              <text x="89" y="198" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">~1000 steps</text>
+
+              <!-- Panel 2: Probability Flow ODE (smooth, same marginals) -->
+              <rect x="186" y="34" width="148" height="168" rx="8" fill="rgba(240,140,0,0.07)" stroke="rgba(240,140,0,0.25)" stroke-width="1.2"/>
+              <text x="260" y="52" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Probability Flow ODE</text>
+              <text x="260" y="65" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">ẋ = f − ½g²∇log p</text>
+              <circle cx="202" cy="150" r="14" fill="rgba(194,65,12,0.3)" stroke="#c2410c" stroke-width="2"/>
+              <text x="202" y="155" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Mono,monospace" font-size="8">p₀</text>
+              <circle cx="318" cy="150" r="14" fill="rgba(11,114,133,0.4)" stroke="#0b7285" stroke-width="2"/>
+              <text x="318" y="155" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="8">p₁</text>
+              <!-- Smooth curved paths (same marginals, no noise) -->
+              <path d="M216 145 C230 130 255 160 278 140 C298 125 310 148 305 150" fill="none" stroke="#f08c00" stroke-width="2" opacity="0.9"/>
+              <path d="M216 152 C228 168 250 135 272 155 C292 170 307 155 305 152" fill="none" stroke="#f08c00" stroke-width="2" opacity="0.7"/>
+              <path d="M216 148 C235 140 257 150 275 145 C295 140 308 150 305 150" fill="none" stroke="#f08c00" stroke-width="2.5" opacity="1"/>
+              <text x="260" y="188" text-anchor="middle" fill="#f08c00" font-family="IBM Plex Mono,monospace" font-size="8">deterministic</text>
+              <text x="260" y="198" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">same p_t marginals</text>
+
+              <!-- Panel 3: Flow Matching (straight conditional paths) -->
+              <rect x="357" y="34" width="148" height="168" rx="8" fill="rgba(11,114,133,0.07)" stroke="rgba(11,114,133,0.25)" stroke-width="1.2"/>
+              <text x="431" y="52" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Flow Matching</text>
+              <text x="431" y="65" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">u_t = x₁ − x₀</text>
+              <circle cx="373" cy="150" r="14" fill="rgba(194,65,12,0.3)" stroke="#c2410c" stroke-width="2"/>
+              <text x="373" y="155" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Mono,monospace" font-size="8">x₀</text>
+              <circle cx="489" cy="150" r="14" fill="rgba(11,114,133,0.4)" stroke="#0b7285" stroke-width="2"/>
+              <text x="489" y="155" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="8">x₁</text>
+              <!-- Straight lines — conditional flow paths -->
+              <line x1="387" y1="142" x2="476" y2="135" stroke="#0b7285" stroke-width="2" marker-end="url(#arrth)" opacity="0.9"/>
+              <line x1="387" y1="150" x2="476" y2="150" stroke="#0b7285" stroke-width="2.5" marker-end="url(#arrth)"/>
+              <line x1="387" y1="158" x2="476" y2="162" stroke="#0b7285" stroke-width="2" marker-end="url(#arrth)" opacity="0.7"/>
+              <text x="431" y="188" text-anchor="middle" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="8" font-weight="700">straight · simple</text>
+              <text x="431" y="198" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">no score needed</text>
+
+              <!-- The key equivalence row -->
+              <rect x="15" y="218" width="490" height="72" rx="8" fill="rgba(255,250,240,0.9)" stroke="rgba(21,33,31,0.12)" stroke-width="1"/>
+              <text x="260" y="237" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Key theoretical result (Song et al. 2021 / Lipman et al. 2022)</text>
+              <text x="30" y="256" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">The marginal velocity field v_t of the marginal flow p_t equals the expectation of the conditional velocity:</text>
+              <text x="260" y="278" text-anchor="middle" fill="#102522" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700">v_t(x) = 𝔼[u_t(x|x₀,x₁) | x_t = x]</text>
+
+              <!-- Training objective derivation -->
+              <rect x="15" y="302" width="490" height="120" rx="8" fill="rgba(232,243,239,0.8)" stroke="rgba(11,114,133,0.2)" stroke-width="1.2"/>
+              <text x="260" y="320" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Flow Matching training objective (conditional variant = CFM)</text>
+              <text x="260" y="340" text-anchor="middle" fill="#102522" font-family="IBM Plex Mono,monospace" font-size="10">𝓛_CFM = 𝔼_{t,x₀~p₀,x₁~p_data} ‖v_θ(x_t, t) − (x₁−x₀)‖²</text>
+              <text x="30" y="362" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">This has the same gradient as 𝓛_FM (marginal) but is fully tractable — no need to marginalise over p_t(x).</text>
+              <text x="30" y="380" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">At inference: solve the ODE dx/dt = v_θ(x_t, t) from t=0 (noise) to t=1 (structure) with an ODE solver.</text>
+              <text x="30" y="398" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">fastDNA uses Euler integration with N=10 steps (N=50 for high-quality inference).</text>
+              <text x="30" y="416" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">t-bias: sample t ~ U(0,1)², E[t]=1/3 (vs 1/2 uniform) — more signal near t=0 where model is uncertain.</text>
+
+              <!-- SO(3) extension -->
+              <rect x="15" y="434" width="490" height="72" rx="8" fill="rgba(255,243,191,0.7)" stroke="rgba(240,140,0,0.3)" stroke-width="1.2"/>
+              <text x="260" y="452" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">SE(3) extension: geodesic interpolation on SO(3)</text>
+              <text x="30" y="472" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">Linear interpolation x_t = (1-t)x₀ + tx₁ works for ℝ³ (positions). For orientations R ∈ SO(3):</text>
+              <text x="260" y="492" text-anchor="middle" fill="#102522" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">R_t = R₀ · exp(t · log(R₀ᵀR₁))    [geodesic / SLERP on SO(3)]</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>Flow matching: Lipman et al. 2022 (arXiv:2210.02747); Probability Flow ODE: Song et al. 2021 (ICLR 2021); CFM equivalence: Tong et al. 2023; SE(3) flow: Yim et al. 2023 (FrameDiff).</footer>
+      </section>
+
+      <!-- ===== SLIDE: CLIFFORD ALGEBRA THEORY ===== -->
+      <section class="slide compact" data-title="SE(3) Equivariance &amp; Clifford Algebra">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Theory · Architecture</p>
+            <h2>SE(3)-equivariant attention via Clifford geometric algebra: why not just use standard transformers</h2>
+
+            <p>Standard transformers are not equivariant to rigid-body transformations. If you rotate the DNA structure, the model must re-learn that the same geometry just happened to appear at a different orientation. Equivariance builds this in: rotating the input rotates the output by the same amount.</p>
+
+            <div class="formula-box small" style="margin-top:14px">
+              <strong>Equivariance definition:</strong>
+              \[f(g \cdot x) = g \cdot f(x) \quad \forall g \in \text{SE}(3)\]
+              where \(g = (R, \mathbf{t})\) is a rigid body transformation (rotation + translation). The model \(f_\theta\) satisfies this exactly — not approximately — regardless of how the input structure is oriented.
+            </div>
+
+            <div class="formula-box small" style="margin-top:12px">
+              <strong>Clifford (geometric) algebra approach:</strong>
+              \[\text{Clifford algebra } \mathcal{G}(\mathbb{R}^{3,0,1}) \text{ encodes vectors, bivectors, rotors}\]
+              A rotor \(R \in \mathcal{G}\) encodes a rotation: applying it to a vector \(\mathbf{v}\):
+              \[\mathbf{v}' = R\,\mathbf{v}\,\tilde{R} \quad\text{(sandwich product)}\]
+              This is more efficient than 4×4 matrix multiplication. The key property: <em>rotor multiplication is closed</em> — composing two SE(3) rotors gives another SE(3) rotor, preserving equivariance through all attention layers.
+            </div>
+
+            <div class="formula-box small" style="margin-top:12px">
+              <strong>Equivariant attention (Clifford attention):</strong>
+              \[e_{ij} = \phi_e(\mathbf{h}_i, \mathbf{h}_j, \|\mathbf{r}_{ij}\|^2, \hat{\mathbf{r}}_{ij})\]
+              \[\mathbf{h}_i' = \sum_j \alpha_{ij}\,\phi_v(\mathbf{h}_j, \hat{\mathbf{r}}_{ij})\]
+              Edge features include the invariant \(\|\mathbf{r}_{ij}\|^2\) (distance squared, SE(3)-invariant) and the equivariant unit vector \(\hat{\mathbf{r}}_{ij}\) (transforms as a vector under rotation). Attention weights \(\alpha_{ij}\) are invariant scalars; value aggregation propagates equivariant geometric information.
+            </div>
+
+            <div class="callout" style="margin-top:12px">
+              <strong>Why not IPA (Invariant Point Attention from AlphaFold2)?</strong> IPA achieves equivariance through explicit frame-relative coordinates — heavy engineering with many special cases. Clifford attention achieves the same equivariance more cleanly through algebraic structure. No explicit frame decomposition needed: the geometry flows naturally through rotor algebra.
+            </div>
+
+            <p style="margin-top:10px;font-size:0.88em">For DNA: each nucleotide defines a local frame (a₁, a₂, a₃). The model processes all N nucleotides' frames jointly, updating both positions and orientations in an SE(3)-equivariant way. The same DNA sequence folded at two different global orientations gives predictions that differ only by that same global rotation.</p>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 520 520" role="img" aria-label="SE(3) equivariance and Clifford attention diagram">
+              <defs>
+                <marker id="arrcl" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#0b7285"/>
+                </marker>
+                <marker id="arrclr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#c2410c"/>
+                </marker>
+                <marker id="arrclg" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#3d8f3d"/>
+                </marker>
+              </defs>
+              <text x="260" y="22" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">SE(3) equivariance &amp; Clifford attention</text>
+
+              <!-- Equivariance illustration -->
+              <rect x="15" y="34" width="490" height="120" rx="8" fill="rgba(232,243,239,0.75)" stroke="rgba(11,114,133,0.2)" stroke-width="1.2"/>
+              <text x="260" y="52" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Equivariance: f(R·x) = R·f(x)</text>
+              <!-- Input structure (canonical) -->
+              <circle cx="90" cy="100" r="10" fill="rgba(11,114,133,0.5)" stroke="#064d5a" stroke-width="2"/>
+              <circle cx="110" cy="88" r="10" fill="rgba(11,114,133,0.5)" stroke="#064d5a" stroke-width="2"/>
+              <circle cx="105" cy="113" r="10" fill="rgba(194,65,12,0.5)" stroke="#7a2b0d" stroke-width="2"/>
+              <text x="90" y="135" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">x (input)</text>
+              <!-- Arrow: apply model -->
+              <line x1="128" y1="100" x2="178" y2="100" stroke="#0b7285" stroke-width="2" marker-end="url(#arrcl)"/>
+              <text x="153" y="92" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="8">f_θ</text>
+              <!-- Output structure -->
+              <circle cx="200" cy="100" r="10" fill="rgba(240,140,0,0.6)" stroke="#8a5200" stroke-width="2"/>
+              <circle cx="220" cy="88" r="10" fill="rgba(240,140,0,0.6)" stroke="#8a5200" stroke-width="2"/>
+              <circle cx="215" cy="113" r="10" fill="rgba(194,65,12,0.5)" stroke="#7a2b0d" stroke-width="2"/>
+              <text x="210" y="135" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">f(x) (output)</text>
+              <!-- Rotation arrow -->
+              <path d="M100 68 C115 42 140 42 155 68" fill="none" stroke="#c2410c" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#arrclr)"/>
+              <text x="128" y="40" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="8">rotate R</text>
+              <!-- Rotated input -->
+              <circle cx="320" cy="78" r="10" fill="rgba(11,114,133,0.5)" stroke="#064d5a" stroke-width="2"/>
+              <circle cx="308" cy="96" r="10" fill="rgba(11,114,133,0.5)" stroke="#064d5a" stroke-width="2"/>
+              <circle cx="332" cy="108" r="10" fill="rgba(194,65,12,0.5)" stroke="#7a2b0d" stroke-width="2"/>
+              <text x="318" y="130" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">R·x</text>
+              <!-- Arrow: apply model -->
+              <line x1="348" y1="98" x2="398" y2="98" stroke="#0b7285" stroke-width="2" marker-end="url(#arrcl)"/>
+              <text x="373" y="90" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="8">f_θ</text>
+              <!-- Rotated output -->
+              <circle cx="420" cy="78" r="10" fill="rgba(240,140,0,0.6)" stroke="#8a5200" stroke-width="2"/>
+              <circle cx="408" cy="96" r="10" fill="rgba(240,140,0,0.6)" stroke="#8a5200" stroke-width="2"/>
+              <circle cx="432" cy="108" r="10" fill="rgba(194,65,12,0.5)" stroke="#7a2b0d" stroke-width="2"/>
+              <text x="420" y="130" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">f(R·x) = R·f(x)</text>
+              <!-- Equal sign -->
+              <text x="260" y="104" text-anchor="middle" fill="#3d8f3d" font-family="IBM Plex Mono,monospace" font-size="18" font-weight="700">=</text>
+
+              <!-- Clifford algebra panel -->
+              <rect x="15" y="168" width="230" height="168" rx="8" fill="rgba(194,65,12,0.07)" stroke="rgba(194,65,12,0.25)" stroke-width="1.2"/>
+              <text x="130" y="185" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Clifford algebra grade structure</text>
+              <text x="30" y="206" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Grade 0 (scalar):</text>
+              <text x="30" y="220" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">invariant scalars (‖r‖², dot products)</text>
+              <text x="30" y="240" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Grade 1 (vector):</text>
+              <text x="30" y="254" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">r_ij, a₁, a₂, a₃ (transform as ℝ³)</text>
+              <text x="30" y="274" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Grade 2 (bivector):</text>
+              <text x="30" y="288" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">r_ij ∧ a₁ (oriented planes)</text>
+              <text x="30" y="308" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Grade ½ (rotor):</text>
+              <text x="30" y="322" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">R = exp(−θ/2 · B̂)  [encodes rotation]</text>
+              <text x="30" y="324" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">v' = R v R̃  [sandwich product]</text>
+
+              <!-- Attention mechanism panel -->
+              <rect x="275" y="168" width="230" height="168" rx="8" fill="rgba(11,114,133,0.07)" stroke="rgba(11,114,133,0.25)" stroke-width="1.2"/>
+              <text x="390" y="185" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Clifford attention mechanism</text>
+              <!-- Node i -->
+              <circle cx="310" cy="230" r="14" fill="rgba(11,114,133,0.5)" stroke="#064d5a" stroke-width="2"/>
+              <text x="310" y="235" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="9">i</text>
+              <!-- Nodes j around it -->
+              <circle cx="370" cy="210" r="10" fill="rgba(194,65,12,0.45)" stroke="#7a2b0d" stroke-width="1.5"/>
+              <text x="370" y="214" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="8">j₁</text>
+              <circle cx="385" cy="250" r="10" fill="rgba(194,65,12,0.45)" stroke="#7a2b0d" stroke-width="1.5"/>
+              <text x="385" y="254" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="8">j₂</text>
+              <circle cx="355" cy="278" r="10" fill="rgba(194,65,12,0.45)" stroke="#7a2b0d" stroke-width="1.5"/>
+              <text x="355" y="282" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="8">j₃</text>
+              <!-- Edges with r_ij labels -->
+              <line x1="324" y1="222" x2="362" y2="214" stroke="rgba(11,114,133,0.4)" stroke-width="1.5"/>
+              <text x="338" y="212" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="7">r_ij,‖r‖</text>
+              <line x1="324" y1="234" x2="376" y2="248" stroke="rgba(11,114,133,0.4)" stroke-width="1.5"/>
+              <line x1="320" y1="242" x2="347" y2="270" stroke="rgba(11,114,133,0.4)" stroke-width="1.5"/>
+              <!-- Edge feature formula -->
+              <text x="435" y="218" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">e_ij =</text>
+              <text x="435" y="230" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">ϕ(h_i,h_j,</text>
+              <text x="435" y="242" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">‖r‖²,r̂_ij)</text>
+              <text x="390" y="298" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Mono,monospace" font-size="9">h_i' = Σ_j α_ij ϕ_v(h_j, r̂_ij)</text>
+              <text x="390" y="312" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">α_ij: invariant scalar weights</text>
+              <text x="390" y="325" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">ϕ_v: equivariant value transform</text>
+
+              <!-- fastDNA specifics -->
+              <rect x="15" y="348" width="490" height="155" rx="8" fill="rgba(255,250,240,0.9)" stroke="rgba(21,33,31,0.12)" stroke-width="1"/>
+              <text x="260" y="366" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">fastDNA model sizes: input, layers, hidden dim, output</text>
+              <text x="30" y="388" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">Input per nt:</tspan> pos(3) + ori_flat(9) + base_embed(64) + strand_embed(16) = 92 dims</text>
+              <text x="30" y="406" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">Output per nt:</tspan> Δpos(3) + Δori via axis-angle(3) → applied to x_t via Gram-Schmidt</text>
+              <text x="30" y="424" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">Small:</tspan> dim=64, L=2 attention layers, ~1M params · <tspan font-weight="700">Medium:</tspan> dim=128, L=4, ~8M · <tspan font-weight="700">Large:</tspan> dim=256, L=6, ~60M</text>
+              <text x="30" y="442" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">BondConstrainedLayer:</tspan> projects output so bond lengths lie in FENE range [0.5064, 1.0064] su</text>
+              <text x="30" y="460" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">Gram-Schmidt:</tspan> re-orthonormalises predicted rotation matrices; eps=5e-3 (critical for bf16)</text>
+              <text x="30" y="478" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">Inference:</tspan> Euler ODE dx=v_θ(x_t,t)dt from x₀~N(0,I) for 10–50 steps; apply relaxation post-hoc</text>
+              <text x="30" y="496" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Equivariance guarantee: rotate all positions/orientations → all outputs rotate identically. No spurious orientation dependence.</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>Clifford geometric algebra attention: Brehmer et al. 2023 (arXiv:2302.06594); SE(3) equivariance for molecular generation: Hoogeboom et al. 2022; IPA comparison: Jumper et al. Nature 2021 (AlphaFold2).</footer>
+      </section>
+
       <!-- ===== SLIDE 5: oxDNA2 NUCLEOTIDE MODEL ===== -->
       <section class="slide" data-title="oxDNA2 Nucleotide Model">
         <div class="two-col">
