@@ -2,57 +2,58 @@
 
 A collection of interactive web-based slide presentations built with plain HTML, CSS, and JavaScript. Each sub-folder is a self-contained deck that opens directly in any browser with no build step.
 
+**Live site:** <https://subhajit-roy-partho.github.io/web-presentation/>
+
 ## Presentations
 
-### [`bbflow/`](bbflow/)
+| Deck | Description |
+|------|-------------|
+| [`bbflow/`](bbflow/) | BBFlow — Learning Conformational Ensembles of Proteins Based on Backbone Geometry (42 slides, NeurIPS 2025) |
+| [`bbflow2/`](bbflow2/) | IDPFlow — BBFlow variant focused on intrinsically disordered proteins |
+| [`bbflow3/`](bbflow3/) | BBFlow proposal (incomplete) |
+| [`fastdna/`](fastdna/) | fastDNA presentation |
+| [`mdgen/`](mdgen/) | MDGen survey &amp; presentation |
+| [`mdgen2/`](mdgen2/) | MDGen proposal presentation |
 
-**Learning Conformational Ensembles of Proteins Based on Backbone Geometry**
+### Controls
 
-A 42-slide walkthrough of the BBFlow paper (Wolf, Seute et al., NeurIPS 2025, arXiv:2503.05738). Designed for a mixed scientific audience — covers prerequisite biology, machine-learning background, the BBFlow method, results, and open questions.
+Arrow keys, Space (next), L (laser pointer), F (fullscreen), ? (help).
 
-| Feature | Details |
-|---------|---------|
-| Slides | 42 |
-| Audience | Mixed scientific (biologists, physicists, ML researchers) |
-| Source paper | arXiv:2503.05738v2 |
-| Controls | Arrow keys, Space, L (laser), F (fullscreen), ? (help) |
-
-**To run locally:**
+## Run locally
 
 ```bash
-cd bbflow
 python3 -m http.server 8000
-# then open http://localhost:8000
+# open http://localhost:8000
 ```
 
-**To regenerate slide screenshots:**
+## Deployment
 
-```bash
-cd bbflow
-npm install playwright
-npx playwright install chromium
-node screenshot_slides.js
-```
+A GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically deploys
+the `main` branch to GitHub Pages on every push.
+
+### One-time setup
+
+1. Go to repo **Settings → Pages**.
+2. Under **Source**, select **GitHub Actions** (not a branch).
+3. Push to `main` — the workflow will deploy automatically.
 
 ## Repository structure
 
 ```
 web-presentation/
-└── bbflow/                  # BBFlow paper walkthrough
-    ├── index.html           # Main presentation (42 slides)
-    ├── styles.css           # Deck theme and SVG styling
-    ├── slides.js            # Navigation, keyboard, laser pointer
-    ├── fixes-slides-*.css   # Per-section layout fixes
-    ├── 2503.05738v2.pdf     # Source paper (local copy)
-    ├── bbflow_paper.txt     # Extracted paper text
-    ├── screenshot_slides.js # Playwright screenshot tool
-    ├── notes/               # Paper summary, outline, references
-    └── review/              # PNG screenshots of all 42 slides
+├── index.html            # Landing page with links to all decks
+├── .github/workflows/    # GitHub Actions deployment workflow
+├── bbflow/               # BBFlow paper walkthrough
+├── bbflow2/              # IDPFlow presentation
+├── bbflow3/              # BBFlow proposal (incomplete)
+├── fastdna/              # fastDNA presentation
+├── mdgen/                # MDGen survey
+└── mdgen2/               # MDGen proposal
 ```
 
 ## Adding a new presentation
 
 1. Create a new sub-folder: `mkdir my-talk`
-2. Copy the `bbflow/` structure as a starting point or build from scratch.
-3. Add an entry to this README.
+2. Add an `index.html` (and any CSS/JS assets).
+3. Add an entry to this README and to the root `index.html` landing page.
 4. Add agent documentation to `AGENTS.md` if using AI-assisted authoring.

@@ -13,6 +13,13 @@ This repository stores self-contained interactive web presentations. Each sub-fo
 - SVG diagrams are hand-authored inline; styling is done via shared CSS classes, not inline attributes.
 - Screenshots of all slides are stored in `review/slides/` and a contact sheet in `review/contact-sheet-all.png`.
 
+## Deployment
+
+- A GitHub Actions workflow (`.github/workflows/deploy.yml`) auto-deploys `main` to GitHub Pages.
+- After pushing, decks are live at `https://subhajit-roy-partho.github.io/web-presentation/<deck-name>/`.
+- The root `index.html` is a landing page that links every deck.
+- **One-time setup required:** repo **Settings → Pages → Source** must be set to **GitHub Actions** (not a branch).
+
 ## Slide screenshot workflow
 
 ```bash
