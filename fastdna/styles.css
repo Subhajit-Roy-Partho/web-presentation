@@ -1310,3 +1310,76 @@ body.laser-on {
 .slide[data-title="RMSF Visualized"] .svg-card text {
   font-family: "IBM Plex Sans", sans-serif;
 }
+
+/* ===== DATA TABLE (was missing entirely) ===== */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(0.78rem, 0.9vw, 0.95rem);
+  margin-top: 10px;
+}
+.data-table th {
+  background: var(--teal-dark);
+  color: #fffaf0;
+  padding: 7px 12px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.data-table th:first-child { border-radius: 8px 0 0 0; }
+.data-table th:last-child  { border-radius: 0 8px 0 0; }
+.data-table td {
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  vertical-align: top;
+  font-size: 0.88rem;
+}
+.data-table tbody tr:nth-child(even) td { background: rgba(232,243,239,0.45); }
+.data-table tbody tr:last-child td     { border-bottom: none; }
+
+/* ===== METRIC VALUE / LABEL spans (were missing) ===== */
+.metric-value {
+  display: block;
+  color: var(--rust);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.metric-label {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+/* ===== FIX: SVG card out-of-frame on content-heavy slides =====
+   Root cause: align-items:center on a tall auto-height grid row caused the
+   SVG card to be vertically centered in a row taller than the slide, getting
+   clipped by overflow:hidden on .slide.
+   Fix: align-items:start keeps the SVG card pinned to the top (always visible).
+   The left text column gets max-height + overflow-y:auto so it scrolls instead
+   of pushing the grid row taller than the viewport. */
+.two-col {
+  align-items: start;
+}
+.two-col > div:first-child {
+  max-height: calc(100vh - 210px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(11,114,133,0.2) transparent;
+  padding-right: 3px;
+}
+/* SVG card: explicit min-height so it never collapses when left column is short */
+.two-col > figure.svg-card {
+  min-height: 300px;
+}
+
+/* Compact variant: tighter left-col scrollbox */
+.slide.compact .two-col > div:first-child {
+  max-height: calc(100vh - 200px);
+}

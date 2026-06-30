@@ -276,6 +276,455 @@
         <footer>oxDNA2 coarse-grained model: Snodin et al. JCP 2015; DNA origami: Rothemund, Nature 2006; scaffold routing: Veneziano et al. Science 2016.</footer>
       </section>
 
+      <!-- ===== SLIDE: oxDNA2 SMOOTH FUNCTIONS ===== -->
+      <section class="slide compact" data-title="oxDNA2 Smooth Functions">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Physics · Force Field</p>
+            <h2>Modular smooth functions: f1, f4, f5 — the building blocks of every interaction</h2>
+            <p>All seven oxDNA2 energy terms are products of three types of smooth, differentiable functions. Smooth continuity ensures energy and force are well-behaved everywhere — critical for both MD stability and PyTorch autodiff.</p>
+            <div class="formula-box small" style="margin-top:12px">
+              <strong>f1(r) — smooth radial well (used in stacking, HB, cross-stacking):</strong>
+              \[f_1(r) = \begin{cases} 0 & r > r^*_\text{high} \\ e^{-k_1(r-r_0)^2}\text{(ramp)} & r_\text{HB} \le r \le r^*_\text{high} \\ 1\text{ (plateau)} & r_\text{low} \le r \le r_\text{HB} \\ 0 & r < r_\text{low} \end{cases}\]
+              <strong>f4(θ) — angular gate (6× in stacking, 6× in HB):</strong>
+              \[f_4(\theta;\,\theta_0,k_4) = 1 - k_4(\cos\theta - \cos\theta_0)^2, \quad |\theta-\theta_0| \le \Delta\theta\]
+              <strong>f5(φ) — groove/twist gate (stacking only):</strong>
+              \[f_5(\phi;\,\phi_0) = \begin{cases} 1 & |\phi| \le |\phi_0| \\ 1 - k_5(\phi-\phi_0)^2 & |\phi_0| < |\phi| < |\phi_\text{cut}| \\ 0 & \text{otherwise} \end{cases}\]
+            </div>
+            <div class="callout" style="margin-top:10px">
+              <strong>Why smooth?</strong> Discontinuous cutoffs create energy drift in MD (and NaN gradients in PyTorch). The Gaussian rolloff in f1 and quadratic rolloff in f4/f5 ensure \(\nabla V\) is continuous everywhere. Our geom_loss surrogate uses squared differences <em>without</em> gates — giving gradient at all distances.
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 520 410" role="img" aria-label="Plots of f1 f4 f5 smooth functions">
+              <text x="260" y="22" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">oxDNA2 smooth function building blocks</text>
+              <!-- f1 panel -->
+              <rect x="18" y="34" width="484" height="108" rx="8" fill="rgba(232,243,239,0.7)" stroke="rgba(11,114,133,0.25)" stroke-width="1.2"/>
+              <text x="28" y="52" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">f₁(r) — radial smooth well</text>
+              <line x1="55" y1="126" x2="490" y2="126" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <line x1="55" y1="126" x2="55" y2="44" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <text x="50" y="130" text-anchor="end" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">0</text>
+              <text x="50" y="50" text-anchor="end" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">1</text>
+              <!-- curve: 0 for small r, rises, plateau at 1, falls, 0 for large r -->
+              <path d="M55 124 L100 124 C115 124 125 58 150 54 C185 50 260 50 295 54 C320 58 335 100 350 124 L490 124" fill="rgba(11,114,133,0.1)" stroke="#0b7285" stroke-width="2.5"/>
+              <text x="222" y="47" text-anchor="middle" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">f₁=1 plateau</text>
+              <line x1="150" y1="120" x2="150" y2="128" stroke="rgba(21,33,31,0.4)" stroke-width="1"/>
+              <text x="150" y="138" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">r_low</text>
+              <line x1="295" y1="120" x2="295" y2="128" stroke="rgba(21,33,31,0.4)" stroke-width="1"/>
+              <text x="295" y="138" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">r₀</text>
+              <line x1="350" y1="120" x2="350" y2="128" stroke="rgba(21,33,31,0.4)" stroke-width="1"/>
+              <text x="350" y="138" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">r*_high</text>
+              <!-- f4 panel -->
+              <rect x="18" y="155" width="230" height="120" rx="8" fill="rgba(255,243,191,0.55)" stroke="rgba(240,140,0,0.3)" stroke-width="1.2"/>
+              <text x="28" y="173" fill="#8a5200" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">f₄(θ) — angular gate</text>
+              <line x1="48" y1="258" x2="238" y2="258" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <line x1="48" y1="258" x2="48" y2="178" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <!-- bell curve at θ₀ -->
+              <path d="M48 256 C75 256 100 256 118 218 C128 200 133 183 143 181 C153 183 158 200 168 218 C186 256 211 256 238 256" fill="rgba(240,140,0,0.12)" stroke="#f08c00" stroke-width="2.5"/>
+              <text x="143" y="178" text-anchor="middle" fill="#f08c00" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">f₄=1 at θ=θ₀</text>
+              <line x1="143" y1="254" x2="143" y2="262" stroke="rgba(21,33,31,0.4)" stroke-width="1"/>
+              <text x="143" y="272" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">θ₀</text>
+              <text x="60" y="272" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">0</text>
+              <text x="226" y="272" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">π</text>
+              <!-- Δθ annotation -->
+              <line x1="110" y1="230" x2="176" y2="230" stroke="rgba(194,65,12,0.4)" stroke-width="1.2" stroke-dasharray="3 3"/>
+              <text x="143" y="245" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="8">Δθ window</text>
+              <!-- f5 panel -->
+              <rect x="272" y="155" width="230" height="120" rx="8" fill="rgba(194,65,12,0.07)" stroke="rgba(194,65,12,0.25)" stroke-width="1.2"/>
+              <text x="282" y="173" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">f₅(φ) — groove twist gate</text>
+              <line x1="302" y1="258" x2="492" y2="258" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <line x1="302" y1="258" x2="302" y2="178" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <!-- f5: plateau then smooth drop to 0 -->
+              <path d="M302 182 L380 182 C395 182 405 220 415 240 C422 252 430 256 492 256" fill="rgba(194,65,12,0.1)" stroke="#c2410c" stroke-width="2.5"/>
+              <text x="340" y="178" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">f₅=1</text>
+              <line x1="380" y1="254" x2="380" y2="262" stroke="rgba(21,33,31,0.4)" stroke-width="1"/>
+              <text x="380" y="272" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">|φ₀|</text>
+              <text x="310" y="272" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">0</text>
+              <text x="475" y="272" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">φ_cut</text>
+              <!-- Usage summary -->
+              <rect x="18" y="292" width="484" height="108" rx="8" fill="rgba(255,250,240,0.9)" stroke="rgba(21,33,31,0.14)" stroke-width="1.2"/>
+              <text x="260" y="312" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700">Usage in energy terms</text>
+              <text x="30" y="330" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Stacking:</text>
+              <text x="105" y="330" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">f₁(r_stack) · f₄(θ₄) · f₄(θ₅) · f₄(θ₆) · f₅(φ₃)   [5 factors]</text>
+              <text x="30" y="348" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">H-bonding:</text>
+              <text x="105" y="348" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">f₁(r_HB) · f₄(θ₁) · f₄(θ₂) · f₄(θ₃) · f₄(θ₄) · f₄(θ₇) · f₄(θ₈)   [7 factors]</text>
+              <text x="30" y="366" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Cross-stack:</text>
+              <text x="105" y="366" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">f₂(r) · f₄(θ₁) · f₄(θ₄) · f₄(θ₅) · f₄(θ₆) · f₅(φ₁) · f₅(φ₂)   [7 factors]</text>
+              <text x="30" y="384" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">fastDNA surrogate:</text>
+              <text x="130" y="384" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">smooth (dot−target)² everywhere — no gates — gradient at all distances</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>oxDNA2 smooth functions: Snodin et al. JCP 2015 Supp; DNA2Interaction.cpp functions _f1, _f4, _f5; surrogate in geom_loss.py uses ungated squared losses.</footer>
+      </section>
+
+      <!-- ===== SLIDE: STACKING ENERGY DETAIL ===== -->
+      <section class="slide compact" data-title="Stacking Energy Detail">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Physics · Stacking</p>
+            <h2>Base stacking: helical twist φ is the key B-DNA geometry constraint</h2>
+            <p>Stacking acts on bonded consecutive pairs on the same strand. Three geometric constraints are enforced, each verified against equilibrated BOILERPLATE dsDNA (504 nt).</p>
+            <div class="formula-box small" style="margin-top:12px">
+              <strong>stacking_geometry_loss (geom_loss.py):</strong>
+              \[\mathcal{L}_\text{stck} = \frac{1}{N}\sum_\text{bonds}\left[5\,(\phi_\text{loss}) + 3\,(a_3\text{-par}) + 1\,(\theta_5\text{-align})\right]\]
+              <strong>1. Helical twist φ (weight×5) — the KEY constraint:</strong>
+              \[|\cos\phi_1| = |a_2^p \cdot \hat{r}_\text{backref}| \to 0.656, \quad \cos\phi_1 = a_2 \cdot \frac{\Delta r_\text{COM} + d_\text{back}(a_1^q - a_1^p)}{|\cdot|}\]
+              <strong>2. a₃ nearly parallel (weight×3):</strong>
+              \[a_3^p \cdot a_3^q \to 0.921 \approx \cos(22.9°)\]
+              <strong>3. Stack-site alignment |a₃·r̂| (weight×1):</strong>
+              \[|a_3^p \cdot \hat{r}_\text{stack}| \to 0.932 \approx \cos(21.3°)\]
+            </div>
+            <div class="callout" style="margin-top:10px">
+              <strong>v0.6 bug, v0.9 fix:</strong> Old stacking used target a₃·a₃→0.809 (cos36°) from origami data that mixed strand directions. Correct target 0.921 (cos22.9°) from BOILERPLATE single-strand pairs. Also: POS_BACK=-0.4 (uses a₂, not a₃, for backbone reference — critical for correct φ). Absolute value handles both 5'→3' and 3'→5' strand storage in zarr.
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 520 410" role="img" aria-label="Stacking geometry angles diagram">
+              <defs>
+                <marker id="arrstk" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#0b7285"/>
+                </marker>
+                <marker id="arrstko" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#f08c00"/>
+                </marker>
+                <marker id="arrstkr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#c2410c"/>
+                </marker>
+              </defs>
+              <text x="260" y="22" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">Stacking geometry (consecutive bonded pair)</text>
+              <!-- Nucleotide p (bottom) -->
+              <circle cx="200" cy="280" r="18" fill="rgba(11,114,133,0.45)" stroke="#064d5a" stroke-width="2.5"/>
+              <text x="200" y="285" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="13" font-weight="700">p</text>
+              <!-- Nucleotide q (top) -->
+              <circle cx="250" cy="150" r="18" fill="rgba(194,65,12,0.45)" stroke="#7a2b0d" stroke-width="2.5"/>
+              <text x="250" y="155" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="13" font-weight="700">q</text>
+              <!-- COM to COM backbone reference -->
+              <line x1="200" y1="280" x2="250" y2="150" stroke="rgba(21,33,31,0.4)" stroke-width="2" stroke-dasharray="5 3"/>
+              <text x="215" y="222" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">Δr_COM</text>
+              <!-- a3 at p (upward) -->
+              <line x1="200" y1="280" x2="175" y2="200" stroke="#0b7285" stroke-width="3" marker-end="url(#arrstk)"/>
+              <text x="158" y="197" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="700">a₃ᵖ</text>
+              <!-- a3 at q (upward, nearly parallel) -->
+              <line x1="250" y1="150" x2="228" y2="72" stroke="#c2410c" stroke-width="3" marker-end="url(#arrstkr)"/>
+              <text x="212" y="68" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="700">a₃ᵍ</text>
+              <!-- a3 angle annotation -->
+              <path d="M185 215 A35 35 0 0 0 215 90" fill="none" stroke="rgba(21,33,31,0.3)" stroke-width="1.2" stroke-dasharray="4 3"/>
+              <text x="148" y="158" fill="#064d5a" font-family="IBM Plex Mono,monospace" font-size="9">22.9° ≈ cos(0.921)</text>
+              <!-- a2 at p (base normal, for phi) -->
+              <line x1="200" y1="280" x2="260" y2="295" stroke="#f08c00" stroke-width="3" marker-end="url(#arrstko)"/>
+              <text x="265" y="300" fill="#f08c00" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="700">a₂ᵖ</text>
+              <!-- rbackref direction label -->
+              <text x="265" y="218" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">r_backref</text>
+              <text x="265" y="228" fill="#f08c00" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">|a₂·r̂|→0.656</text>
+              <!-- Stack sites (pos + 0.34*a1) -->
+              <circle cx="218" cy="265" r="7" fill="rgba(240,140,0,0.7)" stroke="#8a5200" stroke-width="1.5"/>
+              <text x="218" y="256" fill="#8a5200" font-family="IBM Plex Mono,monospace" font-size="8">stk_p</text>
+              <circle cx="267" cy="136" r="7" fill="rgba(240,140,0,0.7)" stroke="#8a5200" stroke-width="1.5"/>
+              <text x="267" y="127" fill="#8a5200" font-family="IBM Plex Mono,monospace" font-size="8">stk_q</text>
+              <line x1="218" y1="265" x2="267" y2="136" stroke="#f08c00" stroke-width="1.5" stroke-dasharray="4 3"/>
+              <!-- Three constraints summary box -->
+              <rect x="30" y="320" width="460" height="80" rx="10" fill="rgba(232,243,239,0.85)" stroke="rgba(11,114,133,0.2)" stroke-width="1.5"/>
+              <text x="260" y="340" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Stacking constraints (all verified vs BOILERPLATE dsDNA)</text>
+              <text x="44" y="358" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10">① Helical twist (φ, w=5): |a₂ᵖ·r̂_backref|→0.656 — <tspan fill="#c2410c" font-weight="700">main B-DNA shape constraint</tspan></text>
+              <text x="44" y="374" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10">② a₃ nearly parallel (w=3): a₃ᵖ·a₃ᵍ→0.921 (cos22.9°) — both stacking axes align on same strand</text>
+              <text x="44" y="390" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10">③ Stack-site alignment (w=1): |a₃·r̂_stack|→0.932 (cos21.3°) — a₃ approximately along bond</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>stacking_geometry_loss(): geom_loss.py; equilibria from equilibrated BOILERPLATE dsDNA; POS_BACK=−0.4 (DNAInteraction::_stacking); abs values for strand-direction independence.</footer>
+      </section>
+
+      <!-- ===== SLIDE: HB GEOMETRY DETAIL ===== -->
+      <section class="slide compact" data-title="HB & WC Geometry">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Physics · Hydrogen Bonding</p>
+            <h2>Watson-Crick H-bond: 5 smooth angular terms, all gates removed in v0.12</h2>
+            <p>The HB geometry loss acts on <strong>sampled WC-compatible pairs</strong> (A↔T: base types 0+3=3; G↔C: types 2+1=3), enforcing five constraints simultaneously.</p>
+            <div class="formula-box small" style="margin-top:12px">
+              <strong>hb_geometry_loss (sampled, K=300 pairs/step):</strong>
+              \[\mathcal{L}_\text{HB} = \frac{1}{M}\!\sum_\text{valid WC pairs}\!\left[4r_\text{term} + t_1 + t_2 + 3t_4 + 2t_5\right]\]
+              where:
+              \[r_\text{term} = (r_\text{base} - 0.40)^2\quad \text{[position gradient, no gate]}\]
+              \[t_1 = (a_1^p\cdot\hat{r} - 1)^2,\quad t_2 = (a_1^q\cdot\hat{r} + 1)^2\]
+              \[t_4 = (a_1^p\cdot a_1^q + 1)^2,\quad t_5 = (a_3^p\cdot a_3^q + 1)^2\]
+              <p style="font-size:0.88em;margin-top:6px">Sampling: K=300 random i, seq_sep ≥ 4; WC check: bt[i]+bt[j]==3.</p>
+            </div>
+            <div class="callout" style="margin-top:10px">
+              <strong>v0.12 fix (smooth losses):</strong> Old code used <code>F.relu(1 - dot)</code> gates that produce zero gradient when orientation is partly wrong. Replaced with smooth <code>(dot - target)²</code> everywhere → gradient at all orientations. Also: radial term r_term has NO distance gate → pulls WC partners into HB range even at large separation.
+            </div>
+            <table class="data-table" style="margin-top:10px">
+              <thead><tr><th>Term</th><th>Target</th><th>Weight</th><th>Enforces</th></tr></thead>
+              <tbody>
+                <tr><td>r_base</td><td>0.40 su</td><td>4</td><td>HB site–site distance (= HYDR_R0)</td></tr>
+                <tr><td>a₁ᵖ·r̂</td><td>+1</td><td>1</td><td>p base-face points toward partner</td></tr>
+                <tr><td>a₁ᵍ·r̂</td><td>−1</td><td>1</td><td>q base-face points away (anti-parallel)</td></tr>
+                <tr><td>a₁ᵖ·a₁ᵍ</td><td>−1</td><td>3</td><td>Watson-Crick anti-parallel base alignment</td></tr>
+                <tr><td>a₃ᵖ·a₃ᵍ</td><td>−1</td><td>2</td><td>Complementary strands run anti-parallel</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 520 410" role="img" aria-label="HB Watson-Crick geometry diagram">
+              <defs>
+                <marker id="arrhb" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#0b7285"/>
+                </marker>
+                <marker id="arrhbo" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#f08c00"/>
+                </marker>
+                <marker id="arrhbr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#c2410c"/>
+                </marker>
+              </defs>
+              <text x="260" y="22" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">Watson-Crick HB geometry (WC pair p–q)</text>
+              <!-- Scaffold strand (top) -->
+              <text x="130" y="58" text-anchor="middle" fill="#0b7285" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Scaffold (p)</text>
+              <!-- Nucleotide p -->
+              <circle cx="130" cy="130" r="20" fill="rgba(11,114,133,0.5)" stroke="#064d5a" stroke-width="2.5"/>
+              <text x="130" y="136" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="13" font-weight="700">p</text>
+              <!-- COM label -->
+              <text x="108" y="122" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">r_COM</text>
+              <!-- Base site of p (r + 0.4*a1, pointing RIGHT) -->
+              <line x1="130" y1="130" x2="230" y2="130" stroke="#f08c00" stroke-width="3" marker-end="url(#arrhbo)"/>
+              <text x="178" y="120" text-anchor="middle" fill="#f08c00" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">a₁ᵖ → +r̂</text>
+              <circle cx="222" cy="130" r="9" fill="rgba(240,140,0,0.75)" stroke="#8a5200" stroke-width="2"/>
+              <text x="222" y="118" fill="#8a5200" font-family="IBM Plex Mono,monospace" font-size="8">B_p</text>
+              <!-- HB distance r_base -->
+              <line x1="222" y1="130" x2="298" y2="130" stroke="rgba(21,33,31,0.5)" stroke-width="2.5" stroke-dasharray="5 3"/>
+              <text x="260" y="118" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">r_base→0.40 su</text>
+              <!-- Base site of q -->
+              <circle cx="298" cy="130" r="9" fill="rgba(194,65,12,0.75)" stroke="#7a2b0d" stroke-width="2"/>
+              <text x="298" y="118" fill="#7a2b0d" font-family="IBM Plex Mono,monospace" font-size="8">B_q</text>
+              <!-- Nucleotide q -->
+              <circle cx="390" cy="130" r="20" fill="rgba(194,65,12,0.5)" stroke="#7a2b0d" stroke-width="2.5"/>
+              <text x="390" y="136" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="13" font-weight="700">q</text>
+              <!-- a1 of q (pointing LEFT — anti-parallel) -->
+              <line x1="390" y1="130" x2="310" y2="130" stroke="#c2410c" stroke-width="3" marker-end="url(#arrhbr)"/>
+              <text x="350" y="148" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">a₁ᵍ → −r̂</text>
+              <text x="390" y="158" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="9">Staple (q)</text>
+              <!-- a3 of p (upward) -->
+              <line x1="130" y1="130" x2="130" y2="55" stroke="#0b7285" stroke-width="2.5" marker-end="url(#arrhb)"/>
+              <text x="114" y="50" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700">a₃ᵖ↑</text>
+              <!-- a3 of q (downward — anti-parallel to a3 of p) -->
+              <line x1="390" y1="130" x2="390" y2="205" stroke="#c2410c" stroke-width="2.5" marker-end="url(#arrhbr)"/>
+              <text x="398" y="200" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="700">↓a₃ᵍ</text>
+              <!-- a3·a3 annotation -->
+              <text x="260" y="190" text-anchor="middle" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">a₃ᵖ·a₃ᵍ→−1 (anti-parallel strands)</text>
+              <!-- a1·a1 annotation -->
+              <text x="260" y="70" text-anchor="middle" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">a₁ᵖ·a₁ᵍ→−1 (anti-parallel base axes)</text>
+              <!-- Smooth vs relu comparison -->
+              <rect x="30" y="218" width="460" height="80" rx="8" fill="rgba(255,243,191,0.7)" stroke="rgba(240,140,0,0.3)" stroke-width="1.2"/>
+              <text x="260" y="238" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">v0.12 fix: relu gates → smooth squared losses</text>
+              <!-- Old relu shape -->
+              <path d="M42 280 L90 280 L90 248 L140 248" fill="none" stroke="#c2410c" stroke-width="2" stroke-dasharray="6 3"/>
+              <text x="90" y="297" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="9">relu (old)</text>
+              <text x="55" y="277" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">grad=0</text>
+              <!-- New smooth parabola -->
+              <path d="M180 280 C210 278 230 255 260 248 C290 255 310 278 340 280" fill="none" stroke="#0b7285" stroke-width="2.5"/>
+              <text x="260" y="297" text-anchor="middle" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="9">smooth (dot−target)²</text>
+              <text x="440" y="262" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">gradient</text>
+              <text x="440" y="272" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">everywhere</text>
+              <!-- HB cutoff values -->
+              <rect x="30" y="308" width="460" height="90" rx="8" fill="rgba(232,243,239,0.8)" stroke="rgba(11,114,133,0.2)" stroke-width="1.2"/>
+              <text x="260" y="328" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Key HB constants (verified from oxDNA2 model.h)</text>
+              <text x="44" y="346" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10">HYDR_R0 = 0.40 su (target base-to-base distance)</text>
+              <text x="44" y="362" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10">HYDR_RCLOW = 0.2769 su, HYDR_RCHIGH = 0.7838 su (f1 cutoffs)</text>
+              <text x="44" y="378" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10">COM-to-COM HB r_cut = 2×0.4 + 0.7838 = 1.5838 su (used in geom_loss sampling)</text>
+              <text x="44" y="394" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">WC check: bt[i]+bt[j]==3 (A=0,T=3; G=2,C=1)</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>hb_geometry_loss(): geom_loss.py; HYDR_R0=0.40, HYDR_RCHIGH=0.7838, COM-to-COM cutoff=1.5838 su; smooth squared losses (no relu) since v0.12; sampling K=300.</footer>
+      </section>
+
+      <!-- ===== SLIDE: WC ATTRACTOR & HB EXCLUSION ===== -->
+      <section class="slide compact" data-title="WC Attractor &amp; HB Exclusion">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Physics · Nucleotide Attraction</p>
+            <h2>WC attractor + hb_exc: attracting the right pairs while repelling all others</h2>
+            <p>These two complementary losses solve a fundamental problem: bring each Watson-Crick base to its unique partner without causing other base-face contacts.</p>
+            <div class="formula-box small" style="margin-top:12px">
+              <strong>wc_attractor_loss — exclusive nearest-WC-partner pull:</strong>
+              \[\mathcal{L}_\text{wc} = \frac{1}{N_\text{active}}\sum_{i}\,w_i\cdot\text{relu}(r_{ij} - r_\text{stop})^2 \cdot \mathbf{1}[r_{ij} < r_\text{attract}]\]
+              where \(j=\arg\min_{k:\text{WC}(i,k)} r_{ik}\) (unique nearest WC partner),<br>
+              \(w_i=1.0\) if mutual (i is also j's nearest WC partner), \(w_i=0.5\) otherwise.<br>
+              \(r_\text{attract}=1.5\) su, \(r_\text{stop}=0.40\) su (= HYDR_R0)
+              <br><br>
+              <strong>hb_exc_loss_nonwc — base-face exclusion for non-WC pairs only:</strong>
+              \[\mathcal{L}_\text{exc}^\text{HB} = e^{-d/\sigma} + 10\cdot\text{relu}(r_\text{clash}-d)^2, \quad \text{only if bt}[i]+\text{bt}[j] \ne 3\]
+            </div>
+            <div class="callout" style="margin-top:10px">
+              <strong>v0.12 fix (wc_mask):</strong> Old code compared <code>bt[i]</code> to <code>comp[i]</code> (a pair of the same nucleotide) — always true, so every pair was treated as WC-compatible. Fixed to <code>bt[i]+bt[j]==3</code>, verified on displaced dsDNA test where wc_attractor now correctly fires only on A-T and G-C cross-strand pairs.
+            </div>
+            <p style="margin-top:8px"><strong>Why mutual weighting (1.0 vs 0.5)?</strong> If j already has a better WC partner, pulling i toward j at full weight would cause two bases to compete for the same partner, producing collapsed clumps. Halving the weight for non-mutual pairs allows the best partner to "win" while still providing weak global pull.</p>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 520 410" role="img" aria-label="WC attractor and HB exclusion diagram">
+              <defs>
+                <marker id="arrwc" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#0b7285"/>
+                </marker>
+                <marker id="arrwcr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#c2410c"/>
+                </marker>
+              </defs>
+              <text x="260" y="22" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">WC attractor + HB exclusion</text>
+              <!-- Top: WC attractor diagram -->
+              <text x="260" y="46" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700">wc_attractor: one-to-one nearest-partner pull</text>
+              <!-- Scaffold strand (top row) -->
+              <circle cx="100" cy="100" r="16" fill="rgba(11,114,133,0.5)" stroke="#064d5a" stroke-width="2"/>
+              <text x="100" y="105" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">A</text>
+              <circle cx="200" cy="100" r="16" fill="rgba(11,114,133,0.5)" stroke="#064d5a" stroke-width="2"/>
+              <text x="200" y="105" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">G</text>
+              <circle cx="300" cy="100" r="16" fill="rgba(11,114,133,0.5)" stroke="#064d5a" stroke-width="2"/>
+              <text x="300" y="105" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">C</text>
+              <circle cx="400" cy="100" r="16" fill="rgba(11,114,133,0.5)" stroke="#064d5a" stroke-width="2"/>
+              <text x="400" y="105" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">T</text>
+              <!-- Staple strand (bottom row) -->
+              <circle cx="120" cy="185" r="16" fill="rgba(194,65,12,0.45)" stroke="#7a2b0d" stroke-width="2"/>
+              <text x="120" y="190" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">T</text>
+              <circle cx="220" cy="185" r="16" fill="rgba(194,65,12,0.45)" stroke="#7a2b0d" stroke-width="2"/>
+              <text x="220" y="190" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">C</text>
+              <circle cx="320" cy="185" r="16" fill="rgba(194,65,12,0.45)" stroke="#7a2b0d" stroke-width="2"/>
+              <text x="320" y="190" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">G</text>
+              <circle cx="420" cy="185" r="16" fill="rgba(194,65,12,0.45)" stroke="#7a2b0d" stroke-width="2"/>
+              <text x="420" y="190" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">A</text>
+              <!-- WC attractor arrows (A→T, G→C, C→G, T→A) — mutual, weight=1 -->
+              <line x1="100" y1="116" x2="118" y2="169" stroke="#0b7285" stroke-width="2.5" marker-end="url(#arrwc)"/>
+              <text x="85" y="147" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">w=1</text>
+              <line x1="200" y1="116" x2="218" y2="169" stroke="#0b7285" stroke-width="2.5" marker-end="url(#arrwc)"/>
+              <line x1="300" y1="116" x2="322" y2="169" stroke="#0b7285" stroke-width="2.5" marker-end="url(#arrwc)"/>
+              <line x1="400" y1="116" x2="422" y2="169" stroke="#0b7285" stroke-width="2.5" marker-end="url(#arrwc)"/>
+              <!-- r_attract and r_stop labels -->
+              <rect x="30" y="208" width="460" height="48" rx="7" fill="rgba(232,243,239,0.8)" stroke="rgba(11,114,133,0.2)" stroke-width="1"/>
+              <text x="260" y="226" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Range: r_attract=1.5 su (max pull range) · r_stop=0.40 su (HYDR_R0, no push once inside)</text>
+              <text x="260" y="244" text-anchor="middle" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">Full M×M pairwise for M≤2000; sampled K pairs for M&gt;2000 (large windows)</text>
+              <!-- hb_exc diagram -->
+              <text x="260" y="278" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="12" font-weight="700">hb_exc (non-WC pairs only): e^{-d/σ} + 10·relu(r_clash−d)²</text>
+              <!-- Non-WC repulsion visualization -->
+              <circle cx="120" cy="330" r="14" fill="rgba(11,114,133,0.4)" stroke="#064d5a" stroke-width="1.5"/>
+              <text x="120" y="335" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="10">A</text>
+              <circle cx="200" cy="330" r="14" fill="rgba(194,65,12,0.4)" stroke="#7a2b0d" stroke-width="1.5"/>
+              <text x="200" y="335" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="10">C</text>
+              <!-- Repulsion arrows (A-C is NOT WC) -->
+              <line x1="135" y1="330" x2="185" y2="330" stroke="#c2410c" stroke-width="2" stroke-dasharray="4 3"/>
+              <text x="160" y="320" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="9">A+C=1≠3 → repel</text>
+              <!-- WC pair — no hb_exc -->
+              <circle cx="330" cy="330" r="14" fill="rgba(11,114,133,0.4)" stroke="#064d5a" stroke-width="1.5"/>
+              <text x="330" y="335" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="10">A</text>
+              <circle cx="410" cy="330" r="14" fill="rgba(194,65,12,0.4)" stroke="#7a2b0d" stroke-width="1.5"/>
+              <text x="410" y="335" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="10">T</text>
+              <line x1="345" y1="330" x2="395" y2="330" stroke="#0b7285" stroke-width="2" marker-end="url(#arrwc)"/>
+              <text x="370" y="320" text-anchor="middle" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="9">A+T=3 → attract</text>
+              <text x="370" y="360" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">hb_exc SKIPS this pair</text>
+              <!-- Key fix label -->
+              <rect x="30" y="372" width="460" height="32" rx="7" fill="rgba(194,65,12,0.1)" stroke="rgba(194,65,12,0.3)" stroke-width="1"/>
+              <text x="260" y="386" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">v0.12 fix: hb_exc now correctly skips WC pairs (was applying repulsion to complementary bases, fighting attractor)</text>
+              <text x="260" y="399" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">σ=0.30 su (soft core) · r_clash=0.25 su (hard collision) · K=500 sampled pairs</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>wc_attractor_loss() and hb_exc_loss_nonwc(): geom_loss.py; WC types A(0)+T(3)=3, G(2)+C(1)=3; r_attract=1.5su, r_stop=0.40su; hb_exc σ=0.30su, r_clash=0.25su.</footer>
+      </section>
+
+      <!-- ===== SLIDE: GROOVE LOSS ===== -->
+      <section class="slide compact" data-title="Groove &amp; Backbone Geometry">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Physics · Groove Geometry</p>
+            <h2>groove_geometry_loss: the only loss that gives positions a gradient from orientation constraints</h2>
+            <p>Added in v0.12, groove_geometry_loss bridges the gap between orientation and position gradients. The first two sub-terms enforce only orientation; the backbone MM-site sub-term is the key position signal.</p>
+            <div class="formula-box small" style="margin-top:12px">
+              \[\mathcal{L}_\text{groove} = 2\,\mathcal{L}_{a_1\perp a_3} + 1\,\mathcal{L}_{a_2\text{-par}} + 3\,\mathcal{L}_\text{back}\]
+              <strong>(a) a₁ ⊥ a₃ [orientation only]:</strong>
+              \[\mathcal{L}_{a_1\perp a_3} = \frac{1}{N}\sum_i (a_1^i \cdot a_3^i)^2 \to 0\]
+              <strong>(b) Consecutive a₂ parallel [orientation only]:</strong>
+              \[\mathcal{L}_{a_2} = \frac{1}{N_b}\sum_\text{bonds} (|a_2^p \cdot a_2^q| - 0.92)^2\]
+              <strong>(c) Backbone MM-site bond distance [POSITION gradient] (w=3):</strong>
+              \[\mathcal{L}_\text{back} = \frac{1}{N_b}\sum_\text{bonds}(d_\text{MM} - 0.7403)^2\]
+              \[d_\text{MM} = \|\mathbf{r}_{i+1} - 0.34\,a_1^{i+1} + 0.3408\,a_2^{i+1} - (\mathbf{r}_i - 0.34\,a_1^i + 0.3408\,a_2^i)\|\]
+            </div>
+            <div class="callout" style="margin-top:10px">
+              <strong>Why term (c) matters:</strong> Pure orientation constraints (a₁⊥a₃, a₂ parallel) have gradient only into <em>ori</em>, not <em>pos</em>. The backbone MM-site depends on both <em>pos</em> and <em>a₁, a₂</em>, so it provides position gradient proportional to how far the backbone bond is from equilibrium — coupling groove shape to chain geometry.
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 520 410" role="img" aria-label="Groove geometry constraint diagram">
+              <defs>
+                <marker id="arrgr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#0b7285"/>
+                </marker>
+                <marker id="arrgrr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#c2410c"/>
+                </marker>
+                <marker id="arrgro" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#f08c00"/>
+                </marker>
+              </defs>
+              <text x="260" y="22" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">Groove geometry: 3 sub-terms</text>
+              <!-- Left sub-panel: a1 perp a3 -->
+              <rect x="15" y="34" width="155" height="175" rx="8" fill="rgba(232,243,239,0.75)" stroke="rgba(11,114,133,0.25)" stroke-width="1.2"/>
+              <text x="92" y="52" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">(a) a₁ ⊥ a₃ → 0</text>
+              <circle cx="92" cy="130" r="16" fill="rgba(11,114,133,0.4)" stroke="#064d5a" stroke-width="2"/>
+              <text x="92" y="135" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="10">i</text>
+              <!-- a1 rightward -->
+              <line x1="92" y1="130" x2="148" y2="130" stroke="#f08c00" stroke-width="2.5" marker-end="url(#arrgro)"/>
+              <text x="148" y="121" fill="#f08c00" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">a₁</text>
+              <!-- a3 upward (perpendicular to a1) -->
+              <line x1="92" y1="130" x2="92" y2="70" stroke="#0b7285" stroke-width="2.5" marker-end="url(#arrgr)"/>
+              <text x="96" y="66" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">a₃</text>
+              <!-- right angle symbol -->
+              <rect x="94" y="114" width="12" height="12" fill="none" stroke="rgba(21,33,31,0.4)" stroke-width="1.2"/>
+              <text x="92" y="200" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">a₁·a₃ → 0</text>
+              <!-- Center sub-panel: a2 parallel -->
+              <rect x="182" y="34" width="155" height="175" rx="8" fill="rgba(255,243,191,0.55)" stroke="rgba(240,140,0,0.25)" stroke-width="1.2"/>
+              <text x="260" y="52" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">(b) consec. a₂ ‖ a₂</text>
+              <circle cx="225" cy="115" r="14" fill="rgba(11,114,133,0.4)" stroke="#064d5a" stroke-width="2"/>
+              <text x="225" y="120" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="9">i</text>
+              <circle cx="295" cy="155" r="14" fill="rgba(11,114,133,0.4)" stroke="#064d5a" stroke-width="2"/>
+              <text x="295" y="160" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="9">i+1</text>
+              <!-- a2 arrows (pointing same direction) -->
+              <line x1="225" y1="115" x2="225" y2="75" stroke="#f08c00" stroke-width="2.5" marker-end="url(#arrgro)"/>
+              <text x="230" y="70" fill="#f08c00" font-family="IBM Plex Mono,monospace" font-size="9">a₂ᵢ</text>
+              <line x1="295" y1="155" x2="295" y2="115" stroke="#f08c00" stroke-width="2.5" marker-end="url(#arrgro)"/>
+              <text x="300" y="110" fill="#f08c00" font-family="IBM Plex Mono,monospace" font-size="9">a₂ᵢ₊₁</text>
+              <text x="260" y="200" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">|a₂·a₂|→0.92</text>
+              <!-- Right sub-panel: backbone MM bond -->
+              <rect x="349" y="34" width="155" height="175" rx="8" fill="rgba(194,65,12,0.08)" stroke="rgba(194,65,12,0.25)" stroke-width="1.2"/>
+              <text x="426" y="52" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">(c) MM-site bond distance</text>
+              <circle cx="385" cy="115" r="14" fill="rgba(11,114,133,0.4)" stroke="#064d5a" stroke-width="2"/>
+              <text x="385" y="120" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="9">i</text>
+              <circle cx="460" cy="155" r="14" fill="rgba(11,114,133,0.4)" stroke="#064d5a" stroke-width="2"/>
+              <text x="460" y="160" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="9">i+1</text>
+              <!-- MM sites -->
+              <circle cx="370" cy="103" r="7" fill="rgba(194,65,12,0.7)" stroke="#7a2b0d" stroke-width="1.5"/>
+              <text x="356" y="100" fill="#7a2b0d" font-family="IBM Plex Mono,monospace" font-size="7">MM_i</text>
+              <circle cx="445" cy="143" r="7" fill="rgba(194,65,12,0.7)" stroke="#7a2b0d" stroke-width="1.5"/>
+              <text x="448" y="137" fill="#7a2b0d" font-family="IBM Plex Mono,monospace" font-size="7">MM_{i+1}</text>
+              <line x1="370" y1="103" x2="445" y2="143" stroke="#c2410c" stroke-width="2.5" stroke-dasharray="4 3"/>
+              <text x="395" y="118" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="8">→ 0.7403 su</text>
+              <text x="426" y="200" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">POS gradient!</text>
+              <!-- Summary box -->
+              <rect x="15" y="222" width="490" height="90" rx="8" fill="rgba(232,243,239,0.85)" stroke="rgba(11,114,133,0.2)" stroke-width="1.2"/>
+              <text x="260" y="242" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Gradient flow summary</text>
+              <line x1="25" y1="250" x2="495" y2="250" stroke="rgba(21,33,31,0.12)" stroke-width="1"/>
+              <text x="40" y="268" fill="#102122" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">(a) a₁⊥a₃:</tspan> gradient into ori only (rotation of nucleotide frame)</text>
+              <text x="40" y="284" fill="#102122" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">(b) a₂‖a₂:</tspan> gradient into ori only (groove direction alignment)</text>
+              <text x="40" y="300" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">(c) MM-site bond: gradient into BOTH pos AND ori — the missing position signal from orientation constraints</text>
+              <!-- Formula for MM-site -->
+              <rect x="15" y="322" width="490" height="82" rx="8" fill="rgba(255,250,240,0.85)" stroke="rgba(21,33,31,0.12)" stroke-width="1"/>
+              <text x="260" y="342" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Backbone MM-site: r_back = pos − 0.34·a₁ + 0.3408·a₂</text>
+              <text x="260" y="360" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="10">Uses a₂ (NOT a₃) — verified from DNANucleotide.cpp</text>
+              <text x="260" y="378" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="10">POS_MM_BACK1=−0.34 (a₁)  POS_MM_BACK2=+0.3408 (a₂)</text>
+              <text x="260" y="397" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Mono,monospace" font-size="10">Thermal mean 0.7403 su from equilibrated BOILERPLATE dsDNA MD</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>groove_geometry_loss(): geom_loss.py v0.12; added to bridge pos/ori gradient gap; _A1_BACK=−0.34, _A2_BACK=+0.3408 from DNANucleotide.cpp; thermal mean 0.7403 su.</footer>
+      </section>
 
       <!-- ===== SLIDE 4: FLOW MATCHING ===== -->
       <section class="slide" data-title="Flow Matching">
@@ -1283,174 +1732,463 @@
       </section>
 
       <!-- ===== SLIDE 17: VERSION HISTORY I ===== -->
-      <section class="slide" data-title="Version History I">
+      <section class="slide compact" data-title="v0.1–v0.2: Prototype &amp; OOM Crashes">
         <div class="two-col">
           <div>
-            <p class="section-tag">History</p>
-            <h2>v0.1 – v0.5: prototype to bf16 NaN crisis</h2>
-            <p>The first versions established the basic flow-matching framework and DNA origami representation. The critical bf16 NaN crisis emerged in v0.4-0.5 when geometry losses were added.</p>
-            <table class="data-table" style="margin-top:14px">
-              <thead><tr><th>Version</th><th>Key change</th></tr></thead>
-              <tbody>
-                <tr><td>v0.1</td><td>Initial flow-matching prototype, single-strand only, no physics</td></tr>
-                <tr><td>v0.2</td><td>Dynamic batching, bucketed sampler for variable-length sequences</td></tr>
-                <tr><td>v0.3</td><td>E3-equivariant Clifford attention backbone, multi-strand support</td></tr>
-                <tr><td>v0.4</td><td>oxDNA2 energy as differentiable loss, energy warmup schedule</td></tr>
-                <tr><td>v0.5</td><td><strong>bf16 NaN fixes</strong> (see below), HB-site EXC loss, energy guard</td></tr>
-              </tbody>
-            </table>
-            <div class="warning" style="margin-top:16px;padding:12px;background:rgba(194,65,12,0.08);border:1.5px solid rgba(194,65,12,0.35);border-radius:10px">
-              <strong>bf16 NaN crisis (v0.4–v0.5):</strong><br>
-              BUG: Gram-Schmidt safe-norm used eps=1e-8<br>
-              → Jacobian = 1/√(1e-8) = 10,000<br>
-              → geometry gradients ~624 × 10,000 = 6.24M<br>
-              → bf16 max = 65,504 → <strong>overflow → NaN</strong><br><br>
-              FIX: eps 1e-8 → 5e-3<br>
-              → Jacobian = 1/√(5e-3) = 14<br>
-              → peak gradient = 8,736 ≪ 65,504 ✓
+            <p class="section-tag">History · Origin</p>
+            <h2>The project began as a protein backbone flow model — then pivoted to DNA in May 2026</h2>
+            <p>The repository's first commit (<code>29e5b9d</code>, May 8 2026) was <strong>BBFlow</strong> — an SE(3) flow-matching model for protein backbone conformational sampling, built on GAFL and FrameFlow. DNA origami work began with the May 13 commit adding the oxDNA C++ submodule. The BBFlow code was the template for the entire fastDNA architecture.</p>
+
+            <div class="callout" style="margin-top:12px">
+              <strong>What transferred from BBFlow to fastDNA:</strong><br>
+              • SE(3) equivariant attention (Clifford geometric algebra) — kept as-is<br>
+              • Linear flow matching x_t = (1-t)x₀ + tx₁ — kept<br>
+              • PyTorch Lightning training loop — kept and extended<br>
+              • DeepSpeed / gradient checkpointing — kept<br>
+              • Key difference: protein has 1 backbone atom; DNA has 2 sites (backbone MM + base) with full SO(3) orientation R ∈ SO(3) per nucleotide — 12 DoF vs ~3 DoF per residue
+            </div>
+
+            <div class="formula-box small" style="margin-top:12px">
+              <strong>v0.1 (May–Jun 2026): First DNA-specific prototype</strong><br>
+              Loss = MSE(pred_pos, tgt_pos) + 0.5·MSE(pred_ori, tgt_ori)<br>
+              Single-strand only. No physics. No geometry constraints. No energy.
+            </div>
+
+            <div style="margin-top:12px;padding:12px;background:rgba(194,65,12,0.08);border:1.5px solid rgba(194,65,12,0.3);border-radius:10px">
+              <strong>v0.2 (Jun 12 2026) — OOM crash: variable-length sequences</strong><br>
+              <strong>Problem:</strong> DNA origami has structures from 100 nt to 10,000 nt. Batching mixed lengths in a fixed-size tensor wasted 70–90% of GPU memory on padding and caused CUDA OOM on any batch containing a long structure.<br>
+              <strong>Fix:</strong> <code>BucketedSampler</code> groups sequences by similar length into buckets, then pads only within a bucket. 5–12× training speedup; enables batch_size &gt; 1.
             </div>
           </div>
           <figure class="svg-card">
-            <svg viewBox="0 0 520 420" role="img" aria-label="bf16 NaN crisis diagram showing gradient overflow">
+            <svg viewBox="0 0 520 410" role="img" aria-label="Version origin timeline">
               <defs>
-                <marker id="arrv1" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
-                  <path d="M0.5 0.5 L5 3.5 L0.5 6.5 Z" fill="#c2410c"/>
-                </marker>
-                <marker id="arrv1g" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
-                  <path d="M0.5 0.5 L5 3.5 L0.5 6.5 Z" fill="#3d8f3d"/>
+                <marker id="arr01" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                  <path d="M0.5 0.5 L5 3.5 L0.5 6.5 Z" fill="#0b7285"/>
                 </marker>
               </defs>
-              <text x="260" y="22" text-anchor="middle" fill="#102522" font-size="14" font-weight="700">Gram-Schmidt eps: NaN chain</text>
-              <!-- Before fix column -->
-              <text x="130" y="48" text-anchor="middle" fill="#c2410c" font-size="13" font-weight="700">Before (eps=1e-8) ✗</text>
-              <rect x="30" y="58" width="200" height="32" rx="7" fill="rgba(194,65,12,0.1)" stroke="#c2410c" stroke-width="1.5"/>
-              <text x="130" y="74" text-anchor="middle" fill="#7a2b0d" font-size="11">Gram-Schmidt safe norm eps=1e-8</text>
-              <text x="130" y="86" text-anchor="middle" class="diagram-note" font-size="10">‖v‖_safe = √(‖v‖²+1e-8)</text>
-              <line x1="130" y1="90" x2="130" y2="108" stroke="#c2410c" stroke-width="2" marker-end="url(#arrv1)"/>
-              <rect x="30" y="111" width="200" height="30" rx="7" fill="rgba(194,65,12,0.12)" stroke="#c2410c" stroke-width="1.5"/>
-              <text x="130" y="128" text-anchor="middle" fill="#7a2b0d" font-size="11">Jacobian = 1/√eps = 10,000</text>
-              <line x1="130" y1="141" x2="130" y2="159" stroke="#c2410c" stroke-width="2" marker-end="url(#arrv1)"/>
-              <rect x="30" y="162" width="200" height="30" rx="7" fill="rgba(194,65,12,0.15)" stroke="#c2410c" stroke-width="1.5"/>
-              <text x="130" y="178" text-anchor="middle" fill="#7a2b0d" font-size="11">Geom grads ~624</text>
-              <text x="130" y="190" text-anchor="middle" class="diagram-note" font-size="10">stck_geo×14 + hb_geo×19</text>
-              <line x1="130" y1="192" x2="130" y2="210" stroke="#c2410c" stroke-width="2" marker-end="url(#arrv1)"/>
-              <rect x="30" y="213" width="200" height="30" rx="7" fill="rgba(194,65,12,0.2)" stroke="#c2410c" stroke-width="2"/>
-              <text x="130" y="229" text-anchor="middle" fill="#7a2b0d" font-size="11" font-weight="700">Peak grad: 624 × 10,000 = 6.24M</text>
-              <line x1="130" y1="243" x2="130" y2="261" stroke="#c2410c" stroke-width="2" marker-end="url(#arrv1)"/>
-              <rect x="30" y="264" width="200" height="32" rx="7" fill="#c2410c"/>
-              <text x="130" y="283" text-anchor="middle" fill="white" font-size="13" font-weight="700">⚠ OVERFLOW → NaN ⚠</text>
-              <text x="130" y="293" text-anchor="middle" fill="white" font-size="10">bf16 max = 65,504 ≪ 6.24M</text>
-              <!-- After fix column -->
-              <text x="390" y="48" text-anchor="middle" fill="#3d8f3d" font-size="13" font-weight="700">After (eps=5e-3) ✓</text>
-              <rect x="290" y="58" width="200" height="32" rx="7" fill="rgba(61,143,61,0.1)" stroke="#3d8f3d" stroke-width="1.5"/>
-              <text x="390" y="74" text-anchor="middle" fill="#1a4d1a" font-size="11">Gram-Schmidt safe norm eps=5e-3</text>
-              <text x="390" y="86" text-anchor="middle" class="diagram-note" font-size="10">‖v‖_safe = √(‖v‖²+5e-3)</text>
-              <line x1="390" y1="90" x2="390" y2="108" stroke="#3d8f3d" stroke-width="2" marker-end="url(#arrv1g)"/>
-              <rect x="290" y="111" width="200" height="30" rx="7" fill="rgba(61,143,61,0.12)" stroke="#3d8f3d" stroke-width="1.5"/>
-              <text x="390" y="128" text-anchor="middle" fill="#1a4d1a" font-size="11">Jacobian = 1/√(5e-3) = 14.1</text>
-              <line x1="390" y1="141" x2="390" y2="159" stroke="#3d8f3d" stroke-width="2" marker-end="url(#arrv1g)"/>
-              <rect x="290" y="162" width="200" height="30" rx="7" fill="rgba(61,143,61,0.12)" stroke="#3d8f3d" stroke-width="1.5"/>
-              <text x="390" y="178" text-anchor="middle" fill="#1a4d1a" font-size="11">Geom grads ~624</text>
-              <text x="390" y="190" text-anchor="middle" class="diagram-note" font-size="10">same geometry losses</text>
-              <line x1="390" y1="192" x2="390" y2="210" stroke="#3d8f3d" stroke-width="2" marker-end="url(#arrv1g)"/>
-              <rect x="290" y="213" width="200" height="30" rx="7" fill="rgba(61,143,61,0.15)" stroke="#3d8f3d" stroke-width="1.5"/>
-              <text x="390" y="229" text-anchor="middle" fill="#1a4d1a" font-size="11" font-weight="700">Peak grad: 624 × 14 = 8,736</text>
-              <line x1="390" y1="243" x2="390" y2="261" stroke="#3d8f3d" stroke-width="2" marker-end="url(#arrv1g)"/>
-              <rect x="290" y="264" width="200" height="32" rx="7" fill="#3d8f3d"/>
-              <text x="390" y="283" text-anchor="middle" fill="white" font-size="13" font-weight="700">✓ SAFE</text>
-              <text x="390" y="293" text-anchor="middle" fill="white" font-size="10">8,736 ≪ bf16 max 65,504</text>
-              <!-- Additional fix: attn mask -->
-              <rect x="30" y="315" width="460" height="40" rx="8" fill="rgba(232,243,239,0.85)" stroke="rgba(11,114,133,0.25)" stroke-width="1.5"/>
-              <text x="260" y="332" text-anchor="middle" fill="#064d5a" font-size="11" font-weight="700">Additional fix: attention mask floor −1×10⁴ (not −∞)</text>
-              <text x="260" y="348" text-anchor="middle" class="diagram-note" font-size="10">−∞ in bf16 softmax: −∞ × 0 = NaN; −1e4 × 0 = 0 ✓</text>
-              <!-- Commits -->
-              <rect x="30" y="368" width="460" height="40" rx="8" fill="rgba(255,250,240,0.9)" stroke="rgba(21,33,31,0.15)" stroke-width="1"/>
-              <text x="260" y="384" text-anchor="middle" fill="#102522" font-size="11" font-weight="700">Fixed in commits 0e3f5a4, 643651c</text>
-              <text x="260" y="400" text-anchor="middle" class="diagram-note" font-size="10">Applied to both constrained_flow.py and flow_model.py</text>
+              <text x="260" y="20" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">From BBFlow (protein) to fastDNA (DNA origami)</text>
+              <!-- Timeline spine -->
+              <line x1="60" y1="55" x2="60" y2="370" stroke="rgba(11,114,133,0.35)" stroke-width="3"/>
+              <!-- BBFlow -->
+              <circle cx="60" cy="68" r="10" fill="rgba(240,140,0,0.7)" stroke="#8a5200" stroke-width="2"/>
+              <text x="80" y="62" fill="#8a5200" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">May 8</text>
+              <text x="80" y="76" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">BBFlow: protein backbone SE(3) flow — first commit</text>
+              <!-- oxDNA submodule -->
+              <circle cx="60" cy="112" r="10" fill="rgba(240,140,0,0.7)" stroke="#8a5200" stroke-width="2"/>
+              <text x="80" y="106" fill="#8a5200" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">May 13</text>
+              <text x="80" y="120" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">Add oxDNAcpp submodule — DNA pivot begins</text>
+              <!-- v0.1 -->
+              <circle cx="60" cy="162" r="12" fill="rgba(11,114,133,0.7)" stroke="#064d5a" stroke-width="2.5"/>
+              <text x="40" y="158" fill="#064d5a" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700" text-anchor="middle">v0.1</text>
+              <text x="80" y="155" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Jun 9–10: First DNA flow model</text>
+              <text x="80" y="169" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">pos + ori MSE only · single strand · 9.7M training pairs</text>
+              <!-- v0.2 -->
+              <circle cx="60" cy="220" r="12" fill="rgba(11,114,133,0.7)" stroke="#064d5a" stroke-width="2.5"/>
+              <text x="40" y="216" fill="#064d5a" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700" text-anchor="middle">v0.2</text>
+              <text x="80" y="213" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Jun 12: Dynamic batching</text>
+              <text x="80" y="227" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">BucketedSampler · batch_size &gt; 1 · 5–12× speedup</text>
+              <!-- Bug box for OOM -->
+              <rect x="80" y="240" width="420" height="38" rx="7" fill="rgba(194,65,12,0.08)" stroke="rgba(194,65,12,0.3)" stroke-width="1.2"/>
+              <text x="290" y="256" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">OOM crash: mixed-length batch → 70-90% padding waste</text>
+              <text x="290" y="270" text-anchor="middle" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">Fix: bucket boundaries [1k, 2k, 4k, 7k, 10k] → pad only within bucket</text>
+              <!-- BucketedSampler diagram -->
+              <rect x="80" y="290" width="420" height="108" rx="8" fill="rgba(232,243,239,0.8)" stroke="rgba(11,114,133,0.2)" stroke-width="1.2"/>
+              <text x="290" y="308" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">BucketedSampler: group by similar length, pad within bucket</text>
+              <!-- Bucket A: short sequences -->
+              <rect x="95" y="315" width="60" height="16" rx="3" fill="rgba(11,114,133,0.55)"/>
+              <rect x="162" y="315" width="55" height="16" rx="3" fill="rgba(11,114,133,0.55)"/>
+              <rect x="224" y="315" width="64" height="16" rx="3" fill="rgba(11,114,133,0.55)"/>
+              <text x="225" y="344" text-anchor="middle" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">Bucket A: ~1k nt → 2% padding</text>
+              <!-- Bucket B: long sequences -->
+              <rect x="95" y="353" width="120" height="16" rx="3" fill="rgba(194,65,12,0.5)"/>
+              <rect x="220" y="353" width="108" height="16" rx="3" fill="rgba(194,65,12,0.5)"/>
+              <text x="225" y="381" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">Bucket B: ~5k nt → 5% padding</text>
+              <text x="450" y="344" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">vs 80%</text>
+              <text x="450" y="360" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">padding</text>
+              <text x="450" y="376" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">before</text>
             </svg>
           </figure>
         </div>
-        <footer>bf16 NaN fix: commits 0e3f5a4, 643651c; eps change in orthonormalize_rotation_matrices(); attention mask: clifford_attention.py floor at −1e4.</footer>
+        <footer>BBFlow origin: commit 29e5b9d (2026-05-08); DNA pivot: 9c8366c (2026-05-13); Lightning migration: b800ea0 (2026-06-10); BucketedSampler: e3c5355 (2026-06-12).</footer>
       </section>
 
-      <!-- ===== SLIDE 18: VERSION HISTORY II ===== -->
-      <section class="slide" data-title="Version History II">
+      <!-- ===== SLIDE: v0.3-v0.4 ENERGY EXPLOSIONS ===== -->
+      <section class="slide compact" data-title="v0.3–v0.4: Energy Explosion &amp; EXC Blindness">
         <div class="two-col">
           <div>
-            <p class="section-tag">History</p>
-            <h2>v0.6 – v0.9: oxDNA2 losses and the dataset crisis</h2>
-            <table class="data-table" style="margin-top:10px">
-              <thead><tr><th>Version</th><th>Key change</th></tr></thead>
-              <tbody>
-                <tr><td>v0.6</td><td>New oxDNA2-grounded geom_loss module: stacking theta4/5/6, HB radial+angular, DH repulsion</td></tr>
-                <tr><td>v0.9</td><td>Dataset utilization crisis fix + DataLoader I/O bottleneck fix (see below)</td></tr>
-              </tbody>
-            </table>
-            <div class="warning" style="margin-top:14px;padding:12px;background:rgba(194,65,12,0.08);border:1.5px solid rgba(194,65,12,0.35);border-radius:10px">
-              <strong>Dataset crisis (v0.9):</strong><br>
-              BUG: Code discarded any zarr with N &gt; max_seq_length<br>
-              → Only 189 of 3381 files used (94.4% wasted!)<br>
-              → Training on 1811 pairs from 129 unique structures<br><br>
-              FIX: <code>scaffold_windows()</code> generates strand-boundary-aligned windows<br>
-              → Now 6300 pairs from 3381 unique structures<br>
-              → <strong>55× more structural diversity</strong>
+            <p class="section-tag">History · v0.3–v0.4</p>
+            <h2>First energy attempt blew up; EXC loss was sampling the wrong pairs 99.6% of the time</h2>
+
+            <div style="margin-top:12px;padding:12px;background:rgba(194,65,12,0.08);border:1.5px solid rgba(194,65,12,0.3);border-radius:10px">
+              <strong>v0.3 (Jun 10–20): Energy integration crash</strong><br>
+              Added differentiable oxDNA2 energy to the loss. First run: gradient exploded to NaN within 2 epochs.<br>
+              <strong>Root cause:</strong> LJ repulsion V ∝ 1/r¹² has gradient ∝ 1/r¹³. When two nucleotides are at r=0.002 su (random init), the gradient is ~10¹⁴ — instantly overflows bf16 (max 65,504).<br>
+              <strong>Fix:</strong> Energy gate — only activate energy loss when bond_mean &gt; 0.45 su AND epoch &gt; 30. Before that, energy is computed for monitoring but its gradient is zeroed.
             </div>
-            <div class="warning" style="margin-top:12px;padding:12px;background:rgba(240,140,0,0.08);border:1.5px solid rgba(240,140,0,0.35);border-radius:10px">
-              <strong>DataLoader I/O bottleneck (v0.9):</strong><br>
-              BUG: per-item cache in <code>self.cache</code> dict with num_workers=4<br>
-              → Each worker forks its own cache → never shared → 0% hit rate<br>
-              → 0.22 it/s (zarr disk I/O on every sample)<br><br>
-              FIX: <code>_preload_all()</code> loads everything into <code>self._ram</code> before fork<br>
-              → Linux fork() shares pages copy-on-read<br>
-              → <strong>1.3–2.7 it/s</strong>
+
+            <div style="margin-top:10px;padding:12px;background:rgba(194,65,12,0.08);border:1.5px solid rgba(194,65,12,0.3);border-radius:10px">
+              <strong>v0.3: CXSTCK sign error</strong><br>
+              Cross-stacking energy (CXSTCK) had the wrong formula: <code>f4(θ) + f4(2π-θ)</code> instead of the correct oxDNA2 formula <code>f4(θ) + SA·(θ-SB)²</code>.<br>
+              Validated against oxpy C++ reference (float32 RMSE = 4.7×10⁻⁶). Fixed in v0.4 (<code>oxdna2_pytorch.py</code>).
+            </div>
+
+            <div style="margin-top:10px;padding:12px;background:rgba(194,65,12,0.08);border:1.5px solid rgba(194,65,12,0.3);border-radius:10px">
+              <strong>v0.4 (Jun 21): EXC loss completely blind to local clashes</strong><br>
+              Added <code>exc_loss</code> to prevent nucleotides overlapping. But used <em>global random sampling</em> — draw K=500 pairs uniformly from all N(N-1)/2 pairs.<br>
+              For N=5000: local pairs (|i-j|≤50) are 50/5000 = 1% of all pairs.<br>
+              → EXC loss hit local (clash-prone) pairs only <strong>0.4% of the time</strong>.<br>
+              → Inference output had 1000+ steric clashes; EXC loss contribution was 0.015 vs pos_loss 428 — a ratio of 14,000×.
+            </div>
+
+            <p style="margin-top:10px;font-size:0.9em">v0.4 also added <code>hb_geometry_loss</code> and <code>stck_ori_loss</code> — first versions with incorrect targets that were later corrected in v0.6–v0.8.</p>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 520 410" role="img" aria-label="Energy explosion and EXC sampling blindness diagrams">
+              <defs>
+                <marker id="arr03" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                  <path d="M0.5 0.5 L5 3.5 L0.5 6.5 Z" fill="#c2410c"/>
+                </marker>
+                <marker id="arr03g" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                  <path d="M0.5 0.5 L5 3.5 L0.5 6.5 Z" fill="#0b7285"/>
+                </marker>
+              </defs>
+              <text x="260" y="20" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">v0.3–v0.4 problems</text>
+              <!-- Energy explosion panel -->
+              <rect x="15" y="32" width="230" height="160" rx="8" fill="rgba(194,65,12,0.07)" stroke="rgba(194,65,12,0.25)" stroke-width="1.2"/>
+              <text x="130" y="50" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Energy gradient explosion (v0.3)</text>
+              <!-- LJ potential curve showing steep gradient -->
+              <line x1="30" y1="165" x2="235" y2="165" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <line x1="30" y1="165" x2="30" y2="55" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <text x="235" y="172" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">r →</text>
+              <text x="30" y="52" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">V ∝ 1/r¹²</text>
+              <!-- LJ curve: diverges steeply as r→0 -->
+              <path d="M35 164 C45 163 55 150 65 120 C75 90 85 70 100 60 L100 164" fill="rgba(194,65,12,0.1)" stroke="#c2410c" stroke-width="2.5"/>
+              <path d="M100 60 C115 55 125 64 140 80 C160 100 190 140 220 160 L235 163" fill="rgba(194,65,12,0.1)" stroke="#c2410c" stroke-width="2.5"/>
+              <!-- Random init point -->
+              <circle cx="42" cy="163" r="6" fill="rgba(194,65,12,0.8)" stroke="#7a2b0d" stroke-width="2"/>
+              <text x="42" y="148" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="8">r≈0.002 su</text>
+              <text x="42" y="158" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="8">∇V→∞</text>
+              <!-- Gate annotation -->
+              <rect x="30" y="174" width="210" height="15" rx="4" fill="rgba(11,114,133,0.12)" stroke="rgba(11,114,133,0.3)" stroke-width="1"/>
+              <text x="135" y="184" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Mono,monospace" font-size="8">Fix: gate off until bond_mean&gt;0.45, ep≥30</text>
+              <!-- EXC sampling blindness panel -->
+              <rect x="275" y="32" width="230" height="160" rx="8" fill="rgba(240,140,0,0.07)" stroke="rgba(240,140,0,0.25)" stroke-width="1.2"/>
+              <text x="390" y="50" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">EXC: global vs local sampling (v0.4)</text>
+              <!-- N=5000 sequence represented as a line -->
+              <rect x="285" y="65" width="210" height="14" rx="3" fill="rgba(232,243,239,0.9)" stroke="rgba(11,114,133,0.2)" stroke-width="1"/>
+              <text x="390" y="76" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Mono,monospace" font-size="8">N = 5000 nucleotides (sequence)</text>
+              <!-- Local clash zone highlighted -->
+              <rect x="325" y="90" width="35" height="14" rx="3" fill="rgba(194,65,12,0.7)"/>
+              <text x="390" y="100" fill="#7a2b0d" font-family="IBM Plex Mono,monospace" font-size="8">← clash zone |i-j|≤50</text>
+              <!-- Random dots (global sampling) — mostly not in clash zone -->
+              <circle cx="290" cy="125" r="4" fill="rgba(11,114,133,0.4)"/>
+              <circle cx="310" cy="128" r="4" fill="rgba(11,114,133,0.4)"/>
+              <circle cx="380" cy="122" r="4" fill="rgba(11,114,133,0.4)"/>
+              <circle cx="420" cy="130" r="4" fill="rgba(11,114,133,0.4)"/>
+              <circle cx="460" cy="125" r="4" fill="rgba(11,114,133,0.4)"/>
+              <circle cx="340" cy="125" r="4" fill="rgba(194,65,12,0.8)"/>
+              <text x="390" y="145" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Mono,monospace" font-size="8">Global random: hits clash zone 0.4% of K=500</text>
+              <text x="390" y="157" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Mono,monospace" font-size="8">EXC contrib = 0.015 vs pos = 428 (14,000× less!)</text>
+              <text x="390" y="170" text-anchor="middle" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="8">v0.5 fix: 80% local (|i-j|≤50) + 20% global</text>
+              <text x="390" y="182" text-anchor="middle" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="8">sigma 0.4 (local) + 1.5 (global); K raised to 1000</text>
+              <!-- CXSTCK formula panel -->
+              <rect x="15" y="202" width="490" height="70" rx="8" fill="rgba(255,243,191,0.65)" stroke="rgba(240,140,0,0.3)" stroke-width="1.2"/>
+              <text x="260" y="220" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">v0.4 CXSTCK formula fix</text>
+              <text x="30" y="238" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Wrong (v0.3):</text>
+              <text x="110" y="238" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="10">f4(θ₁) + f4(2π−θ₁)   [implements symmetric bell around 0 and 2π]</text>
+              <text x="30" y="256" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Correct (v0.4):</text>
+              <text x="110" y="256" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="10">f4(θ₁) + SA·(θ₁−SB)²   [from DNA2Interaction.cpp; asymmetric quadratic]</text>
+              <text x="110" y="267" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="10">Validated: float32 RMSE = 4.7×10⁻⁶ su vs oxpy C++ reference</text>
+              <!-- Version timeline bar -->
+              <rect x="15" y="282" width="490" height="118" rx="8" fill="rgba(232,243,239,0.75)" stroke="rgba(11,114,133,0.2)" stroke-width="1.2"/>
+              <text x="260" y="300" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Loss function progress: v0.1 → v0.4</text>
+              <text x="30" y="320" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">v0.1:</tspan> pos_MSE + ori_MSE only</text>
+              <text x="30" y="337" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">v0.3:</tspan> + energy (gated) — first attempt to use full oxDNA2 energy</text>
+              <text x="30" y="354" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">v0.4:</tspan> + EXC (blind) + HB geometry (wrong targets) + STCK orientation</text>
+              <text x="30" y="371" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Problems: clashes everywhere (EXC 14,000× too weak), energy explosions on random init</text>
+              <text x="30" y="388" fill="#0b7285" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Next: v0.5 fixes EXC + orientation MSE dead zone; v0.6 rewrites all geometry losses</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>Energy gating: 33845fa, 96259fb; CXSTCK fix: 9f24d8c; EXC local sampling: 1e9438d; v0.3 Lightning migration: b800ea0; full oxDNA2 dataset (9.7M pairs): 96926fb.</footer>
+      </section>
+
+      <!-- ===== SLIDE: v0.5-v0.6 ORIENTATION & STACKING FIX ===== -->
+      <section class="slide compact" data-title="v0.5–v0.6: Orientation Trap &amp; Flat-Sheet Collapse">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">History · v0.5–v0.6</p>
+            <h2>MSE orientation loss was dead at θ=π; stacking loss was missing its key constraint entirely</h2>
+
+            <div style="margin-top:12px;padding:12px;background:rgba(194,65,12,0.08);border:1.5px solid rgba(194,65,12,0.3);border-radius:10px">
+              <strong>v0.5 (Jun 21): Orientation MSE → geodesic</strong><br>
+              <strong>Problem:</strong> MSE loss on 3×3 rotation matrices has gradient = 4·sin(θ). At θ = π (completely wrong — bases pointing the other way), sin(π) = 0 → <strong>zero gradient</strong>. At t=0 inference, model receives random noise orientations, so <em>all pairs start near θ=π</em>. The model was stuck from step 1.<br>
+              <strong>Fix:</strong> Geodesic SO(3) distance <em>arccos((trace(RRᵀ)-1)/2)</em> has constant gradient magnitude = 1, regardless of error size. Added direct a₁·a₁ and a₃·a₃ penalties for the two physically critical axes (H-bond direction and stacking axis).
+            </div>
+
+            <div style="margin-top:10px;padding:12px;background:rgba(194,65,12,0.08);border:1.5px solid rgba(194,65,12,0.3);border-radius:10px">
+              <strong>v0.6 (Jun 23): The flat-sheet collapse — missing helical twist</strong><br>
+              Inference output looked like a flat 2D sheet, not a 3D helix. Root cause: the stacking geometry loss was missing the <strong>helical twist φ constraint entirely</strong>.<br>
+              φ (dihedral angle between consecutive a₂ vectors around the backbone) is the core B-DNA shape constraint — it encodes the 36°/base rotation that makes the double helix. Without it, the model correctly aligned a₃ vectors but had no force that creates the twist → flat sheet.<br>
+              Fix: Added <code>|cos φ| → 0.656</code> term (weight ×5), using a₂ (not a₃) as backbone reference.
+            </div>
+
+            <div style="margin-top:10px;padding:12px;background:rgba(240,140,0,0.08);border:1.5px solid rgba(240,140,0,0.3);border-radius:10px">
+              <strong>v0.6: stacking target from wrong data</strong><br>
+              Old target a₃·a₃ = 0.809 (cos 36°) was measured from DNA origami trajectory data that mixed 5'→3' and 3'→5' strand storage — neighboring nucleotides across a strand break had <em>opposite</em> a₃ directions, so the average was wrong. Correct target 0.921 from BOILERPLATE single-strand equilibration. Also: used COM positions instead of stack sites (pos + 0.34·a₁).
             </div>
           </div>
           <figure class="svg-card">
-            <svg viewBox="0 0 520 420" role="img" aria-label="Dataset utilization before and after v0.9 fix">
-              <text x="260" y="22" text-anchor="middle" fill="#102522" font-size="14" font-weight="700">Dataset utilization: before vs after v0.9</text>
-              <!-- Before: pie chart showing waste -->
-              <text x="130" y="52" text-anchor="middle" fill="#c2410c" font-size="12" font-weight="700">Before v0.9 fix</text>
-              <circle cx="130" cy="140" r="80" fill="rgba(255,250,240,0.5)" stroke="rgba(21,33,31,0.15)" stroke-width="1"/>
-              <!-- 94.4% wasted = 340 degrees -->
-              <path d="M130 140 L130 60 A80 80 0 1 1 93 215 Z" fill="rgba(194,65,12,0.55)"/>
-              <!-- 5.6% used = 20 degrees -->
-              <path d="M130 140 L93 215 A80 80 0 0 1 130 60 Z" fill="rgba(11,114,133,0.65)"/>
-              <text x="165" y="120" fill="white" font-size="11" font-weight="700">94.4%</text>
-              <text x="165" y="133" fill="white" font-size="11" font-weight="700">wasted</text>
-              <text x="82" y="200" fill="white" font-size="11" font-weight="700">5.6%</text>
-              <text x="130" y="240" text-anchor="middle" class="diagram-note" font-size="11">189 files / 1811 pairs</text>
-              <!-- After: pie chart showing full use -->
-              <text x="390" y="52" text-anchor="middle" fill="#0b7285" font-size="12" font-weight="700">After v0.9 fix</text>
-              <circle cx="390" cy="140" r="80" fill="rgba(255,250,240,0.5)" stroke="rgba(21,33,31,0.15)" stroke-width="1"/>
-              <circle cx="390" cy="140" r="80" fill="rgba(11,114,133,0.55)" stroke="#0b7285" stroke-width="2"/>
-              <text x="390" y="135" text-anchor="middle" fill="white" font-size="14" font-weight="700">100%</text>
-              <text x="390" y="152" text-anchor="middle" fill="white" font-size="12" font-weight="700">USED</text>
-              <text x="390" y="240" text-anchor="middle" class="diagram-note" font-size="11">3381 files / ~6300 pairs</text>
-              <!-- 55x label -->
-              <rect x="170" y="120" width="100" height="40" rx="10" fill="rgba(11,114,133,0.9)"/>
-              <text x="220" y="138" text-anchor="middle" fill="white" font-size="12" font-weight="700">55× more</text>
-              <text x="220" y="152" text-anchor="middle" fill="white" font-size="11">diversity</text>
-              <!-- DataLoader fix diagram -->
-              <rect x="20" y="268" width="480" height="130" rx="10" fill="rgba(232,243,239,0.7)" stroke="rgba(11,114,133,0.2)" stroke-width="1.5"/>
-              <text x="260" y="286" text-anchor="middle" fill="#064d5a" font-size="12" font-weight="700">DataLoader fix: RAM preload before fork</text>
-              <!-- Before -->
-              <rect x="35" y="295" width="185" height="50" rx="7" fill="rgba(194,65,12,0.1)" stroke="#c2410c" stroke-width="1.2"/>
-              <text x="127" y="313" text-anchor="middle" fill="#7a2b0d" font-size="10" font-weight="700">Before: worker-local cache</text>
-              <text x="127" y="328" text-anchor="middle" class="diagram-note" font-size="9">worker 0 cache ≠ worker 1 cache</text>
-              <text x="127" y="340" text-anchor="middle" fill="#c2410c" font-size="10" font-weight="700">0% hit rate → 0.22 it/s</text>
-              <!-- After -->
-              <rect x="300" y="295" width="185" height="50" rx="7" fill="rgba(11,114,133,0.1)" stroke="#0b7285" stroke-width="1.2"/>
-              <text x="392" y="313" text-anchor="middle" fill="#064d5a" font-size="10" font-weight="700">After: _preload_all() in __init__</text>
-              <text x="392" y="328" text-anchor="middle" class="diagram-note" font-size="9">self._ram shared via fork() COW</text>
-              <text x="392" y="340" text-anchor="middle" fill="#0b7285" font-size="10" font-weight="700">100% hit rate → 1.3–2.7 it/s</text>
-              <text x="260" y="386" text-anchor="middle" class="diagram-note" font-size="10">commit 3680b1f · activated when len(pairs_index) ≤ 25000</text>
+            <svg viewBox="0 0 520 410" role="img" aria-label="Orientation MSE dead zone and flat sheet collapse">
+              <defs>
+                <marker id="arr05" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                  <path d="M0.5 0.5 L5 3.5 L0.5 6.5 Z" fill="#0b7285"/>
+                </marker>
+                <marker id="arr05r" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                  <path d="M0.5 0.5 L5 3.5 L0.5 6.5 Z" fill="#c2410c"/>
+                </marker>
+              </defs>
+              <text x="260" y="20" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">v0.5–v0.6 fixes</text>
+              <!-- Orientation MSE dead zone panel -->
+              <rect x="15" y="32" width="235" height="175" rx="8" fill="rgba(194,65,12,0.07)" stroke="rgba(194,65,12,0.25)" stroke-width="1.2"/>
+              <text x="132" y="50" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">MSE grad = 4·sin(θ): dead at θ=π</text>
+              <line x1="30" y1="175" x2="240" y2="175" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <line x1="30" y1="175" x2="30" y2="62" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <!-- MSE gradient curve: sin shape, zero at 0 and π -->
+              <path d="M30 175 C60 175 80 90 132 68 C184 90 204 175 240 175" fill="rgba(194,65,12,0.1)" stroke="#c2410c" stroke-width="2.5" stroke-dasharray="6 3"/>
+              <!-- Geodesic gradient: constant = 1 -->
+              <line x1="30" y1="120" x2="240" y2="120" stroke="#0b7285" stroke-width="2.5"/>
+              <text x="200" y="112" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="8" font-weight="700">geodesic (const)</text>
+              <text x="200" y="160" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="8">MSE (dead at π)</text>
+              <!-- θ=π annotation: model starts here! -->
+              <line x1="240" y1="170" x2="240" y2="180" stroke="rgba(21,33,31,0.4)" stroke-width="1"/>
+              <text x="240" y="192" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">θ=π → grad=0!</text>
+              <text x="132" y="200" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">Model starts here at t=0</text>
+              <text x="40" y="192" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">0</text>
+              <text x="240" y="62" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Mono,monospace" font-size="8">pi</text>
+              <!-- Helix vs flat sheet panel -->
+              <rect x="270" y="32" width="235" height="175" rx="8" fill="rgba(240,140,0,0.07)" stroke="rgba(240,140,0,0.25)" stroke-width="1.2"/>
+              <text x="387" y="50" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Missing φ twist → flat sheet</text>
+              <!-- Flat sheet (wrong) -->
+              <text x="320" y="70" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">v0.5 output (no φ)</text>
+              <line x1="285" y1="90" x2="395" y2="90" stroke="#c2410c" stroke-width="2.5"/>
+              <circle cx="295" cy="90" r="5" fill="rgba(11,114,133,0.6)"/>
+              <circle cx="315" cy="90" r="5" fill="rgba(11,114,133,0.6)"/>
+              <circle cx="335" cy="90" r="5" fill="rgba(11,114,133,0.6)"/>
+              <circle cx="355" cy="90" r="5" fill="rgba(11,114,133,0.6)"/>
+              <circle cx="375" cy="90" r="5" fill="rgba(11,114,133,0.6)"/>
+              <circle cx="395" cy="90" r="5" fill="rgba(11,114,133,0.6)"/>
+              <!-- Helix (correct) -->
+              <text x="320" y="120" fill="#0b7285" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">v0.6 with φ constraint</text>
+              <path d="M285 150 C295 130 305 170 315 150 C325 130 335 170 345 150 C355 130 365 170 375 150 C385 130 395 170 405 150" fill="none" stroke="#0b7285" stroke-width="2.5"/>
+              <circle cx="285" cy="150" r="4" fill="rgba(11,114,133,0.6)"/>
+              <circle cx="305" cy="170" r="4" fill="rgba(11,114,133,0.6)"/>
+              <circle cx="325" cy="130" r="4" fill="rgba(11,114,133,0.6)"/>
+              <circle cx="345" cy="150" r="4" fill="rgba(11,114,133,0.6)"/>
+              <circle cx="365" cy="170" r="4" fill="rgba(11,114,133,0.6)"/>
+              <circle cx="385" cy="130" r="4" fill="rgba(11,114,133,0.6)"/>
+              <circle cx="405" cy="150" r="4" fill="rgba(11,114,133,0.6)"/>
+              <!-- phi formula -->
+              <text x="387" y="196" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Mono,monospace" font-size="9">|a₂·r̂_back|→0.656 (cos(49.1°))</text>
+              <!-- Summary of all v0.6 bugs fixed -->
+              <rect x="15" y="220" width="490" height="180" rx="8" fill="rgba(232,243,239,0.75)" stroke="rgba(11,114,133,0.2)" stroke-width="1.2"/>
+              <text x="260" y="238" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">v0.6 complete geom_loss.py rewrite — 5 issues fixed simultaneously</text>
+              <text x="30" y="258" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan fill="#c2410c" font-weight="700">①</tspan> Helical twist φ completely missing → flat sheet collapse. Fix: add |a₂·r̂_back|→0.656</text>
+              <text x="30" y="276" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan fill="#c2410c" font-weight="700">②</tspan> Stacking target a₃·a₃: 0.809→0.921 (wrong baseline from mixed-strand origami data)</text>
+              <text x="30" y="294" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan fill="#c2410c" font-weight="700">③</tspan> HB a₃ anti-parallel: relu(1−a₃·a₃) pushed to +1 (same), should push to −1</text>
+              <text x="30" y="312" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan fill="#c2410c" font-weight="700">④</tspan> Backbone MM-site used a₃ instead of a₂ (wrong axis from DNANucleotide.cpp)</text>
+              <text x="30" y="330" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan fill="#c2410c" font-weight="700">⑤</tspan> Stacking used COM positions, not stack sites (pos + 0.34·a₁)</text>
+              <text x="30" y="350" fill="#0b7285" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Verification: stacking loss 0.629 on correct dsDNA vs 5.13 on random → 8× discriminative</text>
+              <text x="30" y="368" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">Commits: c07dcb2 (geom_loss bugs), fe277ea (ori geodesic), 8ec0d6a (v0.6 training setup)</text>
+              <text x="30" y="385" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">All equilibria verified against BOILERPLATE 504-nt dsDNA; 42 stale .md docs deleted in cleanup</text>
             </svg>
           </figure>
         </div>
-        <footer>Dataset fix commit 3680b1f; scaffold_windows() sorts by staple count descending; _preload_all() activated for ≤25k pairs; v0.6: geom_loss.py with oxDNA2 constants from model.h.</footer>
+        <footer>MSE dead zone fix: fe277ea (2026-06-21); geom_loss rewrite: c07dcb2, f290fda (2026-06-23); EXC local sampling: 1e9438d; all equilibria from BOILERPLATE dsDNA MD simulation.</footer>
       </section>
 
-      <!-- ===== SLIDE 19: VERSION HISTORY III ===== -->
+      <!-- ===== SLIDE: v0.7-v0.9 BOND DEAD ZONE ===== -->
+      <section class="slide compact" data-title="v0.7–v0.9: Bond Dead-Zone &amp; Dataset Crisis">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">History · v0.7–v0.9</p>
+            <h2>Backbone bonds stuck at 0.39 su for 75 epochs; 94% of dataset was silently discarded</h2>
+
+            <div style="margin-top:12px;padding:12px;background:rgba(194,65,12,0.08);border:1.5px solid rgba(194,65,12,0.3);border-radius:10px">
+              <strong>v0.8 (Jun 23): Verified oxDNA2 HB cutoff (was approximate)</strong><br>
+              Old code used HB_RCUT = 1.5 su (approximate). Verified from <code>DNA2Interaction.cpp</code>: correct value is 2 × POS_BASE (0.4) + HYDR_RCHIGH (0.783775) = <strong>1.5838 su</strong>. Using wrong cutoff caused hb_geo loss to fire on non-WC pairs and miss genuine WC pairs.
+            </div>
+
+            <div style="margin-top:10px;padding:12px;background:rgba(194,65,12,0.08);border:1.5px solid rgba(194,65,12,0.3);border-radius:10px">
+              <strong>v0.9 (Jun 24): Bond dead-zone — MSE gradient too weak in compressed range</strong><br>
+              By epoch 30, bond_mean stabilized at 0.39–0.41 su and refused to move for 75+ epochs. The energy gate required bond_mean &gt; 0.45 — so energy <em>never activated</em>.<br>
+              <strong>Root cause:</strong> MSE loss on bond length has gradient = 2·(r−R₀). At r=0.39 su, R₀=0.54 su → gradient = −0.30. This competes with geometry losses that don't care about bond length. The model found a local minimum with compressed bonds.<br>
+              <strong>Fix:</strong> FENE bond loss V = −(ε/2)·log(1−((r−R₀)/Δ)²). The logarithm diverges as r → [0.5064, 1.0064] su (the FENE walls), creating very strong gradient near the walls — much stronger than MSE in the compressed region. Also added <code>FORCE_ENERGY=true</code> to bypass the gate entirely.
+            </div>
+
+            <div style="margin-top:10px;padding:12px;background:rgba(194,65,12,0.08);border:1.5px solid rgba(194,65,12,0.3);border-radius:10px">
+              <strong>v0.9: 94% of dataset silently discarded</strong><br>
+              Any zarr file with N &gt; max_seq_length was dropped entirely. For 5k windows: 3192 of 3381 files were too large → only 189 files used → 1811 training pairs from 129 structures.<br>
+              Fix: scaffold-aware windowed slicing. Instead of discarding, split large structures into overlapping windows at strand boundaries. 189 files → 3381 files, 1811 → 6300 pairs — <strong>55× more structural diversity</strong>.
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 520 410" role="img" aria-label="Bond dead zone and dataset waste">
+              <text x="260" y="20" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">v0.7–v0.9: bond dead-zone &amp; dataset waste</text>
+              <!-- Bond dead-zone diagram -->
+              <rect x="15" y="32" width="240" height="170" rx="8" fill="rgba(194,65,12,0.07)" stroke="rgba(194,65,12,0.25)" stroke-width="1.2"/>
+              <text x="135" y="50" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">MSE vs FENE gradient near walls</text>
+              <line x1="28" y1="170" x2="245" y2="170" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <line x1="28" y1="170" x2="28" y2="58" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <text x="240" y="178" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">r (su)</text>
+              <!-- MSE gradient: linear, weak near 0.39 -->
+              <line x1="28" y1="150" x2="160" y2="170" stroke="#c2410c" stroke-width="2.5" stroke-dasharray="6 3"/>
+              <text x="90" y="148" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="8">MSE grad (weak)</text>
+              <!-- FENE diverges at 0.5064 and 1.0064 -->
+              <path d="M28 168 C50 168 80 160 100 145 C120 130 135 90 140 58" fill="none" stroke="#0b7285" stroke-width="2.5"/>
+              <path d="M195 58 C200 90 210 130 218 150 C228 160 238 168 245 170" fill="none" stroke="#0b7285" stroke-width="2.5"/>
+              <text x="135" y="72" text-anchor="middle" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="8">FENE (diverges at walls)</text>
+              <!-- Wall annotations -->
+              <line x1="140" y1="160" x2="140" y2="180" stroke="rgba(21,33,31,0.4)" stroke-width="1"/>
+              <text x="140" y="190" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="7">0.5064</text>
+              <line x1="195" y1="160" x2="195" y2="180" stroke="rgba(21,33,31,0.4)" stroke-width="1"/>
+              <text x="195" y="190" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="7">1.0064</text>
+              <!-- Bond stuck here -->
+              <circle cx="78" cy="168" r="6" fill="rgba(194,65,12,0.8)" stroke="#7a2b0d" stroke-width="2"/>
+              <text x="78" y="155" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="8">stuck 0.39</text>
+              <!-- R0 target -->
+              <line x1="165" y1="162" x2="165" y2="180" stroke="#3d8f3d" stroke-width="1.5" stroke-dasharray="3 2"/>
+              <text x="165" y="190" text-anchor="middle" fill="#3d8f3d" font-family="IBM Plex Mono,monospace" font-size="7">R₀=0.54</text>
+              <!-- Dataset crisis panel -->
+              <rect x="275" y="32" width="230" height="170" rx="8" fill="rgba(240,140,0,0.07)" stroke="rgba(240,140,0,0.25)" stroke-width="1.2"/>
+              <text x="390" y="50" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Dataset: 94% silently discarded</text>
+              <!-- Before: tiny slice used -->
+              <rect x="285" y="62" width="210" height="32" rx="5" fill="rgba(194,65,12,0.5)"/>
+              <rect x="285" y="62" width="12" height="32" rx="5" fill="rgba(11,114,133,0.8)"/>
+              <text x="350" y="82" fill="white" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">94.4% discarded</text>
+              <text x="283" y="105" fill="#7a2b0d" font-family="IBM Plex Mono,monospace" font-size="8">5.6% used: 189 files, 1811 pairs</text>
+              <!-- Fix arrow -->
+              <text x="390" y="125" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="9" font-weight="700">scaffold_windows() fix:</text>
+              <!-- After: all used -->
+              <rect x="285" y="132" width="210" height="32" rx="5" fill="rgba(11,114,133,0.6)"/>
+              <text x="390" y="152" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">100% used → 3381 files, 6300 pairs</text>
+              <text x="390" y="175" text-anchor="middle" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">55× more structural diversity</text>
+              <!-- DataLoader fix -->
+              <rect x="15" y="214" width="490" height="100" rx="8" fill="rgba(232,243,239,0.8)" stroke="rgba(11,114,133,0.2)" stroke-width="1.2"/>
+              <text x="260" y="232" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">v0.9: DataLoader I/O bottleneck — cache forked but never shared</text>
+              <text x="30" y="252" fill="#102122" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan fill="#c2410c" font-weight="700">Bug:</tspan> self.cache dict populated in each worker after fork() → never shared across workers → 0% hit rate</text>
+              <text x="30" y="269" fill="#102122" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan fill="#c2410c" font-weight="700">Effect:</tspan> Every sample reads from zarr disk → 0.22 it/s (vs GPU throughput ~2 it/s)</text>
+              <text x="30" y="286" fill="#0b7285" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">Fix:</tspan> _preload_all() called in __init__ before DataLoader fork → Linux fork() shares pages (copy-on-read)</text>
+              <text x="30" y="303" fill="#0b7285" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">Result:</tspan> 0.22 → 1.3–2.7 it/s (12× speedup). Workers read only from RAM, never touch disk.</text>
+              <!-- Also: reactive scheduler intro -->
+              <rect x="15" y="322" width="490" height="76" rx="8" fill="rgba(255,250,240,0.85)" stroke="rgba(21,33,31,0.12)" stroke-width="1"/>
+              <text x="260" y="340" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">v0.7–v0.9: reactive weight scheduler — first version had a bug</text>
+              <text x="30" y="358" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">v0.7: binary threshold scheduler — if metric rises &gt;5%, add +2·step. Binary → no proportionality.</text>
+              <text x="30" y="375" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">Bug:</tspan> stck_geo jumped +2 every 5 epochs on 0.04% noise-level changes (threshold too coarse).</text>
+              <text x="30" y="390" fill="#0b7285" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">v0.9 fix:</tspan> proportional — Δw = step × (Δ%/5%), capped at max_jump. Noise-immune, magnitude-sensitive.</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>FENE bond loss: f67f52c; HB cutoff: fe8efcc (1.5838su verified from DNA2Interaction.cpp); dataset fix: 3680b1f; RAM preload: same commit; proportional scheduler: ac77958.</footer>
+      </section>
+
+      <!-- ===== SLIDE: v0.10-v0.11 STRAND COLLAPSE BUG ===== -->
+      <section class="slide compact" data-title="v0.10–v0.11: The Strand Collapse Bug">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">History · v0.10–v0.11</p>
+            <h2>The model was actively learning to collapse all strands into a single blob — for 9 versions</h2>
+
+            <p>This was the most damaging bug across v0.1–v0.9. The training loss decreased, W&B metrics improved, but every inference output was a dense undifferentiated cluster of nucleotides with no strand structure.</p>
+
+            <div style="margin-top:12px;padding:14px;background:rgba(194,65,12,0.1);border:2px solid rgba(194,65,12,0.4);border-radius:10px">
+              <strong>Root cause:</strong> The zarr dataset stores nucleotides in sequential order across all strands (nt 0, 1, 2, …, N). Consecutive indices across a strand break have inter-strand distances of <strong>5–35 su</strong>. The bond loss treated these as backbone bonds — FENE or MSE tried to pull them to R₀ = 0.54 su.<br><br>
+              The model found the optimal solution: <strong>minimize inter-strand distances by collapsing everything into one blob</strong>. All "bond" losses dropped — but the structure was completely wrong. Visualized in oxView: all nucleotides overlapping at the centroid.
+            </div>
+
+            <div style="margin-top:10px;padding:12px;background:rgba(11,114,133,0.08);border:1.5px solid rgba(11,114,133,0.3);border-radius:10px">
+              <strong>Fix (v0.10, commit a0ce1d3):</strong><br>
+              <code>strand_mask[i] = consec_dist[i] &lt; 2.0 su</code> — computed from consecutive distances in target positions. True = within strand (backbone bond), False = strand break (ignore).<br>
+              Applied to: FENE loss, bond_loss, bond_violations metric, bond_mean gate for energy activation.<br>
+              Also fixed topology export (<code>write_oxdna_top</code>): now correctly writes multi-strand topology instead of one continuous chain — enabling correct visualization in oxView.
+            </div>
+
+            <div style="margin-top:10px;padding:12px;background:rgba(11,114,133,0.08);border:1.5px solid rgba(11,114,133,0.3);border-radius:10px">
+              <strong>v0.11 (Jun 24): Strand ID embedding</strong><br>
+              Without strand IDs, the transformer attention can't distinguish "same-strand" from "different-strand" neighbors — there's no signal that nucleotides 1823/1824 are covalently bonded while 1824/1825 are on different strands.<br>
+              Fix: <code>strand_embedding = nn.Embedding(256, 16)</code>. Model input expanded 76→92 dims. Same-strand embedding → covalent; different embedding → H-bond / EXC only.
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 520 410" role="img" aria-label="Strand collapse bug diagram">
+              <defs>
+                <marker id="arr10" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                  <path d="M0.5 0.5 L5 3.5 L0.5 6.5 Z" fill="#0b7285"/>
+                </marker>
+                <marker id="arr10r" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+                  <path d="M0.5 0.5 L5 3.5 L0.5 6.5 Z" fill="#c2410c"/>
+                </marker>
+              </defs>
+              <text x="260" y="20" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">The strand collapse bug — a silent training failure</text>
+              <!-- Storage layout: what the zarr looks like -->
+              <rect x="15" y="32" width="490" height="68" rx="8" fill="rgba(255,250,240,0.9)" stroke="rgba(21,33,31,0.12)" stroke-width="1"/>
+              <text x="260" y="50" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">zarr storage: nucleotides indexed 0…N (sequential, all strands concatenated)</text>
+              <!-- Strand blocks in zarr -->
+              <rect x="30" y="58" width="80" height="20" rx="4" fill="rgba(11,114,133,0.55)"/>
+              <text x="70" y="71" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="9">Strand 0</text>
+              <rect x="115" y="58" width="60" height="20" rx="4" fill="rgba(194,65,12,0.55)"/>
+              <text x="145" y="71" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="9">Strand 1</text>
+              <rect x="180" y="58" width="90" height="20" rx="4" fill="rgba(240,140,0,0.6)"/>
+              <text x="225" y="71" text-anchor="middle" fill="white" font-family="IBM Plex Mono,monospace" font-size="9">Strand 2</text>
+              <!-- Gap annotation -->
+              <line x1="110" y1="58" x2="115" y2="58" stroke="#c2410c" stroke-width="3"/>
+              <text x="112" y="53" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="8" text-anchor="middle">5–35su gap!</text>
+              <line x1="175" y1="58" x2="180" y2="58" stroke="#c2410c" stroke-width="3"/>
+              <text x="177" y="53" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="8" text-anchor="middle">gap!</text>
+              <!-- Before strand_mask: collapse diagram -->
+              <rect x="15" y="112" width="230" height="140" rx="8" fill="rgba(194,65,12,0.07)" stroke="rgba(194,65,12,0.25)" stroke-width="1.2"/>
+              <text x="130" y="130" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Before strand_mask (v0.1–v0.9)</text>
+              <!-- Blobs collapsing together -->
+              <circle cx="100" cy="195" r="45" fill="rgba(194,65,12,0.15)" stroke="#c2410c" stroke-width="2" stroke-dasharray="5 3"/>
+              <circle cx="108" cy="196" r="8" fill="rgba(11,114,133,0.55)"/>
+              <circle cx="88" cy="192" r="8" fill="rgba(194,65,12,0.55)"/>
+              <circle cx="116" cy="210" r="8" fill="rgba(240,140,0,0.55)"/>
+              <circle cx="96" cy="185" r="8" fill="rgba(11,114,133,0.55)"/>
+              <circle cx="112" cy="180" r="8" fill="rgba(194,65,12,0.55)"/>
+              <text x="130" y="238" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">All strands collapsed to one blob</text>
+              <text x="130" y="248" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">Bond loss → pulls all strands together</text>
+              <!-- After strand_mask: correct structure -->
+              <rect x="275" y="112" width="230" height="140" rx="8" fill="rgba(11,114,133,0.07)" stroke="rgba(11,114,133,0.25)" stroke-width="1.2"/>
+              <text x="390" y="130" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">After strand_mask (v0.10+)</text>
+              <!-- Separated strands -->
+              <path d="M290 175 C310 155 330 195 350 170 C370 150 380 185 400 165" fill="none" stroke="#0b7285" stroke-width="3"/>
+              <path d="M295 215 C310 230 330 210 350 225 C365 238 375 220 395 235" fill="none" stroke="#c2410c" stroke-width="3"/>
+              <circle cx="290" cy="175" r="5" fill="rgba(11,114,133,0.7)"/>
+              <circle cx="350" cy="170" r="5" fill="rgba(11,114,133,0.7)"/>
+              <circle cx="400" cy="165" r="5" fill="rgba(11,114,133,0.7)"/>
+              <circle cx="295" cy="215" r="5" fill="rgba(194,65,12,0.7)"/>
+              <circle cx="350" cy="225" r="5" fill="rgba(194,65,12,0.7)"/>
+              <circle cx="395" cy="235" r="5" fill="rgba(194,65,12,0.7)"/>
+              <text x="390" y="248" text-anchor="middle" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">Distinct strands maintained</text>
+              <!-- strand_mask definition -->
+              <rect x="15" y="262" width="490" height="40" rx="7" fill="rgba(232,243,239,0.85)" stroke="rgba(11,114,133,0.2)" stroke-width="1"/>
+              <text x="30" y="280" fill="#064d5a" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700">strand_mask[i] = (‖tgt_pos[i+1] − tgt_pos[i]‖ &lt; 2.0 su)</text>
+              <text x="30" y="295" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">True = backbone bond (apply FENE/bond loss); False = strand break (skip)</text>
+              <!-- Gradient budget context -->
+              <rect x="15" y="312" width="490" height="86" rx="8" fill="rgba(255,243,191,0.65)" stroke="rgba(240,140,0,0.3)" stroke-width="1.2"/>
+              <text x="260" y="330" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Concurrent fix: pos weight 0.3 → 5.0 (gradient budget crisis from v0.9)</text>
+              <text x="30" y="349" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10">By epoch 90 of v0.9: hb_geo consumed 62% of gradient budget (weight=38, loss=8.2 → 312 units)</text>
+              <text x="30" y="366" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="10">pos consumed only 38% (weight=0.3, loss=769 → 231 units). Model optimized geometry, not shape.</text>
+              <text x="30" y="383" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">RMSD stuck at 60+ su. Fix: pos weight 0.3→5.0; hb_geo/stck_geo max 60→20.</text>
+              <text x="30" y="393" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="9">At epoch 50: pos contributes 1500/1575 = 95% of total gradient budget.</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>Strand collapse fix: a0ce1d3 (strand_mask, pos weight, hb_geo max); strand_id embedding: f540de2; write_oxdna_top multi-strand: 046797b; strand_mask threshold 2.0su from gap distribution.</footer>
+      </section>
+
+      <!-- ===== SLIDE: VERSION HISTORY III ===== -->
       <section class="slide" data-title="Version History III">
         <div class="two-col">
           <div>
@@ -1527,6 +2265,268 @@
           </figure>
         </div>
         <footer>v0.10: pos weight history in common_env.sh; v0.12: LJ fix in oxdna2_energy_torch.py; hb_geo smooth in geometry_loss.py; wc_mask fix verified on dsDNA test.</footer>
+      </section>
+
+      <!-- ===== SLIDE: VERSION HISTORY v0.13 ===== -->
+      <section class="slide compact" data-title="v0.13 Deep Dive">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">History · v0.13</p>
+            <h2>v0.13: geodesic SO(3) flow, spring-mass relaxation, hybrid compiled training</h2>
+            <p>v0.13 is the current training branch (June 2026). Three independent improvements address structural quality at inference time, mathematical correctness of the SO(3) interpolation, and GPU throughput.</p>
+            <div class="formula-box small" style="margin-top:12px">
+              <strong>1. Geodesic SO(3) flow matching (commit 0d86339):</strong>
+              \[R_t = R_0 \cdot \exp\!\left(t \cdot \log(R_0^\top R_1)\right)\]
+              Instead of linear interpolation in ℝ⁹ (then re-orthonormalizing), v0.13 interpolates <em>on</em> SO(3) via matrix logarithm. This ensures the velocity target u_t is intrinsic to the manifold — no approximation error from re-orthonormalization at intermediate steps.
+              <br><br>
+              <strong>2. Spring-mass coordinate relaxation (commits f92f4ee, 9b59a03):</strong><br>
+              Post-inference geometry fix applied before writing to oxDNA topology. Two-phase:
+              <ul style="margin:4px 0 0 16px;font-size:0.87em;line-height:1.6">
+                <li><strong>Phase 1</strong>: spring-mass simulation on backbone positions — pulls FENE bonds to equilibrium [0.5064, 1.0064] su, prevents RATTLE divergence in MD</li>
+                <li><strong>Phase 2</strong>: orientation relaxation aligns a₃ vectors with backbone direction — prevents stacking collapse in early-epoch inference</li>
+              </ul>
+            </div>
+            <div class="callout" style="margin-top:10px">
+              <strong>3. Hybrid compiled training (commit 9b89fba):</strong><br>
+              GPU 0–5 (5k/6k nt): <code>torch.compile(model, mode="reduce-overhead")</code> — 20–30% throughput gain. GPU 6–7 (10k nt): eager + gradient checkpointing — compile + checkpointing clash in Dynamo; 10k would OOM with compile. GPU 6–7 additionally use <em>eager</em> gradient checkpointing (not activation checkpointing) to prevent CUDA OOM on medium model with 6k.
+            </div>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 520 410" role="img" aria-label="v0.13 improvements diagram">
+              <defs>
+                <marker id="arrv13" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#0b7285"/>
+                </marker>
+                <marker id="arrv13r" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#c2410c"/>
+                </marker>
+              </defs>
+              <text x="260" y="20" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">v0.13 improvements</text>
+              <!-- Panel 1: Geodesic SO(3) -->
+              <rect x="15" y="32" width="230" height="150" rx="8" fill="rgba(232,243,239,0.75)" stroke="rgba(11,114,133,0.25)" stroke-width="1.2"/>
+              <text x="130" y="50" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Geodesic SO(3) flow</text>
+              <!-- SO(3) sphere icon -->
+              <ellipse cx="130" cy="105" rx="55" ry="35" fill="none" stroke="rgba(11,114,133,0.25)" stroke-width="1.5"/>
+              <ellipse cx="130" cy="105" rx="55" ry="10" fill="none" stroke="rgba(11,114,133,0.15)" stroke-width="1" stroke-dasharray="3 3"/>
+              <!-- Two points on manifold -->
+              <circle cx="90" cy="97" r="6" fill="rgba(11,114,133,0.7)" stroke="#064d5a" stroke-width="1.5"/>
+              <text x="80" y="91" fill="#064d5a" font-family="IBM Plex Mono,monospace" font-size="9">R₀</text>
+              <circle cx="170" cy="97" r="6" fill="rgba(194,65,12,0.7)" stroke="#7a2b0d" stroke-width="1.5"/>
+              <text x="174" y="91" fill="#7a2b0d" font-family="IBM Plex Mono,monospace" font-size="9">R₁</text>
+              <!-- Geodesic arc (stays on sphere) -->
+              <path d="M90 97 C100 75 140 75 170 97" fill="none" stroke="#0b7285" stroke-width="2.5" marker-end="url(#arrv13)"/>
+              <text x="130" y="70" text-anchor="middle" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">geodesic (on SO(3))</text>
+              <!-- Linear (leaves sphere) -->
+              <line x1="90" y1="97" x2="170" y2="97" stroke="#c2410c" stroke-width="1.5" stroke-dasharray="4 3"/>
+              <text x="130" y="112" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="8">linear (leaves SO(3))</text>
+              <text x="130" y="170" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">R_t = R₀·exp(t·log(R₀ᵀR₁))</text>
+              <!-- Panel 2: Spring-mass relaxation -->
+              <rect x="275" y="32" width="230" height="150" rx="8" fill="rgba(255,243,191,0.55)" stroke="rgba(240,140,0,0.25)" stroke-width="1.2"/>
+              <text x="390" y="50" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Spring-mass relaxation</text>
+              <!-- Chain of nucleotides with spring bonds -->
+              <circle cx="310" cy="105" r="10" fill="rgba(11,114,133,0.4)" stroke="#064d5a" stroke-width="1.5"/>
+              <circle cx="345" cy="118" r="10" fill="rgba(11,114,133,0.4)" stroke="#064d5a" stroke-width="1.5"/>
+              <circle cx="380" cy="112" r="10" fill="rgba(11,114,133,0.4)" stroke="#064d5a" stroke-width="1.5"/>
+              <circle cx="415" cy="125" r="10" fill="rgba(11,114,133,0.4)" stroke="#064d5a" stroke-width="1.5"/>
+              <circle cx="450" cy="118" r="10" fill="rgba(11,114,133,0.4)" stroke="#064d5a" stroke-width="1.5"/>
+              <!-- Springs -->
+              <path d="M320 105 C326 97 338 126 345 118" fill="none" stroke="#f08c00" stroke-width="2"/>
+              <path d="M355 118 C361 110 374 121 380 112" fill="none" stroke="#f08c00" stroke-width="2"/>
+              <path d="M390 112 C396 104 408 133 415 125" fill="none" stroke="#f08c00" stroke-width="2"/>
+              <path d="M425 125 C431 117 444 127 450 118" fill="none" stroke="#f08c00" stroke-width="2"/>
+              <!-- FENE range annotation -->
+              <text x="390" y="145" text-anchor="middle" fill="#8a5200" font-family="IBM Plex Mono,monospace" font-size="9">FENE target: [0.5064, 1.0064] su</text>
+              <text x="390" y="160" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">200 spring-mass iterations</text>
+              <text x="390" y="172" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">+ orientation align phase</text>
+              <!-- Panel 3: Hybrid compile -->
+              <rect x="15" y="196" width="490" height="100" rx="8" fill="rgba(194,65,12,0.07)" stroke="rgba(194,65,12,0.25)" stroke-width="1.2"/>
+              <text x="260" y="215" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Hybrid compiled training — 8 GPUs</text>
+              <text x="40" y="235" fill="#102122" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">GPU 0-5 (5k/6k nt):</tspan> torch.compile(mode="reduce-overhead") → 20–30% throughput↑</text>
+              <text x="40" y="252" fill="#102122" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">GPU 6 (10k nt, medium):</tspan> eager + gradient checkpointing (OOM without checkpointing)</text>
+              <text x="40" y="269" fill="#102122" font-family="IBM Plex Sans,sans-serif" font-size="10"><tspan font-weight="700">GPU 7 (10k nt, medium):</tspan> eager + gradient checkpointing (compile+checkpointing → Dynamo crash)</text>
+              <text x="40" y="286" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">Root cause: torch.compile traces through gradient checkpointing → Inductor BackendCompilerFailed</text>
+              <!-- Key metrics and status -->
+              <rect x="15" y="308" width="490" height="92" rx="8" fill="rgba(232,243,239,0.85)" stroke="rgba(11,114,133,0.2)" stroke-width="1.2"/>
+              <text x="260" y="327" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">v0.13 commit history (branch v0.13)</text>
+              <text x="30" y="345" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">0d86339 — Geodesic SO(3), structural collapse fix, vectorized neighbor search</text>
+              <text x="30" y="360" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">f92f4ee — Spring-mass coordinate relaxation at inference</text>
+              <text x="30" y="375" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">9b59a03 — Stable coordinate + orientation relaxation (phase 2)</text>
+              <text x="30" y="390" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="9">b4dec3e — Ground-truth oxDNA2 energy calculator + ODE integration fix</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>Geodesic SO(3): constrained_flow.py commit 0d86339; spring-mass relaxation: inference/relaxation.py commits f92f4ee, 9b59a03; hybrid compile: train_v013/launch_all.sh commit 9b89fba.</footer>
+      </section>
+
+      <!-- ===== SLIDE: WEIGHT SCHEDULER DEEP DIVE ===== -->
+      <section class="slide compact" data-title="Weight Scheduler Deep Dive">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Training · Optimization</p>
+            <h2>Reactive weight scheduler: proportional gradient-budget control every 5 epochs</h2>
+            <p>The weight scheduler monitors 9 loss metrics and adjusts weights proportionally — not with fixed steps — to prevent any single term from consuming disproportionate gradient budget.</p>
+            <div class="formula-box small" style="margin-top:12px">
+              <strong>Update rule (every 5 epochs):</strong>
+              \[\Delta w = \text{step} \times \frac{\Delta\mathcal{L} / \mathcal{L}_\text{prev}}{0.05},\quad |\Delta w| \le \text{max\_jump}\]
+              <p>If loss improves ≥5%: decrease weight. If loss worsens ≥5%: increase weight. Changes are proportional to the magnitude of change — a 10% improvement gives 2× the step of a 5% improvement. Changes less than 5% are damped (scale &lt; 1).</p>
+            </div>
+            <div class="callout" style="margin-top:10px">
+              <strong>v0.9 post-mortem — the "gradient budget crisis":</strong><br>
+              By epoch 90: hb_geo weight drifted to 38, loss ≈ 8.2 → contribution = <strong>312 units</strong> (62% of budget).<br>
+              pos weight 0.3, loss ≈ 769 → contribution = <strong>231 units</strong> (38%).<br>
+              Result: model optimized geometry over position — RMSD stuck at 60+ su.
+            </div>
+            <table class="data-table" style="margin-top:10px">
+              <thead><tr><th>Term</th><th>step</th><th>max_jump</th><th>min</th><th>max</th><th>epoch_min</th></tr></thead>
+              <tbody>
+                <tr><td>pos</td><td>0.5</td><td>1.0</td><td>2.0</td><td>15.0</td><td>30</td></tr>
+                <tr><td>bond</td><td>0.5</td><td>2.0</td><td>5.0</td><td>30.0</td><td>10</td></tr>
+                <tr><td>exc</td><td>0.02</td><td>0.05</td><td>0.005</td><td>0.5</td><td>5</td></tr>
+                <tr><td>hb_geo</td><td>1.0</td><td>3.0</td><td>2.0</td><td>20.0</td><td>20</td></tr>
+                <tr><td>stck_geo</td><td>1.0</td><td>3.0</td><td>2.0</td><td>20.0</td><td>20</td></tr>
+                <tr><td>wc_attract</td><td>0.5</td><td>2.0</td><td>1.0</td><td>15.0</td><td>5</td></tr>
+                <tr><td>groove</td><td>0.3</td><td>1.0</td><td>0.5</td><td>10.0</td><td>10</td></tr>
+                <tr><td>back_bond</td><td>0.3</td><td>1.0</td><td>0.5</td><td>8.0</td><td>10</td></tr>
+                <tr><td>dh</td><td>0.2</td><td>0.5</td><td>0.3</td><td>5.0</td><td>15</td></tr>
+              </tbody>
+            </table>
+            <p style="margin-top:8px;font-size:0.88em"><strong>3 fixed weights:</strong> ori=0.5, hb_exc=8.0, energy=0.1 (no reactive tuning — these are calibrated independently)</p>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 520 410" role="img" aria-label="Weight scheduler diagram and gradient budget crisis">
+              <defs>
+                <marker id="arrsched" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                  <path d="M1 1 L6 4 L1 7 Z" fill="#0b7285"/>
+                </marker>
+              </defs>
+              <text x="260" y="20" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">Weight scheduler: gradient budget management</text>
+              <!-- v0.9 crisis visualization -->
+              <text x="260" y="44" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">v0.9 gradient budget crisis (epoch 90)</text>
+              <rect x="18" y="52" width="484" height="80" rx="8" fill="rgba(194,65,12,0.07)" stroke="rgba(194,65,12,0.25)" stroke-width="1.2"/>
+              <!-- Budget bars -->
+              <!-- hb_geo: 62% -->
+              <rect x="30" y="70" width="297" height="26" rx="5" fill="rgba(194,65,12,0.7)"/>
+              <text x="280" y="87" fill="white" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700" text-anchor="end">hb_geo: w=38 × loss=8.2 → 312 units (62%)</text>
+              <!-- pos: 38% -->
+              <rect x="30" y="101" width="182" height="22" rx="5" fill="rgba(11,114,133,0.6)"/>
+              <text x="205" y="116" fill="white" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700" text-anchor="end">pos: w=0.3 × loss=769 → 231 units (38%)</text>
+              <text x="470" y="87" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">CRISIS</text>
+              <text x="470" y="116" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="9">only 38%</text>
+              <!-- v0.12 fix visualization -->
+              <text x="260" y="158" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">v0.12 fix: pos weight 0.3→5.0, hb_geo max 60→20</text>
+              <rect x="18" y="165" width="484" height="80" rx="8" fill="rgba(232,243,239,0.75)" stroke="rgba(11,114,133,0.2)" stroke-width="1.2"/>
+              <!-- pos: 95% -->
+              <rect x="30" y="178" width="440" height="26" rx="5" fill="rgba(11,114,133,0.65)"/>
+              <text x="462" y="195" fill="white" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700" text-anchor="end">pos: w=5.0 × loss=300 → 1500 units (95%) @ ep50</text>
+              <!-- hb_geo: 5% -->
+              <rect x="30" y="209" width="22" height="22" rx="4" fill="rgba(194,65,12,0.5)"/>
+              <text x="58" y="224" fill="#7a2b0d" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="700">hb_geo: w=15 × loss=5 → 75 units (5%)</text>
+              <!-- Scheduler update cycle diagram -->
+              <rect x="18" y="260" width="484" height="140" rx="8" fill="rgba(255,250,240,0.9)" stroke="rgba(21,33,31,0.12)" stroke-width="1"/>
+              <text x="260" y="280" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">Proportional update cycle (every 5 epochs)</text>
+              <!-- Flow diagram: measure → compute delta → clamp → apply -->
+              <rect x="35" y="293" width="96" height="32" rx="6" fill="rgba(232,243,239,0.9)" stroke="rgba(11,114,133,0.3)" stroke-width="1.5"/>
+              <text x="83" y="313" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="9" font-weight="700">Measure Δ%</text>
+              <line x1="131" y1="309" x2="155" y2="309" stroke="#0b7285" stroke-width="1.8" marker-end="url(#arrsched)"/>
+              <rect x="155" y="293" width="96" height="32" rx="6" fill="rgba(232,243,239,0.9)" stroke="rgba(11,114,133,0.3)" stroke-width="1.5"/>
+              <text x="203" y="309" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="9" font-weight="700">Δw = step×Δ%/5%</text>
+              <line x1="251" y1="309" x2="275" y2="309" stroke="#0b7285" stroke-width="1.8" marker-end="url(#arrsched)"/>
+              <rect x="275" y="293" width="96" height="32" rx="6" fill="rgba(232,243,239,0.9)" stroke="rgba(11,114,133,0.3)" stroke-width="1.5"/>
+              <text x="323" y="309" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="9" font-weight="700">Clamp |Δw| ≤ max_jump</text>
+              <line x1="371" y1="309" x2="395" y2="309" stroke="#0b7285" stroke-width="1.8" marker-end="url(#arrsched)"/>
+              <rect x="395" y="293" width="96" height="32" rx="6" fill="rgba(232,243,239,0.9)" stroke="rgba(11,114,133,0.3)" stroke-width="1.5"/>
+              <text x="443" y="309" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="9" font-weight="700">Apply w+Δw</text>
+              <!-- Guard: epoch_min -->
+              <text x="260" y="348" text-anchor="middle" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">epoch_min guard: loss ignored until epoch ≥ epoch_min (avoids tuning during rapid initial learning)</text>
+              <!-- min/max rails -->
+              <text x="260" y="367" text-anchor="middle" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">min/max rails: weight clamped to [min, max] — prevents both starvation and budget explosion</text>
+              <!-- 5% deadband -->
+              <text x="260" y="386" text-anchor="middle" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">&lt;5% change → scale&lt;1 → damped update (noise immunity without full deadband)</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>WeightScheduler class: train_lightning.py; full config: train_v012/weight_schedule.json; v0.9 crisis documented in common_env.sh header; max caps halved vs v0.9.</footer>
+      </section>
+
+      <!-- ===== SLIDE: EXCLUDED VOLUME & DEBYE-HUCKEL ===== -->
+      <section class="slide compact" data-title="Soft-Core EXC &amp; Debye-Hückel">
+        <div class="two-col">
+          <div>
+            <p class="section-tag">Physics · Repulsion &amp; Electrostatics</p>
+            <h2>Soft-core excluded volume + Debye-Hückel: preventing clashes and enforcing charge screening</h2>
+            <div class="formula-box small" style="margin-top:12px">
+              <strong>Soft-core excluded volume (4 site-pair types):</strong>
+              \[V_\text{exc}(r) = \frac{\varepsilon}{(r^2 + \delta^2)^3}, \quad \delta=0.20\text{ su}, \varepsilon=0.01\]
+              <p style="font-size:0.86em;margin-top:4px">Applied to: backbone–backbone (r_cut=0.89), backbone–base (r_cut=0.81), base–backbone (r_cut=0.81), base–base (r_cut=0.73). <br>Skip bonded neighbors (|i-j|≤1 same strand).</p>
+              <strong style="display:block;margin-top:8px">Debye-Hückel electrostatics (backbone charges):</strong>
+              \[V_\text{DH}(r) = \frac{q^2 e^{-r/\lambda}}{4\pi\varepsilon_0 \varepsilon_r r}, \quad \lambda = 0.3616\text{ su (0.5M NaCl)}\]
+              \[\mathcal{L}_\text{DH} = \frac{1}{K}\sum_\text{pairs} (V_\text{DH}(r) - V_\text{DH}(r_\text{equil}))^2\]
+              Smooth cosine cutoff at r_cut=3.0 su. bf16 clamp: max 50.0 before squaring (prevents Inf at very small r).
+            </div>
+            <div class="callout" style="margin-top:10px">
+              <strong>Why soft-core, not hard-core?</strong> Hard-core exclusion (relu-based) has zero gradient when r ≫ cutoff, so nucleotides that start far apart receive no guidance. Soft-core V ∝ 1/r⁶ provides repulsive gradient at all distances — stronger as nucleotides approach, but non-zero even at large r. This is especially important at early training when structures are random.
+            </div>
+            <p style="margin-top:8px;font-size:0.88em"><strong>DH justification:</strong> DNA is highly charged (one phosphate per nt, net −1e per bp). Without DH, nucleotides can be placed at arbitrary proximity along the backbone. At 0.5M NaCl, λ≈1.2 Å ≈ 0.36 su — very short screening length, so only nearest neighbors matter energetically.</p>
+          </div>
+          <figure class="svg-card">
+            <svg viewBox="0 0 520 410" role="img" aria-label="Excluded volume and Debye-Hückel potential diagrams">
+              <text x="260" y="20" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="700">EXC soft-core &amp; Debye-Hückel potentials</text>
+              <!-- EXC potential panel -->
+              <rect x="15" y="32" width="230" height="160" rx="8" fill="rgba(194,65,12,0.07)" stroke="rgba(194,65,12,0.25)" stroke-width="1.2"/>
+              <text x="130" y="50" text-anchor="middle" fill="#7a2b0d" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">V_exc(r) = ε/(r²+δ²)³</text>
+              <line x1="35" y1="170" x2="235" y2="170" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <line x1="35" y1="170" x2="35" y2="58" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <text x="30" y="174" text-anchor="end" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">0</text>
+              <text x="30" y="64" text-anchor="end" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">V</text>
+              <!-- soft-core curve: diverges as r→0 but smooth, decays fast -->
+              <path d="M35 62 C50 62 62 78 75 100 C90 125 120 158 175 168 L235 170" fill="rgba(194,65,12,0.1)" stroke="#c2410c" stroke-width="2.5"/>
+              <!-- hard-core comparison (dashed) -->
+              <path d="M35 170 L100 170 L100 62 L235 62" fill="none" stroke="rgba(21,33,31,0.3)" stroke-width="1.5" stroke-dasharray="5 3"/>
+              <text x="130" y="140" text-anchor="middle" fill="#c2410c" font-family="IBM Plex Mono,monospace" font-size="8">soft-core (gradient≠0)</text>
+              <text x="170" y="78" fill="rgba(21,33,31,0.45)" font-family="IBM Plex Mono,monospace" font-size="8">hard-core</text>
+              <text x="35" y="185" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">0</text>
+              <text x="175" y="185" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">r_cut</text>
+              <!-- Site-pair table -->
+              <rect x="15" y="200" width="230" height="98" rx="7" fill="rgba(232,243,239,0.8)" stroke="rgba(11,114,133,0.2)" stroke-width="1"/>
+              <text x="130" y="217" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">4 site-pair cutoffs</text>
+              <text x="25" y="234" fill="#102522" font-family="IBM Plex Mono,monospace" font-size="9">back–back: 0.89 su</text>
+              <text x="25" y="250" fill="#102522" font-family="IBM Plex Mono,monospace" font-size="9">back–base: 0.81 su</text>
+              <text x="25" y="266" fill="#102522" font-family="IBM Plex Mono,monospace" font-size="9">base–back: 0.81 su</text>
+              <text x="25" y="282" fill="#102122" font-family="IBM Plex Mono,monospace" font-size="9">base–base: 0.73 su</text>
+              <text x="25" y="293" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">skip: |i-j|≤1 same strand</text>
+              <!-- DH panel -->
+              <rect x="265" y="32" width="240" height="160" rx="8" fill="rgba(11,114,133,0.07)" stroke="rgba(11,114,133,0.25)" stroke-width="1.2"/>
+              <text x="385" y="50" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">V_DH(r) = q²e^{-r/λ} / (4πε₀εᵣr)</text>
+              <line x1="285" y1="170" x2="495" y2="170" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <line x1="285" y1="170" x2="285" y2="58" stroke="rgba(21,33,31,0.3)" stroke-width="1.5"/>
+              <!-- DH curve: Yukawa, decays exponentially -->
+              <path d="M285 62 C295 62 305 78 320 110 C340 140 375 160 430 168 L495 170" fill="rgba(11,114,133,0.1)" stroke="#0b7285" stroke-width="2.5"/>
+              <!-- cutoff annotation -->
+              <line x1="470" y1="165" x2="470" y2="174" stroke="rgba(21,33,31,0.4)" stroke-width="1"/>
+              <text x="470" y="185" text-anchor="middle" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">3.0 su</text>
+              <!-- λ annotation -->
+              <line x1="350" y1="100" x2="360" y2="88" stroke="rgba(21,33,31,0.4)" stroke-width="1"/>
+              <text x="363" y="87" fill="#0b7285" font-family="IBM Plex Mono,monospace" font-size="8">λ=0.36 su</text>
+              <text x="285" y="185" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">0</text>
+              <!-- DH constants -->
+              <rect x="265" y="200" width="240" height="98" rx="7" fill="rgba(232,243,239,0.8)" stroke="rgba(11,114,133,0.2)" stroke-width="1"/>
+              <text x="385" y="217" text-anchor="middle" fill="#064d5a" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">DH constants (0.5M NaCl)</text>
+              <text x="275" y="234" fill="#102522" font-family="IBM Plex Mono,monospace" font-size="9">λ = 0.3616 su</text>
+              <text x="275" y="250" fill="#102522" font-family="IBM Plex Mono,monospace" font-size="9">DH strength = 0.0543 su</text>
+              <text x="275" y="266" fill="#102522" font-family="IBM Plex Mono,monospace" font-size="9">r_cut = 3.0 su</text>
+              <text x="275" y="282" fill="#102122" font-family="IBM Plex Mono,monospace" font-size="9">bf16 clamp: max=50.0</text>
+              <text x="275" y="293" fill="#53625e" font-family="IBM Plex Mono,monospace" font-size="8">K=300 sampled pairs per step</text>
+              <!-- Summary row -->
+              <rect x="15" y="308" width="490" height="96" rx="8" fill="rgba(255,250,240,0.9)" stroke="rgba(21,33,31,0.12)" stroke-width="1"/>
+              <text x="260" y="328" text-anchor="middle" fill="#102522" font-family="IBM Plex Sans,sans-serif" font-size="11" font-weight="700">bf16 numerical stability: clamping and soft-core choice</text>
+              <text x="30" y="347" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">DH: V(r) can be large when r is tiny. In bf16, V&gt;65504 → Inf, then squared → NaN.</text>
+              <text x="30" y="363" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">Fix: clamp V to max=50.0 before squaring. Gradient of clamped region is zero but that is acceptable</text>
+              <text x="30" y="379" fill="#53625e" font-family="IBM Plex Sans,sans-serif" font-size="10">since very small r means structure has already collapsed — we only need guidance at moderate r.</text>
+              <text x="30" y="395" fill="#c2410c" font-family="IBM Plex Sans,sans-serif" font-size="10" font-weight="700">EXC: 1/(r²+δ²)³ already bounded as r→0 (no Inf) — δ=0.20 acts as soft floor: max value ε/δ⁶≈244.</text>
+            </svg>
+          </figure>
+        </div>
+        <footer>exc_geometry_loss() and dh_geometry_loss(): geom_loss.py; EXC δ=0.2, ε=0.01; DH λ=0.3616su, strength=0.0543su; DH_K=300, DH_SALT=0.5M; bf16 clamp at V=50.</footer>
       </section>
 
       <!-- ===== SLIDE 20: 8-GPU TRAINING SETUP ===== -->

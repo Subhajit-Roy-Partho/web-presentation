@@ -67,7 +67,7 @@
     nextBtn.disabled = current === slides.length - 1;
 
     const title = slides[current].dataset.title || `Slide ${current + 1}`;
-    document.title = `${current + 1}/${slides.length} - ${title} - IDPFlow`;
+    document.title = `${current + 1}/${slides.length} - ${title} - fastDNA`;
 
     if (!options.replaceHash) {
       history.replaceState(null, "", `#slide-${current + 1}`);
